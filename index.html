@@ -1023,7 +1023,7 @@ let _fichaTab = 'detalle';
 const ETAPAS_SUGERIDAS = ['Relevamiento / medidas', 'Presupuesto de materiales', 'Compra de materiales', 'Presupuesto de mano de obra', 'Selección del grupo', 'Ejecución', 'Control de avance', 'Terminación'];
 function nEtapaHtml(titulo, on){ return `<div class="n-et"><label><input type="checkbox" ${on ? 'checked' : ''}> <span>${esc(titulo)}</span></label><button class="btn ico chico bandera" onclick="this.classList.toggle('on')" title="Prioridad alta: se puede hacer ya" aria-label="Prioridad alta">${_i('flag')}</button><button class="btn ico chico" onclick="this.closest('.n-et').remove()" title="Sacar" aria-label="Sacar">${_i('x')}</button></div>`; }
 function nEtapaAgregar(){ const i = document.getElementById('n-et-nueva'), v = i.value.trim(); if (!v) return; document.getElementById('n-etapas').insertAdjacentHTML('beforeend', nEtapaHtml(v, true)); i.value = ''; i.focus(); }
-function nEtapasElegidas(){ return [...document.querySelectorAll('#n-etapas .n-et')].filter(d => d.querySelector('input').checked).map((d, i) => ({ titulo: d.querySelector('span').textContent, orden: i + 1, prioridad: d.querySelector('.bandera').classList.contains('on') ? 'alta' : null, cant_presupuestos: /presupuest|cotiza/i.test(d.querySelector('span').textContent) ? 3 : null })); }
+function nEtapasElegidas(){ return [...document.querySelectorAll('#n-etapas .n-et')].filter(d => d.querySelector('input').checked).map((d, i) => ({ titulo: d.querySelector('span').textContent, orden: i + 1, prioridad: d.querySelector('.bandera').classList.contains('on') ? 'alta' : null, cant_presupuestos: esTituloCotiz(d.querySelector('span').textContent) ? 3 : null })); }
 const PRIO_ICO = { alta: 'red', normal: 'amber', baja: 'green' };
 function fichaTarea(id, tab){
   const t = tareaDe(id); if (!t) return;
@@ -1148,7 +1148,8 @@ async function agregarNovedad(id){
 async function borrarNovedad(nid, tid){ await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); abrirTarea(tid); }
 
 // ── Etapas ──
-const esEtapaPresup = e => /presupuest|cotiza/i.test(e.titulo || '');
+const esTituloCotiz = t => /presupuest|cotiza/i.test(t || '') && !/elegir|selecc|aprob/i.test(t || '');
+const esEtapaPresup = e => esTituloCotiz(e.titulo);
 const presupDeEtapa = e => ARCHIVOS.filter(a => a.tipo === 'presupuesto' && a.etapa_id === e.id);
 function etapasHtml(tid){
   const E = ETAPAS.filter(e => e.tarea_id === tid); if (!E.length) return '<div class="mini">Sin etapas todavía.</div>';
@@ -1173,7 +1174,7 @@ async function cantPresup(id, delta){
 async function agregarEtapa(tid){
   const titulo = document.getElementById('m-et-titulo').value.trim(); if (!titulo) return;
   const orden = ETAPAS.filter(e => e.tarea_id === tid).length + 1;
-  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: null, cant_presupuestos: /presupuest|cotiza/i.test(titulo) ? 3 : null, creado_por: YO.email });
+  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: null, cant_presupuestos: esTituloCotiz(titulo) ? 3 : null, creado_por: YO.email });
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(tid, 'etapas'); document.getElementById('m-et-titulo').focus(); renderTablero();
 }
