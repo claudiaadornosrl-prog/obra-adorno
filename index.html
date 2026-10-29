@@ -497,6 +497,27 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 @media (max-width: 800px) { #ov .box input:not([type=checkbox]):not([type=file]), #ov .box select, #ov .box textarea { font-size: 16px !important; } }
 .n-etapas { border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; } .n-et { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px dashed #eef2f7; font-size: 14px; } .n-et:last-child { border-bottom: 0; } .n-et label { flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer; } .n-et input { width: 17px; height: 17px; accent-color: var(--primary); } .n-et .bandera { color: #cbd5e1; } .n-et .bandera.on { color: var(--red); }
 .etapa .cotiz { display: inline-flex; align-items: center; gap: 2px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 1px 4px; } .etapa .cotiz b { font-size: 12px; color: #9a3412; min-width: 28px; text-align: center; } .etapa .cotiz.ok { background: #dcfce7; border-color: #bbf7d0; } .etapa .cotiz.ok b { color: #166534; } .etapa .cotiz .btn { width: 22px; height: 22px; font-size: 15px; font-weight: 700; } .etapa.cot label input:disabled { opacity: .35; }
+/* v25: ventana Nueva tarea "tarjeta ámbar" */
+.nueva3 { margin: -18px; background: #fffbeb; border-radius: 12px; overflow: hidden; }
+.nueva3 .cab { background: var(--primary); padding: 16px 16px 42px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+.nueva3 .cab .cierra { position: absolute; right: 6px; top: 6px; color: #fff; }
+.nueva3 .cab input { background: rgba(255,255,255,.16); border: 0; color: #fff; border-radius: 9px; padding: 8px 10px; font: inherit; width: 100%; box-sizing: border-box; }
+.nueva3 .cab input::placeholder { color: rgba(255,255,255,.75); }
+.nueva3 .cab .tit { font-size: 17px; font-weight: 700; padding-right: 36px; } .nueva3 .cab .corto { font-size: 13px; width: 70%; }
+.nueva3 .datos4 { display: flex; gap: 6px; margin: -30px 14px 0; position: relative; }
+.nueva3 .dato { flex: 1; min-width: 0; position: relative; background: #fff; border: 0; border-radius: 12px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; box-shadow: 0 4px 12px rgba(0,0,0,.10); font: inherit; color: inherit; cursor: pointer; }
+.nueva3 .dato .ico { width: 18px; height: 18px; color: var(--muted); }
+.nueva3 .dato b { font-size: 10.5px; font-weight: 700; color: #334155; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nueva3 .dato .over { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.nueva3 .dato.pr-alta { background: #fee2e2; } .nueva3 .dato.pr-alta .ico { color: var(--red); } .nueva3 .dato.pr-normal .ico { color: var(--amber); } .nueva3 .dato.pr-baja .ico { color: var(--green); }
+.nueva3 .cuerpo { padding: 12px 14px 16px; }
+.nueva3 h4 { margin: 12px 0 6px; font-size: 13px; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; } .nueva3 h4:first-child { margin-top: 2px; } .nueva3 h4 .mini { margin-left: auto; font-weight: 400; }
+.nueva3 textarea, .nueva3 .nov-in input { background: #fff; border: 1px solid #f3e8c8; border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 14px; width: 100%; box-sizing: border-box; }
+.nueva3 .n-etapas { background: #fff; border-color: #f3e8c8; border-radius: 14px; padding: 4px 12px; }
+.nueva3 .n-et { border-bottom-color: #f3e8c8; }
+.nueva3 .guardar { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.nueva3 .guardar .big { width: 46px; height: 46px; border-radius: 14px; background: var(--primary); color: #fff; border: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(180,83,9,.35); cursor: pointer; }
+@media (max-width: 800px) { .nueva3 { margin: -10px; } }
 /* v13: prioridad por etapa */
 .etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
 /* v13: ficha de tarea (preview 3) */
@@ -998,24 +1019,29 @@ function cerrarOv(){ const o = document.getElementById('ov'); if (o) o.remove();
 function ovBox(html){ cerrarOv(); const o = document.createElement('div'); o.id = 'ov'; o.innerHTML = `<div class="box">${html}</div>`; document.body.appendChild(o); return o; }
 function abrirTarea(id, tab){
   if (id) return fichaTarea(id, tab);
-  const t = { titulo: '', descripcion: '', rubro: '', grupo: '', prioridad: 'normal', responsable: 'arquitecto', fecha_limite: '', estado: 'pendiente' };
-  ovBox(`<div class="m-head"><h3 style="margin:0">Nueva tarea</h3><div class="spacer"></div><button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
-    <div class="form" style="margin-top:10px">
-      <label style="grid-column:1/-1">Título <input id="m-titulo" value="" placeholder="Qué hay que hacer"></label>
-      <label style="grid-column:1/-1">Nombre corto para el círculo <input id="m-tcorto" maxlength="24" placeholder="Opcional, ej.: Bibliotecas"></label>
-      <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…"></textarea></label>
-      <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option>${esc(r)}</option>`).join('')}</select></label>
-      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón… (varios: separados por coma)"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
-      <label style="display:none">Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-      <label>Prioridad <select id="m-prio">${['alta','normal','baja'].map(p => `<option ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
-      <label>Fecha límite <input id="m-fecha" type="date"></label>
-      <label style="display:none">Estado <select id="m-estado"><option value="pendiente" selected>Pendiente</option></select></label>
+  // v25 (JP eligió "tarjeta ámbar"): alta con el mismo lenguaje visual que la ficha
+  ovBox(`<div class="nueva3">
+    <div class="cab"><button class="btn ico cierra" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button>
+      <input id="m-titulo" class="tit" placeholder="Nueva tarea: qué hay que hacer" autocomplete="off">
+      <input id="m-tcorto" class="corto" maxlength="24" placeholder="Nombre corto para el círculo" autocomplete="off"></div>
+    <div class="datos4">
+      <label class="dato" title="Rubro">${_i('brick')}<b id="nl-rubro">Rubro</b><select id="m-rubro" class="over" onchange="document.getElementById('nl-rubro').textContent = this.value || 'Rubro'"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option>${esc(r)}</option>`).join('')}</select></label>
+      <button class="dato" title="Grupo que lo trabaja" onclick="const r = document.getElementById('n-grupo-row'); r.style.display = r.style.display === 'none' ? 'flex' : 'none'; if (r.style.display === 'flex') document.getElementById('m-grupo').focus()">${_i('users')}<b id="nl-grupo">Grupo</b></button>
+      <label class="dato pr-normal" id="nd-prio" title="Prioridad">${_i('flag')}<b id="nl-prio">Normal</b><select id="m-prio" class="over" onchange="document.getElementById('nl-prio').textContent = this.value[0].toUpperCase() + this.value.slice(1); document.getElementById('nd-prio').className = 'dato pr-' + this.value">${['alta','normal','baja'].map(p => `<option ${p === 'normal' ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
+      <label class="dato" title="Fecha límite">${_i('cal')}<b id="nl-fecha">Fecha</b><input id="m-fecha" type="date" class="over" onchange="document.getElementById('nl-fecha').textContent = this.value ? fmtF(this.value).slice(0,5) : 'Fecha'"></label>
     </div>
-    <h4 style="margin:14px 0 4px">Etapas</h4>
-    <div class="mini" style="margin-bottom:6px">Destildá las que no van, agregá las que falten. 🚩 = se puede hacer ya (prioridad alta).</div>
-    <div id="n-etapas" class="n-etapas">${ETAPAS_SUGERIDAS.map(t => nEtapaHtml(t, true)).join('')}</div>
-    <div class="nov-in" style="margin-top:6px"><input id="n-et-nueva" placeholder="Otra etapa…" onkeydown="if(event.key==='Enter'){ event.preventDefault(); nEtapaAgregar(); }"><button class="btn primary ico" onclick="nEtapaAgregar()" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
-    <div style="margin-top:12px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(0)" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar la tarea con sus etapas</span></div>`);
+    <div class="nov-in" id="n-grupo-row" style="display:none;margin:8px 14px 0"><input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón… (varios: separados por coma)" oninput="document.getElementById('nl-grupo').textContent = this.value.trim() ? (this.value.split(',').length > 1 ? this.value.split(',').length + ' grupos' : this.value.trim()) : 'Grupo'"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></div>
+    <select id="m-resp" style="display:none">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${k === 'arquitecto' ? 'selected' : ''}>${v}</option>`).join('')}</select>
+    <select id="m-estado" style="display:none"><option value="pendiente" selected>Pendiente</option></select>
+    <div class="cuerpo">
+      <h4>Detalle</h4>
+      <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…"></textarea>
+      <h4>Etapas <span class="mini">${ETAPAS_SUGERIDAS.length} sugeridas · 🚩 = se puede hacer ya</span></h4>
+      <div id="n-etapas" class="n-etapas">${ETAPAS_SUGERIDAS.map(t => nEtapaHtml(t, true)).join('')}</div>
+      <div class="nov-in" style="margin-top:8px"><input id="n-et-nueva" placeholder="Otra etapa…" onkeydown="if(event.key==='Enter'){ event.preventDefault(); nEtapaAgregar(); }"><button class="btn primary ico" onclick="nEtapaAgregar()" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+      <div class="guardar"><button class="big" onclick="guardarTarea(0)" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar la tarea con sus etapas</span></div>
+    </div>
+  </div>`);
   setTimeout(() => document.getElementById('m-titulo').focus(), 50);
 }
 // ── Ficha de una tarea existente (v13, "preview 3" elegido por JP): título una sola vez + ✎, datos en un renglón de íconos,
