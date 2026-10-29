@@ -454,6 +454,16 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .rowt { padding: 8px 4px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; } .rowt:last-child { border-bottom: none; } .rowt:hover { background: #fafafa; }
 .rowt a { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .plata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; } .plata .l { font-size: 12px; color: var(--muted); font-weight: 600; } .plata .v { font-size: 16px; font-weight: 700; }
+/* v6: filtros en un renglón + lista por prioridad */
+.filters.fila1 { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding: 8px 10px; scrollbar-width: none; }
+.filters.fila1::-webkit-scrollbar { display: none; }
+.filters.fila1 input, .filters.fila1 select { flex: 0 0 auto; min-width: 0; padding: 6px 8px; font-size: 13px; }
+.filters.fila1 #t-q { flex: 1 1 120px; min-width: 90px; }
+.filters.fila1 .stat { white-space: nowrap; }
+.lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 12px; align-items: start; }
+@media (max-width: 800px) { .lista-tareas { grid-template-columns: 1fr; } .filters.fila1 .stat { display: none; } }
+.grp-h { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 10px 4px 6px; display: flex; align-items: center; gap: 6px; }
+.grp-h .count { background: #eef2f7; border-radius: 10px; padding: 0 8px; font-size: 12px; }
 .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; } @media (max-width: 800px) { .kanban { grid-template-columns: 1fr; } }
 .col { background: #eef2f7; border-radius: 12px; padding: 8px; min-height: 120px; }
 .col-h { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px 8px; display: flex; align-items: center; gap: 6px; }
@@ -523,15 +533,15 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <div class="card"><h3>💰 Plata</h3><div id="r-plata"></div></div>
     </section>
     <section id="content-tablero" class="tab-content active">
-      <div class="filters">
+      <div class="filters fila1">
         <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-        <input id="t-q" placeholder="🔎 Buscar tarea…" style="min-width:200px">
-        <label>Rubro</label><select id="t-rubro" onchange="renderTablero()"><option value="">Todos</option></select>
-        <label>Responsable</label><select id="t-resp" onchange="renderTablero()"><option value="">Todos</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
-        <label><input type="checkbox" id="t-canc" onchange="renderTablero()"> ver canceladas</label>
+        <input id="t-q" placeholder="🔎 Buscar…">
+        <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro: todos</option></select>
+        <select id="t-resp" onchange="renderTablero()" title="Responsable"><option value="">Resp.: todos</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
+        <select id="t-est" onchange="renderTablero()" title="Estado"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select>
         <div class="stat" id="t-stat"></div>
       </div>
-      <div class="kanban" id="t-kanban"></div>
+      <div class="lista-tareas" id="t-kanban"></div>
     </section>
     <section id="content-presupuestos" class="tab-content">
       <div class="card">
@@ -793,11 +803,17 @@ function irTablero(){ switchTab('tablero'); }
 
 // ── Tareas (tablero) ──
 function renderTablero(){
-  const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, re = document.getElementById('t-resp').value, canc = document.getElementById('t-canc').checked;
-  const L = TAREAS.filter(t => (canc || t.estado !== 'cancelada') && (!ru || t.rubro === ru) && (!re || t.responsable === re) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
-  const cols = [['pendiente','Pendientes'],['en_curso','En curso'],['terminada','Terminadas']]; if (canc) cols.push(['cancelada','Canceladas']);
-  document.getElementById('t-kanban').innerHTML = cols.map(([k, nom]) => { const R = L.filter(t => t.estado === k);
-    return `<div class="col ${k}"><div class="col-h">${nom} <span class="count">${R.length}</span></div>${R.map(card).join('') || '<div class="mini" style="padding:8px">—</div>'}</div>`; }).join('');
+  const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, re = document.getElementById('t-resp').value, est = document.getElementById('t-est').value;
+  const okEst = t => est === 'todas' ? true : est ? t.estado === est : (t.estado === 'pendiente' || t.estado === 'en_curso');
+  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!re || t.responsable === re) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
+  // orden: prioridad (alta > normal > baja) → fecha límite más cercana → en curso antes que pendiente → título. Terminadas/canceladas al final.
+  const PR = { alta: 0, normal: 1, baja: 2 }, ES = { en_curso: 0, pendiente: 1, terminada: 2, cancelada: 3 };
+  L.sort((a, b) => (ES[a.estado] >= 2) - (ES[b.estado] >= 2) || PR[a.prioridad] - PR[b.prioridad] || (a.fecha_limite || '9') .localeCompare(b.fecha_limite || '9') || ES[a.estado] - ES[b.estado] || a.titulo.localeCompare(b.titulo));
+  const grupos = [['alta', '🔴 Prioridad alta'], ['normal', 'Prioridad normal'], ['baja', 'Prioridad baja']];
+  let html = '';
+  for (const [k, nom] of grupos) { const R = L.filter(t => ES[t.estado] < 2 && t.prioridad === k); if (R.length) html += `<div class="grp-h">${nom} <span class="count">${R.length}</span></div>` + R.map(card).join(''); }
+  const C = L.filter(t => ES[t.estado] >= 2); if (C.length) html += `<div class="grp-h">Cerradas <span class="count">${C.length}</span></div>` + C.map(card).join('');
+  document.getElementById('t-kanban').innerHTML = html || '<div class="mini" style="padding:8px">—</div>';
   document.getElementById('t-stat').textContent = `${L.length} tarea(s)`;
 }
 function card(t){
@@ -811,7 +827,7 @@ function card(t){
             : `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
   return `<div class="tcard p-${t.prioridad}" onclick="abrirTarea(${t.id})">
     <div class="tt">${esc(t.titulo)}</div>
-    <div class="meta">${fecha}<span class="chip gray">${RESP[t.responsable]}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
+    <div class="meta">${fecha}<span class="chip ${t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : 'gray'}">${t.estado === 'en_curso' ? '▶ en curso' : t.estado === 'terminada' ? '✓ terminada' : t.estado === 'cancelada' ? 'cancelada' : 'pendiente'}</span><span class="chip gray">${RESP[t.responsable]}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
     ${prog}<div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
