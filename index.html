@@ -454,6 +454,35 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .rowt { padding: 8px 4px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; } .rowt:last-child { border-bottom: none; } .rowt:hover { background: #fafafa; }
 .rowt a { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .plata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; } .plata .l { font-size: 12px; color: var(--muted); font-weight: 600; } .plata .v { font-size: 16px; font-weight: 700; }
+/* v9: muñequitos animados por estado */
+.mu { display: inline-flex; width: 44px; height: 36px; flex: none; color: var(--muted); margin-right: 4px; }
+.mu svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.mu .piso { stroke: var(--border); stroke-width: 1.5; }
+.mu-corre { color: var(--amber); } .mu-meta { color: var(--green); } .mu-meta .bandera { fill: var(--green); stroke: var(--green); }
+.mu-corre .cuerpo { animation: mu-bob .5s ease-in-out infinite; }
+.mu-corre .br1 { transform-origin: 19.5px 12px; animation: mu-swing .5s ease-in-out infinite; }
+.mu-corre .br2 { transform-origin: 19.5px 12px; animation: mu-swing .5s ease-in-out infinite reverse; }
+.mu-corre .pi1 { transform-origin: 17px 19px; animation: mu-swing .5s ease-in-out infinite reverse; }
+.mu-corre .pi2 { transform-origin: 17px 19px; animation: mu-swing .5s ease-in-out infinite; }
+.mu-meta .cuerpo { transform-origin: 15px 29px; animation: mu-salto 1.1s ease-in-out infinite; }
+.mu-meta .br1 { transform-origin: 15px 12px; animation: mu-saludo 1.1s ease-in-out infinite; }
+.mu-meta .br2 { transform-origin: 15px 12px; animation: mu-saludo 1.1s ease-in-out infinite reverse; }
+.mu-meta .bandera { transform-origin: 33px 5px; animation: mu-flamea 1.4s ease-in-out infinite; }
+.mu-sale .cuerpo { transform-origin: 20px 29px; animation: mu-listo 1.6s ease-in-out infinite; }
+@keyframes mu-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
+@keyframes mu-swing { 0%,100% { transform: rotate(-32deg); } 50% { transform: rotate(32deg); } }
+@keyframes mu-salto { 0%,100% { transform: translateY(0) scaleY(1); } 40% { transform: translateY(-3px) scaleY(1.03); } 70% { transform: translateY(0) scaleY(.97); } }
+@keyframes mu-saludo { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
+@keyframes mu-flamea { 0%,100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-6deg) scaleX(.9); } }
+@keyframes mu-listo { 0%,70%,100% { transform: rotate(0deg) translateX(0); } 80% { transform: rotate(-3deg) translateX(-.8px); } 90% { transform: rotate(2deg) translateX(.6px); } }
+@media (prefers-reduced-motion: reduce) { .mu * { animation: none !important; } }
+/* v9: la ficha no se desborda a los costados en el celular */
+#ov { padding: 10px; } #ov .box { box-sizing: border-box; max-width: min(720px, 100%); overflow-x: hidden; overflow-wrap: anywhere; }
+#ov .box input, #ov .box select, #ov .box textarea, #ov .box button { max-width: 100%; min-width: 0; box-sizing: border-box; }
+#ov .box .nov-in { flex-wrap: wrap; } #ov .box .nov-in > input[type=text], #ov .box .nov-in > input:not([type]), #ov .box .nov-in textarea { flex: 1 1 160px; }
+#ov .box .nov-in > input[type=file] { flex: 1 1 100%; width: 100%; }
+#ov .box .form { grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); }
+#ov .box .nov, #ov .box .rowt, #ov .box h3, #ov .box .etapa { overflow-wrap: anywhere; word-break: break-word; }
 /* v8 (JP 29-oct): Hoy, Equipo y Manual ocultos; el código queda por si vuelven */
 #tab-resumen, #tab-equipo, nav.tabs button[title="Manual"] { display: none !important; }
 /* v6: filtros en un renglón + lista por prioridad */
@@ -539,7 +568,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <input id="t-q" placeholder="🔎 Buscar…">
         <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro</option></select>
-        <select id="t-resp" onchange="renderTablero()" title="Responsable"><option value="">Resp.</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
+        <select id="t-resp" onchange="renderTablero()" title="Responsable" style="display:none"><option value="">Resp.</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
         <select id="t-est" onchange="renderTablero()" title="Estado"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select>
         <div class="stat" id="t-stat"></div>
       </div>
@@ -818,6 +847,26 @@ function renderTablero(){
   document.getElementById('t-kanban').innerHTML = html || '<div class="mini" style="padding:8px">—</div>';
   document.getElementById('t-stat').textContent = `${L.length} tarea(s)`;
 }
+
+// Muñequitos animados por estado (JP 29-oct): pendiente = en los tacos de salida · en curso = corriendo · terminada = llegando a la meta
+function muneco(estado){
+  if (estado === 'en_curso') return `<span class="mu mu-corre" title="En curso"><svg viewBox="0 0 40 32" aria-hidden="true">
+    <line class="piso" x1="2" y1="30" x2="38" y2="30"/>
+    <g class="cuerpo"><circle cx="21" cy="6" r="3.2"/><line x1="20" y1="9.5" x2="17" y2="19"/>
+      <g class="br1"><polyline points="19.5,12 24,15 28,13"/></g><g class="br2"><polyline points="19.5,12 15,14 12,11"/></g>
+      <g class="pi1"><polyline points="17,19 23,23 25,29"/></g><g class="pi2"><polyline points="17,19 12,24 7,24"/></g></g></svg></span>`;
+  if (estado === 'terminada') return `<span class="mu mu-meta" title="Terminada"><svg viewBox="0 0 40 32" aria-hidden="true">
+    <line class="piso" x1="2" y1="30" x2="38" y2="30"/>
+    <line x1="33" y1="30" x2="33" y2="4"/><path class="bandera" d="M33 5 h7 l-2 3 l2 3 h-7z"/>
+    <g class="cuerpo"><circle cx="15" cy="6" r="3.2"/><line x1="15" y1="9.5" x2="15" y2="20"/>
+      <g class="br1"><polyline points="15,12 10,8 9,3"/></g><g class="br2"><polyline points="15,12 20,8 21,3"/></g>
+      <polyline points="15,20 11,29"/><polyline points="15,20 19,29"/></g></svg></span>`;
+  if (estado === 'cancelada') return '';
+  return `<span class="mu mu-sale" title="Pendiente: por arrancar"><svg viewBox="0 0 40 32" aria-hidden="true">
+    <line class="piso" x1="2" y1="30" x2="38" y2="30"/>
+    <g class="cuerpo"><circle cx="11" cy="12" r="3.2"/><line x1="13.5" y1="14.5" x2="22" y2="20"/>
+      <polyline points="16,16 14,24 12,29"/><polyline points="22,20 20,25 15,29"/><polyline points="22,20 29,23 34,29"/></g></svg></span>`;
+}
 function card(t){
   const d = diasA(t.fecha_limite), abierta = t.estado === 'pendiente' || t.estado === 'en_curso';
   const fecha = t.fecha_limite ? `<span class="chip ${abierta && d < 0 ? 'red' : abierta && d <= 3 ? 'amber' : 'gray'}">${abierta && d < 0 ? '⚠ ' : ''}${fmtF(t.fecha_limite)}</span>` : '';
@@ -829,8 +878,8 @@ function card(t){
             : `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
   return `<div class="tcard p-${t.prioridad}" onclick="abrirTarea(${t.id})">
     <div class="tt">${esc(t.titulo)}</div>
-    <div class="meta">${fecha}<span class="chip ${t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : 'gray'}">${t.estado === 'en_curso' ? '▶ en curso' : t.estado === 'terminada' ? '✓ terminada' : t.estado === 'cancelada' ? 'cancelada' : 'pendiente'}</span><span class="chip gray">${RESP[t.responsable]}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
-    ${prog}<div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
+    <div class="meta">${fecha}<span class="chip ${t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : 'gray'}">${t.estado === 'en_curso' ? '▶ en curso' : t.estado === 'terminada' ? '✓ terminada' : t.estado === 'cancelada' ? 'cancelada' : 'pendiente'}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
+    ${prog}<div class="foot">${muneco(t.estado)}<span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
   const { error } = await sb.from('obra_tareas').update({ estado }).eq('id', id);
@@ -852,7 +901,7 @@ function abrirTarea(id){
       <label style="grid-column:1/-1">Título <input id="m-titulo" value="${esc(t.titulo)}" placeholder="Qué hay que hacer"></label>
       <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…">${esc(t.descripcion || '')}</textarea></label>
       <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
-      <label>Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label style="display:none">Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
       <label>Prioridad <select id="m-prio">${['alta','normal','baja'].map(p => `<option ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
       <label>Fecha límite <input id="m-fecha" type="date" value="${t.fecha_limite || ''}"></label>
       <label>Estado <select id="m-estado">${Object.entries(EST).map(([k,v]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
@@ -861,9 +910,9 @@ function abrirTarea(id){
       ${id ? `<span class="mini" style="margin-left:auto">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</span>` : ''}</div>
     ${id ? `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
     <h4 style="margin:0 0 6px">Etapas</h4>
-    <div class="mini" style="margin-bottom:6px">Los pasos de esta tarea. Se tildan a medida que se hacen; la fecha y el responsable son opcionales.</div>
+    <div class="mini" style="margin-bottom:6px">Los pasos de esta tarea. Se tildan a medida que se hacen; la fecha es opcional.</div>
     <div id="m-etapas">${etapasHtml(id)}</div>
-    <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa (por ej.: pedir 3 presupuestos)" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 150px"><select id="m-et-resp" style="flex:0 0 130px"><option value="">(resp. de la tarea)</option>${Object.entries(RESP).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+    <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa (por ej.: pedir 3 presupuestos)" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 150px"><select id="m-et-resp" style="display:none"><option value="">(resp. de la tarea)</option>${Object.entries(RESP).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
     <h4 style="margin:0 0 6px">Novedades y comentarios</h4>
     <div class="nov-in"><textarea id="m-nov" rows="2" placeholder="Contá cómo va, qué falta, qué se compró…"></textarea><button class="btn primary ico grande" onclick="agregarNovedad(${id})" title="Enviar comentario" aria-label="Enviar">${_i('send')}</button></div>
@@ -901,7 +950,7 @@ function etapasHtml(tid){
   const E = ETAPAS.filter(e => e.tarea_id === tid); if (!E.length) return '<div class="mini">Sin etapas todavía.</div>';
   return E.map(e => { const d = diasA(e.fecha_limite);
     return `<div class="etapa ${e.hecha ? 'hecha' : ''}"><label><input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)"> <span class="tt">${esc(e.titulo)}</span></label>
-      ${e.fecha_limite ? `<span class="chip ${!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray'}">${fmtF(e.fecha_limite)}</span>` : ''}${e.responsable ? `<span class="chip gray">${RESP[e.responsable]}</span>` : ''}
+      ${e.fecha_limite ? `<span class="chip ${!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray'}">${fmtF(e.fecha_limite)}</span>` : ''}
       ${e.hecha ? `<span class="mini">✓ ${esc(quien(e.hecha_por))} ${fmtTs(e.hecha_at)}</span>` : ''}
       <span class="spacer"></span><button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
 }
