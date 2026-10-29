@@ -411,6 +411,9 @@ tr.dim { color: var(--muted); }
 header { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15); padding: 10px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
 header h1 { margin: 0; font-size: 17px; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
 header h1 .lb-obra { font-weight: 400; opacity: .85; font-size: 14px; }
+header h1 { cursor: pointer; border-radius: 9px; padding: 2px 6px; margin-left: -6px; } header h1:hover { background: rgba(255,255,255,.14); } header h1 .chev { width: 14px; height: 14px; opacity: .7; margin-left: -4px; }
+.lista-obras { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.obra-it { display: flex; align-items: center; gap: 10px; text-align: left; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font: inherit; color: inherit; cursor: pointer; } .obra-it span { flex: 1; } .obra-it.on { background: var(--primary-bg); border-color: var(--primary); color: var(--primary-dark); } .obra-it .ico { color: var(--muted); } .obra-it.on .ico { color: var(--primary); }
 header .user-info { display: none; }
 .hbtn { display: flex; align-items: center; height: 34px; padding: 0 7px; border: none; border-radius: 9px; background: transparent; color: #fff; opacity: .85; cursor: pointer; font-family: inherit; font-size: 13px; white-space: nowrap; text-decoration: none; transition: background .15s, opacity .15s; }
 .hbtn:hover { background: rgba(255,255,255,.18); opacity: 1; }
@@ -588,7 +591,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
   <div id="franja-prueba" class="prueba" style="display:none">🧪 MODO PRUEBA · solo se ven los comprobantes de test</div>
   <header>
     <button class="hbtn kebab-tabs-btn" onclick="toggleTabsMenu(event)" title="Menú" aria-label="Menú"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
-    <h1><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M2 20h20"/><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><line x1="12" y1="4" x2="12" y2="1"/></svg>Obra <span class="lb-obra"></span></h1>
+    <h1 onclick="elegirObra()" title="Cambiar de obra" role="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M2 20h20"/><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><line x1="12" y1="4" x2="12" y2="1"/></svg>Obra <span class="lb-obra"></span><svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></h1>
     <span class="user-info" id="user-info"></span>
     <nav class="tabs" id="tabs">
       <button id="tab-tablero" class="active" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
@@ -830,9 +833,9 @@ function _i(n){ return ({
 async function init(){
   const [{ data: obras }, { data: rol }, { data: nombre }] = await Promise.all([
     sb.from('obra_obras').select('*').eq('activa', true).order('id'), sb.rpc('obra_mi_rol'), sb.rpc('obra_mi_nombre')]);
-  OBRA = (obras || [])[0]; ROL = rol; YO = { email: (session.email || '').toLowerCase(), nombre: nombre || session.email };
+  OBRAS = obras || []; const guardada = Number(localStorage.getItem('obra_id') || 0); OBRA = OBRAS.find(o => o.id === guardada) || OBRAS[0]; ROL = rol; YO = { email: (session.email || '').toLowerCase(), nombre: nombre || session.email };
   if (!OBRA){ toast('No hay ninguna obra activa', 'error'); return; }
-  document.querySelector('header h1 .lb-obra').textContent = OBRA.nombre;
+  pintarObra();
   document.getElementById('tab-equipo').style.display = esAdmin() ? '' : 'none';
   document.getElementById('t-rubro').innerHTML += RUBROS.map(r => `<option>${esc(r)}</option>`).join('');
   let tq = null; document.getElementById('t-q').addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(renderTablero, 600); });
@@ -840,6 +843,30 @@ async function init(){
   await cargar();
   renderTablero();
   estadoNotif();
+}
+let OBRAS = [];
+function pintarObra(){ document.querySelector('header h1 .lb-obra').textContent = OBRA.nombre; document.title = '🏗 Obra · ' + OBRA.nombre; }
+// v20 (JP): tocar "Obra · <nombre>" en el encabezado abre el selector de obra; admin puede crear otra
+function elegirObra(){
+  ovBox(`<div class="m-head"><h3 style="margin:0;flex:1">Obras</h3><button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
+    <div class="lista-obras">${OBRAS.map(o => `<button class="obra-it ${o.id === OBRA.id ? 'on' : ''}" onclick="cambiarObra(${o.id})">${_i('brick')}<span><b>${esc(o.nombre)}</b>${o.direccion ? `<br><span class="mini">${esc(o.direccion)}</span>` : ''}</span>${o.id === OBRA.id ? _i('check') : ''}</button>`).join('')}</div>
+    ${esAdmin() ? `<hr style="border:none;border-top:1px solid var(--border);margin:12px 0"><div class="mini" style="margin-bottom:6px">Nueva obra (los participantes de la obra actual pasan también a la nueva)</div>
+    <div class="nov-in"><input id="no-nombre" placeholder="Nombre (ej.: Local Unicenter)"><input id="no-dir" placeholder="Dirección (opcional)" style="flex:0 1 45%"><button class="btn primary ico" onclick="crearObra()" title="Crear" aria-label="Crear">${_i('plus')}</button></div>` : ''}`);
+}
+async function cambiarObra(id){
+  const o = OBRAS.find(x => x.id === id); if (!o) return;
+  OBRA = o; localStorage.setItem('obra_id', String(id)); pintarObra(); cerrarOv();
+  await cargar(); renderTablero(); try { renderResumen(); } catch (e) {}
+  toast('Obra: ' + o.nombre, 'success');
+}
+async function crearObra(){
+  const nombre = document.getElementById('no-nombre').value.trim(), direccion = document.getElementById('no-dir').value.trim() || null;
+  if (!nombre) return toast('Poné el nombre de la obra', 'error');
+  const { data, error } = await sb.from('obra_obras').insert({ nombre, direccion, activa: true }).select().single();
+  if (error) return toast(error.message, 'error');
+  const parts = PARTS.filter(p => p.activo).map(p => ({ obra_id: data.id, email: p.email, nombre: p.nombre, rol: p.rol, recibe_mails: p.recibe_mails, activo: true }));
+  if (parts.length) await sb.from('obra_participantes').insert(parts);
+  OBRAS.push(data); await cambiarObra(data.id);
 }
 async function cargar(){
   const [t, a, p, n, et] = await Promise.all([
