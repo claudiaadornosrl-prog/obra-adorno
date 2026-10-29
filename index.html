@@ -527,6 +527,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov2 .bts { display: flex; gap: 8px; justify-content: flex-end; }
 #ov2 .bts button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
 #ov2 .bts .b-si { background: var(--red); border-color: var(--red); color: #fff; }
+.arow .aquien { display: flex; gap: 8px; align-items: center; font-size: 12.5px; margin: 1px 0; overflow: hidden; white-space: nowrap; } .arow .aprov { font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; } .arow .aprov .ico { width: 13px; height: 13px; color: var(--primary); } .arow .atarea { background: var(--primary-bg); color: var(--primary-dark); border-radius: 8px; padding: 0 7px; font-size: 11px; font-weight: 600; flex: none; }
 /* v40: píldoras de tipo tocables en Archivos */
 .pils.tipos { overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; } .pils.tipos::-webkit-scrollbar { display: none; }
 .pils.tipos .pil { flex: none; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 13px; }
@@ -1505,10 +1506,12 @@ function renderArchivosTodo(){
   };
   const ICO_T = { presupuesto: 'dollar', factura: 'file', pago: 'money', foto: 'clip', plano: 'clip', otro: 'clip' };
   document.getElementById('a-lista').innerHTML = L.length ? L.map(a => { const t = a.tarea_id ? tareaDe(a.tarea_id) : null; const ref = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
-    const det = [TIPO_LBL[a.tipo] || a.tipo, fmtF(a.fecha), a.proveedor, t ? (t.titulo_corto || t.titulo) : null, a.medio, ref ? 'cancela ' + ref.nombre : null, 'subió ' + quien(a.subido_por)].filter(Boolean).map(esc).join(' · ');
+    const det = [TIPO_LBL[a.tipo] || a.tipo, fmtF(a.fecha), a.medio, ref ? 'cancela ' + ref.nombre : null, 'subió ' + quien(a.subido_por)].filter(Boolean).map(esc).join(' · ');
+    const quienProv = a.proveedor ? `<span class="aprov">${_i('users')} ${esc(a.proveedor)}</span>` : '';
+    const tareaTxt = t ? `<span class="atarea">${esc(t.titulo_corto || t.titulo)}</span>` : '';
     return `<div class="arow t-${a.tipo}">
       <div class="aico">${_i(ICO_T[a.tipo] || 'file')}</div>
-      <div class="amain"><div class="an">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${esc(a.nombre)}</a>` : esc(a.nombre)}${a.path ? '' : ' <span class="mini">(sin archivo)</span>'}</div><div class="mini">${det}</div>${a.notas ? `<div class="mini anota">${esc(a.notas)}</div>` : ''}</div>
+      <div class="amain"><div class="an">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${esc(a.nombre)}</a>` : esc(a.nombre)}${a.path ? '' : ' <span class="mini">(sin archivo)</span>'}</div>${quienProv || tareaTxt ? `<div class="aquien">${quienProv}${tareaTxt}</div>` : ''}<div class="mini">${det}</div>${a.notas ? `<div class="mini anota">${esc(a.notas)}</div>` : ''}</div>
       <div class="aimp">${a.importe ? `<b>${plata(a.importe)}</b>` : ''}${chipEstado(a)}</div>
       <div class="aacc">${acc(a)}</div></div>`; }).join('') : '<div class="empty">Nada por acá todavía.</div>';
 }
