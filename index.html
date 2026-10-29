@@ -496,8 +496,8 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
     <h1><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M2 20h20"/><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><line x1="12" y1="4" x2="12" y2="1"/></svg>Obra <span class="lb-obra"></span></h1>
     <span class="user-info" id="user-info"></span>
     <nav class="tabs" id="tabs">
-      <button id="tab-resumen" class="active" onclick="switchTab('resumen')" title="Hoy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="lb">Hoy</span><span class="count" id="cnt-resumen"></span></button>
-      <button id="tab-tablero" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
+      <button id="tab-tablero" class="active" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
+      <button id="tab-resumen" onclick="switchTab('resumen')" title="Hoy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="lb">Hoy</span><span class="count" id="cnt-resumen"></span></button>
       <button id="tab-presupuestos" onclick="switchTab('presupuestos')" title="Presupuestos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 11v7"/><path d="M10 13.5h3a1.5 1.5 0 0 1 0 3h-2"/></svg><span class="lb">Presupuestos</span><span class="count" id="cnt-presupuestos"></span></button>
       <button id="tab-facturas" onclick="switchTab('facturas')" title="Facturas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/></svg><span class="lb">Facturas</span><span class="count" id="cnt-facturas"></span></button>
       <button id="tab-pagos" onclick="switchTab('pagos')" title="Pagos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="lb">Pagos</span><span class="count" id="cnt-pagos"></span></button>
@@ -514,7 +514,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
   </header>
   <main>
 
-    <section id="content-resumen" class="tab-content active">
+    <section id="content-resumen" class="tab-content">
       <div class="kpis" id="r-kpis"></div>
       <div class="dos">
         <div class="card"><h3>⚠ Vencidas y por vencer</h3><div id="r-venc"></div></div>
@@ -522,7 +522,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       </div>
       <div class="card"><h3>💰 Plata</h3><div id="r-plata"></div></div>
     </section>
-    <section id="content-tablero" class="tab-content">
+    <section id="content-tablero" class="tab-content active">
       <div class="filters">
         <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <input id="t-q" placeholder="🔎 Buscar tarea…" style="min-width:200px">
@@ -737,7 +737,7 @@ async function init(){
   let tq = null; document.getElementById('t-q').addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(renderTablero, 600); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarOv(); });
   await cargar();
-  renderResumen();
+  renderTablero();
   estadoNotif();
 }
 async function cargar(){
