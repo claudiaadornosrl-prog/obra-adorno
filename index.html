@@ -579,7 +579,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .etapa.arrastrando { background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.18); transform: scale(1.02); z-index: 5; border-radius: 10px; }
 #m-etapas.reordenando { touch-action: none; } #m-etapas.reordenando .etapa { touch-action: none; }
 .ficha .btn.adjuntar { width: 36px; height: 36px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; } .ficha .btn.adjuntar.ok { color: #16a34a; }
-.ficha .adj-tipo { padding: 7px 12px; font-size: 13px; flex: none; } .ficha .nov-in.adj { gap: 6px; }
+.ficha .adj-tipo { padding: 7px 12px; font-size: 13px; flex: none; } .ficha .adj-etapa { flex: 1 1 100%; background: #fff; } .ficha .adj-etapa span { max-width: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ficha .nov-in.adj { gap: 6px; }
 /* v13: prioridad por etapa */
 .etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
 /* v13: ficha de tarea (preview 3) */
@@ -915,7 +915,7 @@ function _i(n){ return ({
   flag: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
   cal: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
   dollar: '<svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
-  edit: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><polyline points="12 6 12 12 16 14"/></svg>',
+  clock: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   check: '<svg class="ico" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
   undo: '<svg class="ico" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
   trash: '<svg class="ico" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
@@ -1190,15 +1190,20 @@ function fichaTarea(id, tab){
       <div class="nov-in" style="margin-top:8px;gap:10px"><button class="btn primary ico" onclick="presupuestoRapido(${id},'factura')" title="Cargar una factura" aria-label="Cargar factura">${_i('file')}</button><span class="mini">Factura</span><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir foto o plano" aria-label="Subir">${_i('clip')}</button><span class="mini">Foto / plano</span></div>
     </section>
     <input type="file" id="m-file" multiple accept="application/pdf,image/*" style="display:none" onchange="mostrarAdj(${id})">
-    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="display:none"></span><label class="pil adj-tipo"><span id="m-ftipo-l">Presupuesto</span><select id="m-ftipo" class="over" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select></label><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
+    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="display:none"></span><label class="pil adj-tipo adj-etapa" id="m-fetapa-l" style="display:none" title="¿De qué etapa es este presupuesto?"><span id="m-fetapa-t">Etapa</span><select id="m-fetapa" class="over" onchange="document.getElementById('m-fetapa-t').textContent = this.options[this.selectedIndex].text"></select></label><label class="pil adj-tipo"><span id="m-ftipo-l">Presupuesto</span><select id="m-ftipo" class="over" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select></label><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
   </div></div>`);
   setTimeout(() => initDragEtapas(id), 0);
 }
 function fichaTab(tab){ _fichaTab = tab; const adj = document.getElementById('m-adj'); if (adj){ adj.style.display = 'none'; document.getElementById('m-file').value = ''; } document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','presupuestos','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
 function mostrarAdj(id){ const f = document.getElementById('m-file').files; if (!f.length) return; const nom = f.length === 1 ? f[0].name : f.length + ' archivos'; const b = document.getElementById('m-adj-btn'); if (b){ b.classList.add('ok'); b.title = 'Adjunto: ' + nom; } const sel = document.getElementById('m-ftipo'); if (document.getElementById('m-adj').style.display === 'none') sel.value = /\.(pdf|xls|xlsx|doc|docx)$/i.test(f[0].name) ? 'presupuesto' : 'foto'; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; }
-function adjCampos(){ const t = document.getElementById('m-ftipo').value, on = t === 'presupuesto' || t === 'factura'; const sel = document.getElementById('m-ftipo'); document.getElementById('m-ftipo-l').textContent = sel.options[sel.selectedIndex].text; for (const i of ['m-fprov','m-fimp']) document.getElementById(i).style.display = on ? '' : 'none'; }
+function etapasCotizDe(tid){ return ETAPAS.filter(e => e.tarea_id === tid && esEtapaPresup(e)).sort((a, b) => (a.hecha - b.hecha) || (a.orden - b.orden)); }
+function cargarEtapaSel(selId, tid, etapaId){ const sel = document.getElementById(selId); if (!sel) return 0; const L = etapasCotizDe(tid);
+  sel.innerHTML = L.map(e => `<option value="${e.id}">${esc(e.titulo)}${e.hecha ? ' ✓' : ''}</option>`).join('') + '<option value="">Sin etapa</option>';
+  sel.value = etapaId ? String(etapaId) : (L.find(e => !e.hecha) || L[0] ? String((L.find(e => !e.hecha) || L[0]).id) : ''); return L.length; }
+function adjCampos(){ const t = document.getElementById('m-ftipo').value, on = t === 'presupuesto' || t === 'factura';
+  const le = document.getElementById('m-fetapa-l'); if (le){ const sel = document.getElementById('m-fetapa'); le.style.display = (t === 'presupuesto' && sel.options.length > 1) ? '' : 'none'; if (sel.options.length) document.getElementById('m-fetapa-t').textContent = sel.options[sel.selectedIndex].text; } const sel = document.getElementById('m-ftipo'); document.getElementById('m-ftipo-l').textContent = sel.options[sel.selectedIndex].text; for (const i of ['m-fprov','m-fimp']) document.getElementById(i).style.display = on ? '' : 'none'; }
 let _adjEtapa = null;
-function presupuestoRapido(id, tipo, etapaId){ _adjEtapa = etapaId || null; fichaTab(tipo === 'presupuesto' ? 'presupuestos' : 'archivos'); document.getElementById('m-file').value = ''; const _et = etapaId ? ETAPAS.find(x => x.id === etapaId) : null; document.getElementById('m-adj-n').textContent = tipo === 'presupuesto' ? (_et ? `${_et.titulo}: presupuesto ${presupDeEtapa(_et).length + 1} de ${_et.cant_presupuestos || 3}` : 'Presupuesto: proveedor e importe; el archivo es opcional (clip).') : 'Factura: proveedor e importe; adjuntá el PDF o la foto con el clip.'; document.getElementById('m-ftipo').value = tipo; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; document.getElementById('m-fprov').focus(); }
+function presupuestoRapido(id, tipo, etapaId){ _adjEtapa = etapaId || null; fichaTab(tipo === 'presupuesto' ? 'presupuestos' : 'archivos'); document.getElementById('m-file').value = ''; cargarEtapaSel('m-fetapa', id, etapaId); const _et = etapaId ? ETAPAS.find(x => x.id === etapaId) : null; document.getElementById('m-adj-n').textContent = tipo === 'presupuesto' ? (_et ? `${_et.titulo}: presupuesto ${presupDeEtapa(_et).length + 1} de ${_et.cant_presupuestos || 3}` : 'Presupuesto: proveedor e importe; el archivo es opcional (clip).') : 'Factura: proveedor e importe; adjuntá el PDF o la foto con el clip.'; document.getElementById('m-ftipo').value = tipo; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; document.getElementById('m-fprov').focus(); }
 async function guardarCampo(id, campo, valor){
   const { error } = await sb.from('obra_tareas').update({ [campo]: valor }).eq('id', id);
   if (error) return toast(error.message, 'error');
@@ -1403,6 +1408,7 @@ async function subirDesdeTarea(id){
   const files = [...(document.getElementById('m-file').files || [])], t = document.getElementById('m-ftipo').value;
   const esPlata = t === 'presupuesto' || t === 'factura';
   const prov = document.getElementById('m-fprov').value.trim() || null, imp = document.getElementById('m-fimp').value ? Number(document.getElementById('m-fimp').value) : null;
+  const selE = document.getElementById('m-fetapa'); if (t === 'presupuesto') _adjEtapa = (selE && selE.value) ? Number(selE.value) : null;
   const extra = { tarea_id: id, fecha: hoyAR(), ...(esPlata ? { proveedor: prov, importe: imp } : {}), ...(t === 'presupuesto' && _adjEtapa ? { etapa_id: _adjEtapa } : {}) };
   if (esPlata && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
   if (!files.length){
@@ -1520,7 +1526,8 @@ function subirGeneral(tipoIni, refId){
         <label class="g-plata">Proveedor / a quién <input id="g-prov" list="dl-prov" value="${ref ? esc(ref.proveedor || '') : ''}"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist></label>
         <label class="g-plata">Importe <input id="g-imp" type="number" inputmode="decimal" step="0.01" value="${ref ? (ref.importe || '') : ''}"></label>
         <label>Fecha <input id="g-fecha" type="date" value="${hoyAR()}"></label>
-        <label>Tarea <select id="g-tarea"><option value="">(sin tarea)</option>${TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}" ${ref && ref.tarea_id === t.id ? 'selected' : ''}>${esc(t.titulo_corto || t.titulo)}</option>`).join('')}</select></label>
+        <label>Tarea <select id="g-tarea" onchange="gEtapas()"><option value="">(sin tarea)</option>${TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}" ${ref && ref.tarea_id === t.id ? 'selected' : ''}>${esc(t.titulo_corto || t.titulo)}</option>`).join('')}</select></label>
+        <label class="g-presup" id="g-etapa-l">Etapa de cotización <select id="g-etapa"></select></label>
         <label class="g-pago">Medio <select id="g-medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Mercado Pago</option><option>Otro</option></select></label>
         <label class="g-pago">Factura que cancela <select id="g-ref"><option value="">(ninguna)</option>${ARCHIVOS.filter(a => a.tipo === 'factura' && (a.estado === 'pendiente' || a.id === refId)).map(a => `<option value="${a.id}" ${a.id === refId ? 'selected' : ''}>${esc(a.nombre)}${a.proveedor ? ' · ' + esc(a.proveedor) : ''} · ${plata(a.importe)}</option>`).join('')}</select></label>
         <label style="grid-column:1/-1">Notas <input id="g-notas" placeholder="Qué incluye, nº de factura, anticipo o saldo…"></label>
@@ -1530,16 +1537,19 @@ function subirGeneral(tipoIni, refId){
     </div></div>`);
   gTipo(tipoIni || 'presupuesto');
 }
+function gEtapas(){ const tid = Number(document.getElementById('g-tarea').value || 0); const n = tid ? cargarEtapaSel('g-etapa', tid, null) : 0; document.getElementById('g-etapa-l').style.display = (document.getElementById('g-tipo').value === 'presupuesto' && n) ? '' : 'none'; }
 function gTipo(k){
   document.getElementById('g-tipo').value = k; document.querySelectorAll('#g-tipos span').forEach(x => x.classList.toggle('on', x.dataset.k === k));
   const plata_ = k === 'presupuesto' || k === 'factura' || k === 'pago';
   document.querySelectorAll('.g-plata').forEach(x => x.style.display = plata_ ? '' : 'none'); document.querySelectorAll('.g-pago').forEach(x => x.style.display = k === 'pago' ? '' : 'none');
+  gEtapas();
   document.getElementById('g-hint').textContent = k === 'pago' ? 'Registrar el pago (el comprobante es opcional)' : plata_ ? 'Guardar (el archivo es opcional)' : 'Subir';
 }
 async function guardarGeneral(){
   const g = id => document.getElementById('g-' + id).value, tipo = g('tipo'), files = [...document.getElementById('g-file').files];
   const prov = g('prov').trim() || null, imp = g('imp') ? Number(g('imp')) : null, fecha = g('fecha') || hoyAR(), tarea_id = g('tarea') ? Number(g('tarea')) : null, notas = g('notas').trim() || null;
   const plata_ = tipo === 'presupuesto' || tipo === 'factura' || tipo === 'pago';
+  const gEtSel = document.getElementById('g-etapa'), gEt = (tipo === 'presupuesto' && tarea_id && gEtSel && gEtSel.value) ? Number(gEtSel.value) : null;
   if (plata_ && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
   if (!plata_ && !files.length) return toast('Elegí el archivo', 'error');
   try {
@@ -1551,14 +1561,19 @@ async function guardarGeneral(){
       if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${prov}`, autor_email: YO.email, autor_nombre: YO.nombre });
     } else if (!files.length){
       const nombre = (tipo === 'presupuesto' ? 'Presupuesto' : 'Factura') + ' - ' + prov;
-      const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre, path: null, proveedor: prov, importe: imp, fecha, tarea_id, notas, subido_por: YO.email }); if (error) throw error;
+      const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre, path: null, proveedor: prov, importe: imp, fecha, tarea_id, notas, subido_por: YO.email, ...(gEt ? { etapa_id: gEt } : {}) }); if (error) throw error;
       if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Cargó ${tipo}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
     } else {
-      const extra = { tarea_id, fecha, notas, ...(plata_ ? { proveedor: prov, importe: imp } : {}) };
+      const extra = { tarea_id, fecha, notas, ...(plata_ ? { proveedor: prov, importe: imp } : {}), ...(gEt ? { etapa_id: gEt } : {}) };
       for (const f of files) await subirUno(f, tipo, extra);
     }
   } catch (e) { return toast('No se pudo guardar: ' + e.message, 'error'); }
-  toast('Guardado', 'success'); cerrarOv(); await cargar(); renderArchivosTodo(); renderTablero(); try { renderResumen(); } catch (e) {}
+  toast('Guardado', 'success'); cerrarOv(); await cargar();
+  if (gEt){ const e = ETAPAS.find(x => x.id === gEt); if (e && !e.hecha && presupDeEtapa(e).length >= (e.cant_presupuestos || 3)){
+    await sb.from('obra_etapas').update({ hecha: true }).eq('id', e.id);
+    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+    toast(`Llegaron los ${e.cant_presupuestos || 3} presupuestos: etapa "${e.titulo}" terminada`, 'success'); await cargar(); } }
+  renderArchivosTodo(); renderTablero(); try { renderResumen(); } catch (e) {}
 }
 
 // ── Pagos ──
