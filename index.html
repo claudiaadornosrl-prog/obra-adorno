@@ -454,6 +454,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .rowt { padding: 8px 4px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; } .rowt:last-child { border-bottom: none; } .rowt:hover { background: #fafafa; }
 .rowt a { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .plata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; } .plata .l { font-size: 12px; color: var(--muted); font-weight: 600; } .plata .v { font-size: 16px; font-weight: 700; }
+.chip.grupo { background: #fef3c7; color: #92400e; }
 /* v9: muñequitos animados por estado */
 .mu { display: inline-flex; width: 44px; height: 36px; flex: none; color: var(--muted); margin-right: 4px; }
 .mu svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
@@ -491,8 +492,19 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .filters.fila1 > #t-q { flex: 1.4 1 0; }
 .filters.fila1 > .btn { flex: 0 0 auto; }
 .filters.fila1 .stat { white-space: nowrap; }
-.lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 12px; align-items: start; }
-@media (max-width: 800px) { .lista-tareas { grid-template-columns: 1fr; } .filters.fila1 .stat { display: none; } .filters.fila1 { gap: 4px; padding: 8px 6px; } .filters.fila1 > input, .filters.fila1 > select { font-size: 12px; padding: 6px 2px; flex: 1.15 1 0; } .filters.fila1 > #t-q { flex: 0.7 1 0; } .filters.fila1 > .btn.grande { width: 34px; height: 34px; } }
+.lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 12px; align-items: start; }
+/* v11: tarjetas circulares con anillo de avance (conic-gradient) */
+.tcirc { background: white; border-radius: 16px; padding: 12px 8px 6px; box-shadow: 0 1px 3px rgba(0,0,0,.06); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tcirc:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); } .tcirc.p-baja { opacity: .85; } .tcirc.e-cancelada { opacity: .55; }
+.tcirc .anillo { --c: #94a3b8; --track: #e5e7eb; width: 140px; height: 140px; border-radius: 50%; padding: 9px; box-sizing: border-box; background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--track) 0); transition: background .4s; }
+.tcirc .anillo.amber { --c: #f59e0b; } .tcirc .anillo.green { --c: #16a34a; } .tcirc .anillo.canc { --c: #cbd5e1; } .tcirc.p-alta .anillo { --track: #fecaca; }
+.tcirc .interior { width: 100%; height: 100%; border-radius: 50%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px; box-sizing: border-box; }
+.tcirc .tt { font-weight: 700; font-size: 12.5px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.tcirc .pct { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.tcirc .meta { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 18px; }
+.tcirc .foot { display: flex; align-items: center; gap: 4px; width: 100%; justify-content: space-between; }
+.tcirc .mu { width: 36px; height: 30px; }
+@media (max-width: 800px) { .lista-tareas { grid-template-columns: repeat(2, 1fr); gap: 8px; } .tcirc .anillo { width: 124px; height: 124px; padding: 8px; } .tcirc { padding: 10px 4px 4px; } .filters.fila1 .stat { display: none; } .filters.fila1 { gap: 4px; padding: 8px 6px; } .filters.fila1 > input, .filters.fila1 > select { font-size: 12px; padding: 6px 2px; flex: 1.15 1 0; } .filters.fila1 > #t-q { flex: 0.7 1 0; } .filters.fila1 > .btn.grande { width: 34px; height: 34px; } }
 .grp-h { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 10px 4px 6px; display: flex; align-items: center; gap: 6px; }
 .grp-h .count { background: #eef2f7; border-radius: 10px; padding: 0 8px; font-size: 12px; }
 .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; } @media (max-width: 800px) { .kanban { grid-template-columns: 1fr; } }
@@ -568,7 +580,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <input id="t-q" placeholder="🔎 Buscar…">
         <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro</option></select>
-        <select id="t-resp" onchange="renderTablero()" title="Responsable" style="display:none"><option value="">Resp.</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
+        <select id="t-grupo" onchange="renderTablero()" title="Grupo que lo trabaja"><option value="">Grupo</option></select>
         <select id="t-est" onchange="renderTablero()" title="Estado"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select>
         <div class="stat" id="t-stat"></div>
       </div>
@@ -833,10 +845,13 @@ function renderResumen(){
 function irTablero(){ switchTab('tablero'); }
 
 // ── Tareas (tablero) ──
+function grupos(){ return [...new Set(TAREAS.map(t => (t.grupo || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)); }
+function llenarGrupos(){ const sel = document.getElementById('t-grupo'), v = sel.value; sel.innerHTML = '<option value="">Grupo</option>' + grupos().map(g => `<option>${esc(g)}</option>`).join('') + '<option value="(sin)">Sin grupo</option>'; sel.value = v; }
 function renderTablero(){
-  const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, re = document.getElementById('t-resp').value, est = document.getElementById('t-est').value;
+  llenarGrupos();
+  const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, gr = document.getElementById('t-grupo').value, est = document.getElementById('t-est').value;
   const okEst = t => est === 'todas' ? true : est ? t.estado === est : (t.estado === 'pendiente' || t.estado === 'en_curso');
-  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!re || t.responsable === re) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
+  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !t.grupo : t.grupo === gr)) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
   // orden: prioridad (alta > normal > baja) → fecha límite más cercana → en curso antes que pendiente → título. Terminadas/canceladas al final.
   const PR = { alta: 0, normal: 1, baja: 2 }, ES = { en_curso: 0, pendiente: 1, terminada: 2, cancelada: 3 };
   L.sort((a, b) => (ES[a.estado] >= 2) - (ES[b.estado] >= 2) || PR[a.prioridad] - PR[b.prioridad] || (a.fecha_limite || '9') .localeCompare(b.fecha_limite || '9') || ES[a.estado] - ES[b.estado] || a.titulo.localeCompare(b.titulo));
@@ -876,10 +891,17 @@ function card(t){
   const acc = t.estado === 'pendiente' ? `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'en_curso')" title="Empezar: la pasa a En curso" aria-label="Empezar">${_i('play')}</button>`
             : t.estado === 'en_curso' ? `<button class="btn primary ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'terminada')" title="Terminada" aria-label="Terminada">${_i('check')}</button>`
             : `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
-  return `<div class="tcard p-${t.prioridad}" onclick="abrirTarea(${t.id})">
-    <div class="tt">${esc(t.titulo)}</div>
-    <div class="meta">${fecha}<span class="chip ${t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : 'gray'}">${t.estado === 'en_curso' ? '▶ en curso' : t.estado === 'terminada' ? '✓ terminada' : t.estado === 'cancelada' ? 'cancelada' : 'pendiente'}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
-    ${prog}<div class="foot">${muneco(t.estado)}<span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
+  // v11 (JP): tarjeta circular; el reborde es el % de etapas hechas (terminada = 100 %)
+  const pct = t.estado === 'terminada' ? 100 : E.length ? Math.round(eh * 100 / E.length) : 0;
+  const estCls = t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : t.estado === 'cancelada' ? 'canc' : 'gray';
+  const estTxt = t.estado === 'en_curso' ? 'En curso' : t.estado === 'terminada' ? 'Terminada' : t.estado === 'cancelada' ? 'Cancelada' : 'Pendiente';
+  return `<div class="tcirc p-${t.prioridad} e-${t.estado}" onclick="abrirTarea(${t.id})" title="${esc(t.titulo)}">
+    <div class="anillo ${estCls}" style="--p:${pct}"><div class="interior">
+      <div class="tt">${esc(t.titulo)}</div>
+      <div class="pct">${E.length ? `${eh}/${E.length} · ` : ''}${pct}%</div>
+    </div></div>
+    <div class="meta">${fecha}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}${t.grupo ? `<span class="chip grupo">👷 ${esc(t.grupo)}</span>` : ''}</div>
+    <div class="foot">${muneco(t.estado)}<span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
   const { error } = await sb.from('obra_tareas').update({ estado }).eq('id', id);
@@ -892,7 +914,7 @@ async function cambiarEstado(id, estado){
 function cerrarOv(){ const o = document.getElementById('ov'); if (o) o.remove(); }
 function ovBox(html){ cerrarOv(); const o = document.createElement('div'); o.id = 'ov'; o.innerHTML = `<div class="box">${html}</div>`; document.body.appendChild(o); return o; }
 function abrirTarea(id){
-  const t = id ? tareaDe(id) : { titulo: '', descripcion: '', rubro: '', prioridad: 'normal', responsable: 'arquitecto', fecha_limite: '', estado: 'pendiente' };
+  const t = id ? tareaDe(id) : { titulo: '', descripcion: '', rubro: '', grupo: '', prioridad: 'normal', responsable: 'arquitecto', fecha_limite: '', estado: 'pendiente' };
   const novs = id ? NOVS.filter(n => n.tarea_id === id) : [], arch = id ? ARCHIVOS.filter(a => a.tarea_id === id) : [];
   ovBox(`<div class="m-head"><h3 style="margin:0">${id ? esc(t.titulo) : 'Nueva tarea'}</h3><div class="spacer"></div>
       ${id && esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
@@ -901,6 +923,7 @@ function abrirTarea(id){
       <label style="grid-column:1/-1">Título <input id="m-titulo" value="${esc(t.titulo)}" placeholder="Qué hay que hacer"></label>
       <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…">${esc(t.descripcion || '')}</textarea></label>
       <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
+      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" value="${esc(t.grupo || '')}" placeholder="Ezequiel Gutiérrez, Gastón…"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
       <label style="display:none">Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
       <label>Prioridad <select id="m-prio">${['alta','normal','baja'].map(p => `<option ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
       <label>Fecha límite <input id="m-fecha" type="date" value="${t.fecha_limite || ''}"></label>
@@ -922,7 +945,7 @@ function abrirTarea(id){
   setTimeout(() => document.getElementById(id ? 'm-nov' : 'm-titulo').focus(), 50);
 }
 async function guardarTarea(id){
-  const d = { titulo: document.getElementById('m-titulo').value.trim(), descripcion: document.getElementById('m-desc').value.trim() || null, rubro: document.getElementById('m-rubro').value || null,
+  const d = { titulo: document.getElementById('m-titulo').value.trim(), descripcion: document.getElementById('m-desc').value.trim() || null, rubro: document.getElementById('m-rubro').value || null, grupo: document.getElementById('m-grupo').value.trim() || null,
     responsable: document.getElementById('m-resp').value, prioridad: document.getElementById('m-prio').value, fecha_limite: document.getElementById('m-fecha').value || null, estado: document.getElementById('m-estado').value };
   if (!d.titulo) return toast('Falta el título', 'error');
   let r;
