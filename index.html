@@ -542,12 +542,13 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tcirc.e-cancelada { opacity: .5; filter: grayscale(1); }
 .tcirc .anillo { --c: #94a3b8; --track: #e5e7eb; width: 150px; height: 150px; border-radius: 50%; padding: 8px; box-sizing: border-box; background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--track) 0); transition: background .4s; filter: drop-shadow(0 2px 3px rgba(0,0,0,.08)); }
 .tcirc .anillo.amber { --c: #f59e0b; } .tcirc .anillo.green { --c: #16a34a; } .tcirc .anillo.canc { --c: #cbd5e1; }
-.tcirc .interior { --pr-bg: #fef3c7; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #fff 0, var(--pr-bg) 70%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.06); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6px 10px; box-sizing: border-box; }
+.tcirc .interior { --pr-bg: #fef3c7; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #fff 0, var(--pr-bg) 70%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.06); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 8px 10px 10px; box-sizing: border-box; }
+.tcirc .cnts { height: 14px; display: flex; gap: 8px; font-size: 10.5px; color: var(--muted); font-weight: 700; }
+.tcirc .v3 { margin-top: -2px; }
 .tcirc.p-alta .interior { --pr-bg: #fecaca; } .tcirc.p-normal .interior { --pr-bg: #fde68a; } .tcirc.p-baja .interior { --pr-bg: #bbf7d0; }
-.tcirc .tt { font-weight: 800; font-size: 13.5px; line-height: 1.15; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: 2px; }
+.tcirc .tt { font-weight: 800; font-size: 13.5px; line-height: 1.15; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: 8px; }
 .tcirc .pct { font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 1px; }
 .tcirc .meta { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 18px; }
-.tcirc .foot { display: flex; align-items: center; gap: 4px; width: 100%; justify-content: space-between; margin-top: -4px; }
 .tcirc:hover .anillo { filter: drop-shadow(0 4px 8px rgba(0,0,0,.14)); }
 @media (max-width: 800px) { .lista-tareas { grid-template-columns: repeat(2, 1fr); gap: 6px; } .tcirc .anillo { width: 142px; height: 142px; padding: 7px; } .tcirc .tt { font-size: 11.5px; } }
 @media (max-width: 800px) { .filters.fila1 .stat { display: none; } .filters.fila1 { gap: 4px; padding: 8px 6px; } .filters.fila1 > input, .filters.fila1 > select { font-size: 12px; padding: 6px 2px; flex: 1.15 1 0; } .filters.fila1 > #t-q { flex: 0.7 1 0; } .filters.fila1 > .btn.grande { width: 34px; height: 34px; } }
@@ -977,12 +978,13 @@ function card(t){
   const estTxt = t.estado === 'en_curso' ? 'En curso' : t.estado === 'terminada' ? 'Terminada' : t.estado === 'cancelada' ? 'Cancelada' : 'Pendiente';
   return `<div class="tcirc p-${t.prioridad} e-${t.estado}" onclick="abrirTarea(${t.id})" title="${esc(t.titulo)} · prioridad ${t.prioridad} · ${estTxt}">
     <div class="anillo ${estCls}" style="--p:${pct}"><div class="interior">
+      <div class="cnts">${nn ? `<span title="${nn} comentario(s)">💬 ${nn}</span>` : ''}${na ? `<span title="${na} adjunto(s)">📎 ${na}</span>` : ''}</div>
       ${muneco(t.estado)}
       <div class="tt">${esc(t.titulo_corto || t.titulo)}</div>
       <div class="pct">${E.length ? `${eh}/${E.length} · ` : ''}${pct}%</div>
     </div></div>
     <div class="meta">${fecha}${(() => { const u = E.filter(e => !e.hecha && e.prioridad === 'alta').length; return u && t.estado !== 'terminada' && t.estado !== 'cancelada' ? `<span class="chip red" title="Etapas de prioridad alta que se pueden hacer ya">🚩 ${u} para ya</span>` : ''; })()}${gruposDe(t).map(g => `<span class="chip grupo">👷 ${esc(g)}</span>`).join('')}</div>
-    <div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
+</div>`;
 }
 async function cambiarEstado(id, estado){
   const { error } = await sb.from('obra_tareas').update({ estado }).eq('id', id);
