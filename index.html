@@ -518,6 +518,32 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .nueva3 .guardar { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .nueva3 .guardar .big { width: 46px; height: 46px; border-radius: 14px; background: var(--primary); color: #fff; border: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(180,83,9,.35); cursor: pointer; }
 @media (max-width: 800px) { .nueva3 { margin: -10px; } }
+/* v30: la ficha de tarea existente con el mismo banner ámbar que el alta */
+.ficha.nueva3 .cab { padding: 14px 14px 40px; }
+.ficha.nueva3 .cab h3 { color: #fff; font-size: 17px; line-height: 1.2; }
+.ficha.nueva3 .cab .btn.ico { color: #fff; } .ficha.nueva3 .cab .btn.ico:hover { background: rgba(255,255,255,.18); }
+.ficha.nueva3 .cab .btn.primary.ico { color: #fff; background: rgba(255,255,255,.22); }
+.ficha.nueva3 .datos4 { gap: 5px; margin: -30px 12px 0; }
+.ficha.nueva3 .datos4 .dato { background: #fff; border: 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.10); padding: 8px 2px; }
+.ficha.nueva3 .datos4 .dato.pr-alta { background: #fee2e2; } .ficha.nueva3 .datos4 .dato.venc { background: #fee2e2; }
+.ficha.nueva3 .cuerpo { padding: 10px 12px 14px; }
+.ficha.nueva3 .ftabs { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.ficha.nueva3 .ftabs span.on { background: var(--primary-bg); }
+.ficha.nueva3 .detlog, .ficha.nueva3 .grupos-ed { border-color: #f3e8c8; }
+.ficha.nueva3 .etapa { border-bottom-color: #f3e8c8; }
+.ficha.nueva3 #m-etapas { background: #fff; border: 1px solid #f3e8c8; border-radius: 14px; padding: 2px 8px; }
+.ficha.nueva3 .nov-in input, .ficha.nueva3 .nov-in textarea, .ficha.nueva3 .nov-in select { background: #fff; border-color: #f3e8c8; }
+.ficha.nueva3 .rowt { border-bottom-color: #f3e8c8; }
+/* v29: cada etapa en UN renglón */
+.etapa { flex-wrap: nowrap !important; gap: 4px !important; padding: 6px 2px !important; }
+.etapa .chk { display: flex; align-items: center; flex: none; } .etapa .chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); }
+.etapa .tt { flex: 1 1 auto; min-width: 40px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.etapa .chip, .etapa .fecha-et, .etapa .bandera, .etapa .cotiz, .etapa .asa { flex: none; }
+.etapa .chip { font-size: 10.5px; padding: 1px 6px; }
+.etapa .cotiz { gap: 0 !important; padding: 0 2px !important; } .etapa .cotiz .btn { width: 20px !important; height: 20px !important; } .etapa .cotiz b { min-width: 22px !important; font-size: 11px !important; }
+.etapa .btn.ico.chico { width: 24px; height: 24px; }
+.nov-in .fecha-et { position: relative; flex: none; } .nov-in .fecha-et.con-fecha { color: var(--primary); background: var(--primary-bg); }
+@media (max-width: 800px) { .etapa { font-size: 13.5px; } .etapa .asa { font-size: 11px; padding: 0; } }
 /* v26: etapas con fecha editable y reordenables */
 .etapa { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .etapa .asa { color: #cbd5e1; font-size: 13px; letter-spacing: -2px; cursor: grab; padding: 0 2px; }
@@ -1086,18 +1112,19 @@ function fichaTarea(id, tab){
     if (n.tipo === 'estado' || n.tipo === 'archivo') return `<div class="fl sis">${fmtTs(n.creado_at)} · ${esc(n.autor_nombre || quien(n.autor_email))}: ${esc(n.texto)}${del}</div>`;
     return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}</b>${esc(n.texto)}${del}</div>`;
   }).join('');
-  ovBox(`<div class="ficha">
-    <div class="m-head" id="f-head"><h3 style="margin:0;flex:1">${esc(t.titulo)}</h3>
+  ovBox(`<div class="ficha nueva3">
+    <div class="cab"><div class="m-head" id="f-head"><h3 style="margin:0;flex:1">${esc(t.titulo)}</h3>
       <button class="btn ico" onclick="renombrarTarea(${id})" title="Cambiar el título" aria-label="Cambiar el título">${_i('edit')}</button>
       ${esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
-      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
-    <div class="datos">
+      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>
+    <div class="datos datos4">
       <label class="dato" title="Rubro">${_i('brick')}<b>${esc(t.rubro || 'Rubro')}</b><select class="over" onchange="guardarCampo(${id},'rubro',this.value)"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
       <button class="dato" title="Grupos que lo trabajan" onclick="editarGrupo(${id})">${_i('users')}<b>${(() => { const G = gruposDe(t); return G.length > 1 ? G.length + ' grupos' : esc(G[0] || 'Grupo'); })()}</b></button>
       <label class="dato pr-${t.prioridad}" title="Prioridad">${_i('flag')}<b>${t.prioridad[0].toUpperCase() + t.prioridad.slice(1)}</b><select class="over" onchange="guardarCampo(${id},'prioridad',this.value)">${['alta','normal','baja'].map(p => `<option value="${p}" ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
       <label class="dato ${abierta && t.fecha_limite && d < 0 ? 'venc' : ''}" title="Fecha límite">${_i('cal')}<b>${t.fecha_limite ? fmtF(t.fecha_limite).slice(0,5) : 'Fecha'}</b><input class="over" type="date" value="${t.fecha_limite || ''}" onchange="guardarCampo(${id},'fecha_limite',this.value || null)"></label>
       <label class="dato est-${t.estado}" title="Estado">${_i(estIco)}<b>${EST[t.estado]}</b><select class="over" onchange="cambiarEstadoFicha(${id},this.value)">${Object.entries(EST).map(([k,v]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     </div>
+    <div class="cuerpo">
     <div id="f-grupo-ed"></div>
     <div class="ftabs"><span class="${_fichaTab === 'detalle' ? 'on' : ''}" onclick="fichaTab('detalle')">Detalle</span><span class="${_fichaTab === 'etapas' ? 'on' : ''}" onclick="fichaTab('etapas')">Etapas${E.length ? `<i>${eh}/${E.length}</i>` : ''}</span><span class="${_fichaTab === 'presupuestos' ? 'on' : ''}" onclick="fichaTab('presupuestos')">Presup.${pres.length ? `<i>${pres.length}</i>` : ''}</span><span class="${_fichaTab === 'archivos' ? 'on' : ''}" onclick="fichaTab('archivos')">Archivos${arch.length ? `<i>${arch.length}</i>` : ''}</span></div>
     <section id="ft-detalle" class="ft ${_fichaTab === 'detalle' ? 'on' : ''}">
@@ -1109,7 +1136,7 @@ function fichaTarea(id, tab){
     </section>
     <section id="ft-etapas" class="ft ${_fichaTab === 'etapas' ? 'on' : ''}">
       <div id="m-etapas">${etapasHtml(id)}</div>
-      <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 130px" title="Fecha límite de la etapa (opcional)"><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+      <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><label class="btn ico fecha-et" id="m-et-fecha-l" title="Fecha estimada (opcional)">${_i('cal')}<input id="m-et-fecha" type="date" class="over" onchange="document.getElementById('m-et-fecha-l').classList.toggle('con-fecha', !!this.value)"></label><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
     </section>
     <section id="ft-presupuestos" class="ft ${_fichaTab === 'presupuestos' ? 'on' : ''}">
       ${pres.length ? pres.map(a => filaArch(a, 'presupuestos')).join('') : '<div class="mini">Sin presupuestos todavía.</div>'}
@@ -1122,7 +1149,7 @@ function fichaTarea(id, tab){
     </section>
     <input type="file" id="m-file" multiple accept="application/pdf,image/*" style="display:none" onchange="mostrarAdj(${id})">
     <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="flex:1 1 100%"></span><select id="m-ftipo" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto del presupuesto">${_i('clip')}<span>Adjuntar PDF o foto</span></button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
-  </div>`);
+  </div></div>`);
   setTimeout(() => initDragEtapas(id), 0);
 }
 function fichaTab(tab){ _fichaTab = tab; const adj = document.getElementById('m-adj'); if (adj){ adj.style.display = 'none'; document.getElementById('m-file').value = ''; } document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','presupuestos','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
@@ -1197,7 +1224,8 @@ async function agregarNovedad(id){
 async function borrarNovedad(nid, tid){ await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); abrirTarea(tid); }
 
 // ── Etapas ──
-const esTituloCotiz = t => /presupuest|cotiza/i.test(t || '') && !/elegir|selecc|aprob/i.test(t || '');
+const _sinAc = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const esTituloCotiz = t => /presup|cotiz|precio|oferta/.test(_sinAc(t)) && !/elegir|selecc|aprob|compar/.test(_sinAc(t));
 const esEtapaPresup = e => esTituloCotiz(e.titulo);
 const presupDeEtapa = e => ARCHIVOS.filter(a => a.tipo === 'presupuesto' && a.etapa_id === e.id);
 function etapasHtml(tid){
@@ -1209,11 +1237,11 @@ function etapasHtml(tid){
       : `<input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)">`;
     const cotiz = cot ? `<span class="cotiz ${listo ? 'ok' : ''}"><button class="btn ico chico" onclick="cantPresup(${e.id},-1)" title="Pedir uno menos" aria-label="Menos">−</button><b title="Presupuestos que llegaron / que pedimos">${n}/${cant}</b><button class="btn ico chico" onclick="cantPresup(${e.id},1)" title="Pedir uno más" aria-label="Más">+</button><button class="btn primary ico chico" onclick="presupuestoRapido(${tid},'presupuesto',${e.id})" title="Cargar un presupuesto que llegó" aria-label="Cargar presupuesto">${_i('dollar')}</button></span>` : '';
     const fechaEt = `<label class="fecha-et ${e.fecha_limite ? 'chip ' + (!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray') : 'btn ico chico'}" title="${e.fecha_limite ? 'Fecha estimada: tocá para cambiarla' : 'Ponerle una fecha estimada'}">${e.fecha_limite ? fmtF(e.fecha_limite) : _i('cal')}<input type="date" class="over" value="${e.fecha_limite || ''}" onchange="fechaEtapa(${e.id}, this.value)"></label>`;
-    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}" data-id="${e.id}"><span class="asa" aria-hidden="true">⋮⋮</span><label>${check} <span class="tt">${esc(e.titulo)}</span></label>${cotiz}
+    const info = esc(e.titulo) + (e.hecha ? ` — hecha por ${esc(quien(e.hecha_por))} el ${fmtTs(e.hecha_at)}` : '') + (e.fecha_limite ? ` — fecha estimada ${fmtF(e.fecha_limite)}` : '');
+    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}" data-id="${e.id}"><span class="asa" aria-hidden="true">⋮⋮</span><label class="chk">${check}</label><span class="tt" title="${info}" onclick="toast(this.title, 'info')">${esc(e.titulo)}</span>${cotiz}
       <button class="btn ico chico bandera ${e.prioridad === 'alta' ? 'on' : ''}" onclick="prioEtapa(${e.id})" title="${e.prioridad === 'alta' ? 'Prioridad alta: se puede hacer ya (tocá para sacarla)' : 'Marcar como prioridad alta (se puede hacer ya)'}" aria-label="Prioridad">${_i('flag')}</button>
       ${fechaEt}
-      ${e.hecha ? `<span class="mini">✓ ${esc(quien(e.hecha_por))} ${fmtTs(e.hecha_at)}</span>` : ''}
-      <span class="spacer"></span><button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
+      <button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
 }
 async function fechaEtapa(id, valor){
   const e = ETAPAS.find(x => x.id === id);
