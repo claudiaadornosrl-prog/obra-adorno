@@ -487,6 +487,31 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 @keyframes b-flamea { 0%,100% { transform: rotateY(0); } 50% { transform: rotateY(35deg); } }
 @keyframes b-conf { 0% { transform: translate3d(0,0,0) rotateZ(0); opacity: 1; } 100% { transform: translate3d(var(--dx), -55px, var(--dz)) rotateZ(360deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .v3 * { animation: none !important; } }
+#ov .box .nov-in > input[type=date] { flex: 0 0 118px !important; font-size: 12px; padding: 7px 4px; }
+/* v13: prioridad por etapa */
+.etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
+/* v13: ficha de tarea (preview 3) */
+.ficha .datos { display: flex; gap: 4px; margin: 10px 0 8px; }
+.ficha .dato { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 6px 2px; cursor: pointer; font: inherit; color: inherit; }
+.ficha .dato .ico { width: 18px; height: 18px; color: var(--muted); }
+.ficha .dato b { font-size: 10px; font-weight: 700; color: #334155; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ficha .dato .over { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.ficha .dato.pr-alta { background: #fee2e2; border-color: #fecaca; } .ficha .dato.pr-alta .ico { color: var(--red); }
+.ficha .dato.pr-normal .ico { color: var(--amber); } .ficha .dato.pr-baja .ico { color: var(--green); }
+.ficha .dato.est-en_curso .ico { color: var(--amber); } .ficha .dato.est-terminada .ico { color: var(--green); } .ficha .dato.venc { background: #fee2e2; border-color: #fecaca; } .ficha .dato.venc .ico { color: var(--red); }
+.ficha .ftabs { display: flex; background: #f1f5f9; border-radius: 10px; padding: 3px; margin: 8px 0; }
+.ficha .ftabs span { flex: 1; text-align: center; font-size: 12.5px; font-weight: 700; padding: 7px 0; border-radius: 8px; color: var(--muted); cursor: pointer; user-select: none; }
+.ficha .ftabs span.on { background: #fff; color: var(--primary-dark); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.ficha .ftabs span i { font-style: normal; background: var(--primary); color: #fff; border-radius: 8px; font-size: 10px; padding: 0 5px; margin-left: 4px; }
+.ficha .ft { display: none; } .ficha .ft.on { display: block; }
+.ficha .detlog { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: 14px; background: #fff; }
+.ficha .detlog .desc { white-space: pre-wrap; position: relative; padding-right: 26px; } .ficha .detlog .fl-ed { position: absolute; right: -6px; top: -6px; }
+.ficha .detlog .fl { padding: 6px 0 2px; border-top: 1px dashed #e2e8f0; margin-top: 6px; font-size: 13.5px; white-space: pre-wrap; position: relative; }
+.ficha .detlog .fl b { display: block; color: var(--primary-dark); font-weight: 700; font-size: 11px; margin-bottom: 1px; }
+.ficha .detlog .fl.sis { font-size: 12px; color: var(--muted); }
+.ficha .detlog .fl-del { opacity: .5; vertical-align: middle; } .ficha .detlog .fl-del:hover { opacity: 1; }
+.ficha .rowt { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.ficha .nov-in.adj { background: var(--primary-bg); border-radius: 10px; padding: 6px 8px; }
 /* v9: la ficha no se desborda a los costados en el celular */
 #ov { padding: 10px; } #ov .box { box-sizing: border-box; max-width: min(720px, 100%); overflow-x: hidden; overflow-wrap: anywhere; }
 #ov .box input, #ov .box select, #ov .box textarea, #ov .box button { max-width: 100%; min-width: 0; box-sizing: border-box; }
@@ -776,6 +801,12 @@ const diasA = d => d ? Math.round((new Date(d + 'T00:00:00') - new Date(hoyAR() 
 function _i(n){ return ({
   plus: '<svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   play: '<svg class="ico" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+  edit: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  brick: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h18M3 16h18M9 4v6M15 10v6M9 16v4"/></svg>',
+  users: '<svg class="ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  flag: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  cal: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  clock: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   check: '<svg class="ico" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
   undo: '<svg class="ico" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
   trash: '<svg class="ico" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
@@ -914,7 +945,7 @@ function card(t){
       <div class="tt">${esc(t.titulo)}</div>
       <div class="pct">${E.length ? `${eh}/${E.length} · ` : ''}${pct}%</div>
     </div></div>
-    <div class="meta">${fecha}${t.grupo ? `<span class="chip grupo">👷 ${esc(t.grupo)}</span>` : ''}</div>
+    <div class="meta">${fecha}${(() => { const u = E.filter(e => !e.hecha && e.prioridad === 'alta').length; return u && t.estado !== 'terminada' && t.estado !== 'cancelada' ? `<span class="chip red" title="Etapas de prioridad alta que se pueden hacer ya">🚩 ${u} para ya</span>` : ''; })()}${t.grupo ? `<span class="chip grupo">👷 ${esc(t.grupo)}</span>` : ''}</div>
     <div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
@@ -927,36 +958,97 @@ async function cambiarEstado(id, estado){
 // ── Modal tarea ──
 function cerrarOv(){ const o = document.getElementById('ov'); if (o) o.remove(); }
 function ovBox(html){ cerrarOv(); const o = document.createElement('div'); o.id = 'ov'; o.innerHTML = `<div class="box">${html}</div>`; document.body.appendChild(o); return o; }
-function abrirTarea(id){
-  const t = id ? tareaDe(id) : { titulo: '', descripcion: '', rubro: '', grupo: '', prioridad: 'normal', responsable: 'arquitecto', fecha_limite: '', estado: 'pendiente' };
-  const novs = id ? NOVS.filter(n => n.tarea_id === id) : [], arch = id ? ARCHIVOS.filter(a => a.tarea_id === id) : [];
-  ovBox(`<div class="m-head"><h3 style="margin:0">${id ? esc(t.titulo) : 'Nueva tarea'}</h3><div class="spacer"></div>
-      ${id && esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
-      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
+function abrirTarea(id, tab){
+  if (id) return fichaTarea(id, tab);
+  const t = { titulo: '', descripcion: '', rubro: '', grupo: '', prioridad: 'normal', responsable: 'arquitecto', fecha_limite: '', estado: 'pendiente' };
+  ovBox(`<div class="m-head"><h3 style="margin:0">Nueva tarea</h3><div class="spacer"></div><button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
     <div class="form" style="margin-top:10px">
-      <label style="grid-column:1/-1">Título <input id="m-titulo" value="${esc(t.titulo)}" placeholder="Qué hay que hacer"></label>
-      <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…">${esc(t.descripcion || '')}</textarea></label>
-      <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
-      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" value="${esc(t.grupo || '')}" placeholder="Ezequiel Gutiérrez, Gastón…"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
+      <label style="grid-column:1/-1">Título <input id="m-titulo" value="" placeholder="Qué hay que hacer"></label>
+      <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…"></textarea></label>
+      <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option>${esc(r)}</option>`).join('')}</select></label>
+      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón…"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
       <label style="display:none">Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
       <label>Prioridad <select id="m-prio">${['alta','normal','baja'].map(p => `<option ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
-      <label>Fecha límite <input id="m-fecha" type="date" value="${t.fecha_limite || ''}"></label>
-      <label>Estado <select id="m-estado">${Object.entries(EST).map(([k,v]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+      <label>Fecha límite <input id="m-fecha" type="date"></label>
+      <label style="display:none">Estado <select id="m-estado"><option value="pendiente" selected>Pendiente</option></select></label>
     </div>
-    <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(${id || 0})" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar</span>
-      ${id ? `<span class="mini" style="margin-left:auto">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</span>` : ''}</div>
-    ${id ? `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
-    <h4 style="margin:0 0 6px">Etapas</h4>
-    <div class="mini" style="margin-bottom:6px">Los pasos de esta tarea. Se tildan a medida que se hacen; la fecha es opcional.</div>
-    <div id="m-etapas">${etapasHtml(id)}</div>
-    <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa (por ej.: pedir 3 presupuestos)" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 150px"><select id="m-et-resp" style="display:none"><option value="">(resp. de la tarea)</option>${Object.entries(RESP).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
-    <h4 style="margin:0 0 6px">Novedades y comentarios</h4>
-    <div class="nov-in"><textarea id="m-nov" rows="2" placeholder="Contá cómo va, qué falta, qué se compró…"></textarea><button class="btn primary ico grande" onclick="agregarNovedad(${id})" title="Enviar comentario" aria-label="Enviar">${_i('send')}</button></div>
-    <div class="nov-in" style="margin-top:6px"><input type="file" id="m-file" multiple style="flex:1"><select id="m-ftipo"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><button class="btn ico" onclick="subirDesdeTarea(${id})" title="Adjuntar a esta tarea" aria-label="Adjuntar">${_i('clip')}</button></div>
-    <div class="novs">${novs.map(n => `<div class="nov ${n.tipo}"><div class="mini"><b>${esc(n.autor_nombre || quien(n.autor_email))}</b> · ${fmtTs(n.creado_at)}${(esAdmin() || (n.autor_email || '').toLowerCase() === YO.email) ? ` <button class="btn ico chico" onclick="borrarNovedad(${n.id},${id})" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</div>${esc(n.texto)}</div>`).join('') || '<div class="mini">Sin novedades todavía.</div>'}</div>
-    ${arch.length ? `<h4 style="margin:12px 0 6px">Archivos</h4>${arch.map(a => `<div class="rowt"><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a> <span class="mini">· ${a.tipo}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span></div>`).join('')}` : ''}` : ''}`);
-  setTimeout(() => document.getElementById(id ? 'm-nov' : 'm-titulo').focus(), 50);
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(0)" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar</span></div>`);
+  setTimeout(() => document.getElementById('m-titulo').focus(), 50);
+}
+// ── Ficha de una tarea existente (v13, "preview 3" elegido por JP): título una sola vez + ✎, datos en un renglón de íconos,
+//    pestañitas Detalle (descripción + renglones que agrega cada uno) · Etapas · Archivos. Cada cambio se guarda al toque.
+let _fichaTab = 'detalle';
+const PRIO_ICO = { alta: 'red', normal: 'amber', baja: 'green' };
+function fichaTarea(id, tab){
+  const t = tareaDe(id); if (!t) return;
+  _fichaTab = tab || _fichaTab || 'detalle';
+  const novs = NOVS.filter(n => n.tarea_id === id), arch = ARCHIVOS.filter(a => a.tarea_id === id), E = ETAPAS.filter(e => e.tarea_id === id), eh = E.filter(e => e.hecha).length;
+  const d = diasA(t.fecha_limite), abierta = t.estado === 'pendiente' || t.estado === 'en_curso';
+  const estIco = t.estado === 'en_curso' ? 'play' : t.estado === 'terminada' ? 'check' : t.estado === 'cancelada' ? 'x' : 'clock';
+  const lineas = novs.map(n => {
+    const mio = esAdmin() || (n.autor_email || '').toLowerCase() === YO.email;
+    const del = mio ? ` <button class="btn ico chico fl-del" onclick="borrarNovedad(${n.id},${id})" title="Borrar" aria-label="Borrar">${_i('x')}</button>` : '';
+    if (n.tipo === 'estado' || n.tipo === 'archivo' || n.tipo === 'avance') return `<div class="fl sis">${fmtTs(n.creado_at)} · ${esc(n.autor_nombre || quien(n.autor_email))}: ${esc(n.texto)}${del}</div>`;
+    return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}</b>${esc(n.texto)}${del}</div>`;
+  }).join('');
+  ovBox(`<div class="ficha">
+    <div class="m-head" id="f-head"><h3 style="margin:0;flex:1">${esc(t.titulo)}</h3>
+      <button class="btn ico" onclick="renombrarTarea(${id})" title="Cambiar el título" aria-label="Cambiar el título">${_i('edit')}</button>
+      ${esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
+      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
+    <div class="datos">
+      <label class="dato" title="Rubro">${_i('brick')}<b>${esc(t.rubro || 'Rubro')}</b><select class="over" onchange="guardarCampo(${id},'rubro',this.value)"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
+      <button class="dato" title="Grupo que lo trabaja" onclick="editarGrupo(${id})">${_i('users')}<b>${esc(t.grupo || 'Grupo')}</b></button>
+      <label class="dato pr-${t.prioridad}" title="Prioridad">${_i('flag')}<b>${t.prioridad[0].toUpperCase() + t.prioridad.slice(1)}</b><select class="over" onchange="guardarCampo(${id},'prioridad',this.value)">${['alta','normal','baja'].map(p => `<option value="${p}" ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
+      <label class="dato ${abierta && t.fecha_limite && d < 0 ? 'venc' : ''}" title="Fecha límite">${_i('cal')}<b>${t.fecha_limite ? fmtF(t.fecha_limite).slice(0,5) : 'Fecha'}</b><input class="over" type="date" value="${t.fecha_limite || ''}" onchange="guardarCampo(${id},'fecha_limite',this.value || null)"></label>
+      <label class="dato est-${t.estado}" title="Estado">${_i(estIco)}<b>${EST[t.estado]}</b><select class="over" onchange="cambiarEstadoFicha(${id},this.value)">${Object.entries(EST).map(([k,v]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+    </div>
+    <div id="f-grupo-ed"></div>
+    <div class="ftabs"><span class="${_fichaTab === 'detalle' ? 'on' : ''}" onclick="fichaTab('detalle')">Detalle</span><span class="${_fichaTab === 'etapas' ? 'on' : ''}" onclick="fichaTab('etapas')">Etapas${E.length ? `<i>${eh}/${E.length}</i>` : ''}</span><span class="${_fichaTab === 'archivos' ? 'on' : ''}" onclick="fichaTab('archivos')">Archivos${arch.length ? `<i>${arch.length}</i>` : ''}</span></div>
+    <section id="ft-detalle" class="ft ${_fichaTab === 'detalle' ? 'on' : ''}">
+      <div class="detlog">
+        <div class="desc" id="f-desc">${t.descripcion ? esc(t.descripcion) : '<span class="mini">Sin detalle todavía.</span>'}<button class="btn ico chico fl-ed" onclick="editarDesc(${id})" title="Editar el detalle" aria-label="Editar">${_i('edit')}</button></div>
+        ${lineas}
+      </div>
+      <div class="nov-in" style="margin-top:8px"><input id="m-nov" placeholder="Agregar al detalle…" onkeydown="if(event.key==='Enter') agregarNovedad(${id})"><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Adjuntar archivo" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="agregarNovedad(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button></div>
+      <div class="mini" style="margin-top:4px">Lo que agregás le llega al otro como aviso.</div>
+    </section>
+    <section id="ft-etapas" class="ft ${_fichaTab === 'etapas' ? 'on' : ''}">
+      <div id="m-etapas">${etapasHtml(id)}</div>
+      <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 130px" title="Fecha límite de la etapa (opcional)"><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+    </section>
+    <section id="ft-archivos" class="ft ${_fichaTab === 'archivos' ? 'on' : ''}">
+      ${arch.length ? arch.map(a => `<div class="rowt"><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a> <span class="mini">· ${a.tipo}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span></div>`).join('') : '<div class="mini">Sin archivos todavía.</div>'}
+      <div class="nov-in" style="margin-top:8px"><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir archivo" aria-label="Subir">${_i('clip')}</button><span class="mini">Subir foto, presupuesto, factura o plano a esta tarea</span></div>
+    </section>
+    <input type="file" id="m-file" multiple style="display:none" onchange="mostrarAdj(${id})">
+    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n"></span><select id="m-ftipo"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Subir" aria-label="Subir">${_i('up')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
+    <div class="mini" style="margin-top:10px;text-align:right">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</div>
+  </div>`);
+}
+function fichaTab(tab){ _fichaTab = tab; document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
+function mostrarAdj(id){ const f = document.getElementById('m-file').files; if (!f.length) return; document.getElementById('m-adj-n').textContent = f.length === 1 ? f[0].name : f.length + ' archivos'; const tipo = /\.(pdf|xls|xlsx|doc|docx)$/i.test(f[0].name) ? 'presupuesto' : 'foto'; document.getElementById('m-ftipo').value = tipo; document.getElementById('m-adj').style.display = 'flex'; }
+async function guardarCampo(id, campo, valor){
+  const { error } = await sb.from('obra_tareas').update({ [campo]: valor }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await cargar(); fichaTarea(id); renderTablero();
+}
+async function cambiarEstadoFicha(id, estado){ const t = tareaDe(id); if (t.estado === estado) return; await cambiarEstado(id, estado); fichaTarea(id); }
+function renombrarTarea(id){
+  const t = tareaDe(id), h = document.getElementById('f-head');
+  h.innerHTML = `<input id="f-tit" value="${esc(t.titulo)}" style="flex:1;font-size:16px;font-weight:700" onkeydown="if(event.key==='Enter') guardarTitulo(${id}); if(event.key==='Escape') fichaTarea(${id})"><button class="btn primary ico" onclick="guardarTitulo(${id})" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="fichaTarea(${id})" title="Cancelar" aria-label="Cancelar">${_i('x')}</button>`;
+  const i = document.getElementById('f-tit'); i.focus(); i.select();
+}
+async function guardarTitulo(id){ const v = document.getElementById('f-tit').value.trim(); if (!v) return toast('El título no puede quedar vacío', 'error'); await guardarCampo(id, 'titulo', v); }
+function editarGrupo(id){
+  const t = tareaDe(id), box = document.getElementById('f-grupo-ed');
+  box.innerHTML = `<div class="nov-in" style="margin:6px 0"><input id="f-grupo" list="dl-grupos" value="${esc(t.grupo || '')}" placeholder="Grupo que lo trabaja (Ezequiel Gomez, Gastón…)" onkeydown="if(event.key==='Enter') guardarCampo(${id},'grupo',this.value.trim()||null)"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist><button class="btn primary ico" onclick="guardarCampo(${id},'grupo',document.getElementById('f-grupo').value.trim()||null)" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="document.getElementById('f-grupo-ed').innerHTML=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>`;
+  document.getElementById('f-grupo').focus();
+}
+function editarDesc(id){
+  const t = tareaDe(id), el = document.getElementById('f-desc');
+  el.innerHTML = `<textarea id="f-desc-t" rows="4" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:14px">${esc(t.descripcion || '')}</textarea><div style="display:flex;gap:6px;margin-top:4px"><button class="btn primary ico" onclick="guardarCampo(${id},'descripcion',document.getElementById('f-desc-t').value.trim()||null)" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="fichaTarea(${id})" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>`;
+  document.getElementById('f-desc-t').focus();
 }
 async function guardarTarea(id){
   const d = { titulo: document.getElementById('m-titulo').value.trim(), descripcion: document.getElementById('m-desc').value.trim() || null, rubro: document.getElementById('m-rubro').value || null, grupo: document.getElementById('m-grupo').value.trim() || null,
@@ -986,7 +1078,8 @@ async function borrarNovedad(nid, tid){ await sb.from('obra_novedades').delete()
 function etapasHtml(tid){
   const E = ETAPAS.filter(e => e.tarea_id === tid); if (!E.length) return '<div class="mini">Sin etapas todavía.</div>';
   return E.map(e => { const d = diasA(e.fecha_limite);
-    return `<div class="etapa ${e.hecha ? 'hecha' : ''}"><label><input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)"> <span class="tt">${esc(e.titulo)}</span></label>
+    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''}"><label><input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)"> <span class="tt">${esc(e.titulo)}</span></label>
+      <button class="btn ico chico bandera ${e.prioridad === 'alta' ? 'on' : ''}" onclick="prioEtapa(${e.id})" title="${e.prioridad === 'alta' ? 'Prioridad alta: se puede hacer ya (tocá para sacarla)' : 'Marcar como prioridad alta (se puede hacer ya)'}" aria-label="Prioridad">${_i('flag')}</button>
       ${e.fecha_limite ? `<span class="chip ${!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray'}">${fmtF(e.fecha_limite)}</span>` : ''}
       ${e.hecha ? `<span class="mini">✓ ${esc(quien(e.hecha_por))} ${fmtTs(e.hecha_at)}</span>` : ''}
       <span class="spacer"></span><button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
@@ -994,15 +1087,21 @@ function etapasHtml(tid){
 async function agregarEtapa(tid){
   const titulo = document.getElementById('m-et-titulo').value.trim(); if (!titulo) return;
   const orden = ETAPAS.filter(e => e.tarea_id === tid).length + 1;
-  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: document.getElementById('m-et-resp').value || null, creado_por: YO.email });
+  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: null, creado_por: YO.email });
   if (error) return toast(error.message, 'error');
-  await cargar(); document.getElementById('m-etapas').innerHTML = etapasHtml(tid); document.getElementById('m-et-titulo').value = ''; document.getElementById('m-et-titulo').focus(); renderTablero();
+  await cargar(); fichaTarea(tid, 'etapas'); document.getElementById('m-et-titulo').focus(); renderTablero();
+}
+async function prioEtapa(id){
+  const e = ETAPAS.find(x => x.id === id); const nueva = e.prioridad === 'alta' ? null : 'alta';
+  const { error } = await sb.from('obra_etapas').update({ prioridad: nueva }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 async function tildarEtapa(id, hecha){
   const e = ETAPAS.find(x => x.id === id); const { error } = await sb.from('obra_etapas').update({ hecha }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, tipo: 'avance', texto: (hecha ? '✓ Etapa hecha: ' : '↶ Etapa reabierta: ') + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
-  await cargar(); abrirTarea(e.tarea_id); renderTablero();
+  await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 async function borrarEtapa(id){
   const e = ETAPAS.find(x => x.id === id); if (!confirm('¿Sacar la etapa "' + e.titulo + '"?')) return;
@@ -1036,7 +1135,7 @@ async function subirDesdeTarea(id){
   const inp = document.getElementById('m-file'); const files = [...(inp.files || [])]; if (!files.length) return toast('Elegí el archivo', 'error');
   const t = document.getElementById('m-ftipo').value;
   try { for (const f of files) await subirUno(f, t, { tarea_id: id, fecha: hoyAR() }); } catch (e) { return toast('No se pudo subir: ' + e.message, 'error'); }
-  toast('Adjuntado', 'success'); await cargar(); abrirTarea(id); renderTablero();
+  toast('Adjuntado', 'success'); await cargar(); fichaTarea(id, 'archivos'); renderTablero();
 }
 async function abrirArchivo(path){
   const { data, error } = await sb.storage.from('obra').createSignedUrl(path, 3600);
@@ -1169,6 +1268,6 @@ async function probarRecordatorio(){
 }
 
 </script>
-<script src="manual.js?v=5"></script>
+<script src="manual.js?v=6"></script>
 </body>
 </html>
