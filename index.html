@@ -455,13 +455,13 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .rowt a { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .plata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; } .plata .l { font-size: 12px; color: var(--muted); font-weight: 600; } .plata .v { font-size: 16px; font-weight: 700; }
 /* v6: filtros en un renglón + lista por prioridad */
-.filters.fila1 { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding: 8px 10px; scrollbar-width: none; }
-.filters.fila1::-webkit-scrollbar { display: none; }
-.filters.fila1 input, .filters.fila1 select { flex: 0 0 auto; min-width: 0; padding: 6px 8px; font-size: 13px; }
-.filters.fila1 #t-q { flex: 1 1 120px; min-width: 90px; }
+.filters.fila1 { flex-wrap: nowrap; gap: 8px; padding: 8px 10px; }
+.filters.fila1 > input, .filters.fila1 > select { flex: 1 1 0; min-width: 0; padding: 6px 6px; font-size: 13px; text-overflow: ellipsis; }
+.filters.fila1 > #t-q { flex: 1.4 1 0; }
+.filters.fila1 > .btn { flex: 0 0 auto; }
 .filters.fila1 .stat { white-space: nowrap; }
 .lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 12px; align-items: start; }
-@media (max-width: 800px) { .lista-tareas { grid-template-columns: 1fr; } .filters.fila1 .stat { display: none; } }
+@media (max-width: 800px) { .lista-tareas { grid-template-columns: 1fr; } .filters.fila1 .stat { display: none; } .filters.fila1 { gap: 5px; padding: 8px; } .filters.fila1 > input, .filters.fila1 > select { font-size: 12px; padding: 6px 4px; } }
 .grp-h { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 10px 4px 6px; display: flex; align-items: center; gap: 6px; }
 .grp-h .count { background: #eef2f7; border-radius: 10px; padding: 0 8px; font-size: 12px; }
 .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; } @media (max-width: 800px) { .kanban { grid-template-columns: 1fr; } }
@@ -536,8 +536,8 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <div class="filters fila1">
         <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <input id="t-q" placeholder="🔎 Buscar…">
-        <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro: todos</option></select>
-        <select id="t-resp" onchange="renderTablero()" title="Responsable"><option value="">Resp.: todos</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
+        <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro</option></select>
+        <select id="t-resp" onchange="renderTablero()" title="Responsable"><option value="">Resp.</option><option value="arquitecto">Arquitecto</option><option value="adorno">Adorno</option><option value="contratista">Contratista</option></select>
         <select id="t-est" onchange="renderTablero()" title="Estado"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select>
         <div class="stat" id="t-stat"></div>
       </div>
