@@ -558,6 +558,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .ficha.nueva3 #m-etapas { background: #fff; border: 1px solid #f3e8c8; border-radius: 14px; padding: 2px 8px; }
 .ficha.nueva3 .nov-in input, .ficha.nueva3 .nov-in textarea, .ficha.nueva3 .nov-in select { background: #fff; border-color: #f3e8c8; }
 .ficha.nueva3 .rowt { border-bottom-color: #f3e8c8; }
+.etapa.editando { flex-wrap: wrap !important; } .etapa.editando input[type=text], .etapa.editando input:not([type]) { flex: 1 1 120px; min-width: 0; border: 1px solid var(--primary); border-radius: 8px; padding: 6px 8px; font: inherit; font-size: 14px; }
 /* v29: cada etapa en UN renglón */
 .etapa { flex-wrap: nowrap !important; gap: 4px !important; padding: 6px 2px !important; }
 .etapa .chk { display: flex; align-items: center; flex: none; } .etapa .chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--primary); }
@@ -1275,10 +1276,22 @@ function etapasHtml(tid){
     const cotiz = cot ? `<span class="cotiz ${listo ? 'ok' : ''}"><button class="btn ico chico" onclick="cantPresup(${e.id},-1)" title="Pedir uno menos" aria-label="Menos">−</button><b title="Presupuestos que llegaron / que pedimos">${n}/${cant}</b><button class="btn ico chico" onclick="cantPresup(${e.id},1)" title="Pedir uno más" aria-label="Más">+</button><button class="btn primary ico chico" onclick="presupuestoRapido(${tid},'presupuesto',${e.id})" title="Cargar un presupuesto que llegó" aria-label="Cargar presupuesto">${_i('dollar')}</button></span>` : '';
     const fechaEt = `<label class="fecha-et ${e.fecha_limite ? 'chip ' + (!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray') : 'btn ico chico'}" title="${e.fecha_limite ? 'Fecha estimada: tocá para cambiarla' : 'Ponerle una fecha estimada'}">${e.fecha_limite ? fmtF(e.fecha_limite) : _i('cal')}<input type="date" class="over" value="${e.fecha_limite || ''}" onchange="fechaEtapa(${e.id}, this.value)"></label>`;
     const info = esc(e.titulo) + (e.hecha ? ` — hecha por ${esc(quien(e.hecha_por))} el ${fmtTs(e.hecha_at)}` : '') + (e.fecha_limite ? ` — fecha estimada ${fmtF(e.fecha_limite)}` : '');
-    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}" data-id="${e.id}"><span class="asa" aria-hidden="true">⋮⋮</span><label class="chk">${check}</label><span class="tt" title="${info}" onclick="toast(this.title, 'info')">${esc(e.titulo)}</span>${cotiz}
+    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}" data-id="${e.id}"><span class="asa" aria-hidden="true">⋮⋮</span><label class="chk">${check}</label><span class="tt" title="${info} · tocá para editar" onclick="editarEtapaTitulo(${e.id})">${esc(e.titulo)}</span>${cotiz}
       <button class="btn ico chico bandera ${e.prioridad === 'alta' ? 'on' : ''}" onclick="prioEtapa(${e.id})" title="${e.prioridad === 'alta' ? 'Prioridad alta: se puede hacer ya (tocá para sacarla)' : 'Marcar como prioridad alta (se puede hacer ya)'}" aria-label="Prioridad">${_i('flag')}</button>
       ${fechaEt}
       <button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
+}
+function editarEtapaTitulo(id){
+  const e = ETAPAS.find(x => x.id === id), fila = document.querySelector(`#m-etapas .etapa[data-id="${id}"]`); if (!e || !fila) return;
+  const info = (e.hecha ? `Hecha por ${esc(quien(e.hecha_por))} el ${fmtTs(e.hecha_at)}. ` : '') + (e.fecha_limite ? `Fecha estimada ${fmtF(e.fecha_limite)}.` : '');
+  fila.outerHTML = `<div class="etapa editando" data-id="${id}"><input id="et-ed-${id}" value="${esc(e.titulo)}" onkeydown="if(event.key==='Enter') guardarEtapaTitulo(${id}); if(event.key==='Escape') fichaTarea(${e.tarea_id},'etapas')"><button class="btn primary ico chico" onclick="guardarEtapaTitulo(${id})" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico chico" onclick="fichaTarea(${e.tarea_id},'etapas')" title="Cancelar" aria-label="Cancelar">${_i('x')}</button>${info ? `<div class="mini" style="flex:1 1 100%">${info}</div>` : ''}</div>`;
+  const i = document.getElementById('et-ed-' + id); i.focus(); i.select();
+}
+async function guardarEtapaTitulo(id){
+  const e = ETAPAS.find(x => x.id === id), v = document.getElementById('et-ed-' + id).value.trim(); if (!v) return toast('El texto no puede quedar vacío', 'error');
+  const d = { titulo: v }; if (esTituloCotiz(v) && !e.cant_presupuestos) d.cant_presupuestos = 3;
+  const { error } = await sb.from('obra_etapas').update(d).eq('id', id); if (error) return toast(error.message, 'error');
+  await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 async function fechaEtapa(id, valor){
   const e = ETAPAS.find(x => x.id === id);
