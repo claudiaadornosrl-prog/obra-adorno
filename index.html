@@ -495,6 +495,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov .box .nov-in > input[type=date] { flex: 0 0 118px !important; font-size: 12px; padding: 7px 4px; }
 .grupos-ed { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin: 4px 0 8px; } .grupos-ed .chips { display: flex; flex-wrap: wrap; gap: 4px; } .grupos-ed .chip .btn { width: 18px; height: 18px; vertical-align: middle; }
 @media (max-width: 800px) { #ov .box input:not([type=checkbox]):not([type=file]), #ov .box select, #ov .box textarea { font-size: 16px !important; } }
+.n-etapas { border: 1px solid var(--border); border-radius: 10px; padding: 4px 8px; } .n-et { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px dashed #eef2f7; font-size: 14px; } .n-et:last-child { border-bottom: 0; } .n-et label { flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer; } .n-et input { width: 17px; height: 17px; accent-color: var(--primary); } .n-et .bandera { color: #cbd5e1; } .n-et .bandera.on { color: var(--red); }
 /* v13: prioridad por etapa */
 .etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
 /* v13: ficha de tarea (preview 3) */
@@ -1007,12 +1008,21 @@ function abrirTarea(id, tab){
       <label>Fecha límite <input id="m-fecha" type="date"></label>
       <label style="display:none">Estado <select id="m-estado"><option value="pendiente" selected>Pendiente</option></select></label>
     </div>
-    <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(0)" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar</span></div>`);
+    <h4 style="margin:14px 0 4px">Etapas</h4>
+    <div class="mini" style="margin-bottom:6px">Destildá las que no van, agregá las que falten. 🚩 = se puede hacer ya (prioridad alta).</div>
+    <div id="n-etapas" class="n-etapas">${ETAPAS_SUGERIDAS.map(t => nEtapaHtml(t, true)).join('')}</div>
+    <div class="nov-in" style="margin-top:6px"><input id="n-et-nueva" placeholder="Otra etapa…" onkeydown="if(event.key==='Enter'){ event.preventDefault(); nEtapaAgregar(); }"><button class="btn primary ico" onclick="nEtapaAgregar()" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(0)" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar la tarea con sus etapas</span></div>`);
   setTimeout(() => document.getElementById('m-titulo').focus(), 50);
 }
 // ── Ficha de una tarea existente (v13, "preview 3" elegido por JP): título una sola vez + ✎, datos en un renglón de íconos,
 //    pestañitas Detalle (descripción + renglones que agrega cada uno) · Etapas · Archivos. Cada cambio se guarda al toque.
 let _fichaTab = 'detalle';
+// v22: etapas sugeridas al crear una tarea (esquema de JP)
+const ETAPAS_SUGERIDAS = ['Relevamiento / medidas', 'Presupuesto de materiales', 'Compra de materiales', 'Presupuesto de mano de obra', 'Selección del grupo', 'Ejecución', 'Control de avance', 'Terminación'];
+function nEtapaHtml(titulo, on){ return `<div class="n-et"><label><input type="checkbox" ${on ? 'checked' : ''}> <span>${esc(titulo)}</span></label><button class="btn ico chico bandera" onclick="this.classList.toggle('on')" title="Prioridad alta: se puede hacer ya" aria-label="Prioridad alta">${_i('flag')}</button><button class="btn ico chico" onclick="this.closest('.n-et').remove()" title="Sacar" aria-label="Sacar">${_i('x')}</button></div>`; }
+function nEtapaAgregar(){ const i = document.getElementById('n-et-nueva'), v = i.value.trim(); if (!v) return; document.getElementById('n-etapas').insertAdjacentHTML('beforeend', nEtapaHtml(v, true)); i.value = ''; i.focus(); }
+function nEtapasElegidas(){ return [...document.querySelectorAll('#n-etapas .n-et')].filter(d => d.querySelector('input').checked).map((d, i) => ({ titulo: d.querySelector('span').textContent, orden: i + 1, prioridad: d.querySelector('.bandera').classList.contains('on') ? 'alta' : null })); }
 const PRIO_ICO = { alta: 'red', normal: 'amber', baja: 'green' };
 function fichaTarea(id, tab){
   const t = tareaDe(id); if (!t) return;
@@ -1112,7 +1122,13 @@ async function guardarTarea(id){
   let r;
   if (id){ const antes = tareaDe(id); r = await sb.from('obra_tareas').update(d).eq('id', id);
     if (!r.error && antes.estado !== d.estado) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'estado', texto: 'Pasó a ' + EST[d.estado], autor_email: YO.email, autor_nombre: YO.nombre }); }
-  else r = await sb.from('obra_tareas').insert({ ...d, obra_id: OBRA.id, creado_por: YO.email });
+  else {
+    r = await sb.from('obra_tareas').insert({ ...d, obra_id: OBRA.id, creado_por: YO.email }).select().single();
+    if (!r.error && document.getElementById('n-etapas')){
+      const et = nEtapasElegidas().map(e => ({ ...e, obra_id: OBRA.id, tarea_id: r.data.id, creado_por: YO.email }));
+      if (et.length){ const re = await sb.from('obra_etapas').insert(et); if (re.error) toast('Tarea creada, pero las etapas no: ' + re.error.message, 'error'); }
+    }
+  }
   if (r.error) return toast(r.error.message, 'error');
   toast('Guardado', 'success'); cerrarOv(); await cargar(); renderTablero(); renderResumen();
 }
