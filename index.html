@@ -411,6 +411,7 @@ tr.dim { color: var(--muted); }
 header { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15); padding: 10px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
 header h1 { margin: 0; font-size: 17px; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
 header h1 .lb-obra { font-weight: 400; opacity: .85; font-size: 14px; }
+@media (max-width: 900px) { header h1 .lb-app { display: none; } header h1 .lb-obra { font-weight: 600; opacity: 1; font-size: 16px; } header h1 { gap: 6px; } }
 header h1 { cursor: pointer; border-radius: 9px; padding: 2px 6px; margin-left: -6px; } header h1:hover { background: rgba(255,255,255,.14); } header h1 .chev { width: 14px; height: 14px; opacity: .7; margin-left: -4px; }
 .lista-obras { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .obra-it { display: flex; align-items: center; gap: 10px; text-align: left; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font: inherit; color: inherit; cursor: pointer; } .obra-it span { flex: 1; } .obra-it.on { background: var(--primary-bg); border-color: var(--primary); color: var(--primary-dark); } .obra-it .ico { color: var(--muted); } .obra-it.on .ico { color: var(--primary); }
@@ -681,7 +682,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
   <div id="franja-prueba" class="prueba" style="display:none">🧪 MODO PRUEBA · solo se ven los comprobantes de test</div>
   <header>
     <button class="hbtn kebab-tabs-btn" onclick="toggleTabsMenu(event)" title="Menú" aria-label="Menú"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
-    <h1 onclick="elegirObra()" title="Cambiar de obra" role="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M2 20h20"/><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><line x1="12" y1="4" x2="12" y2="1"/></svg>Obra <span class="lb-obra"></span><svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></h1>
+    <h1 onclick="elegirObra()" title="Cambiar de obra" role="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M2 20h20"/><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/><line x1="12" y1="4" x2="12" y2="1"/></svg><span class="lb-app">Obra</span> <span class="lb-obra"></span><svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></h1>
     <span class="user-info" id="user-info"></span>
     <nav class="tabs" id="tabs">
       <button id="tab-tablero" class="active" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
