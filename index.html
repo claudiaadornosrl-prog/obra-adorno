@@ -527,6 +527,9 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov2 .bts { display: flex; gap: 8px; justify-content: flex-end; }
 #ov2 .bts button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
 #ov2 .bts .b-si { background: var(--red); border-color: var(--red); color: #fff; }
+/* v40: píldoras de tipo tocables en Archivos */
+.pils.tipos { overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; } .pils.tipos::-webkit-scrollbar { display: none; }
+.pils.tipos .pil { flex: none; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 13px; }
 /* v31: Archivos unificado */
 .a-tot { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 6px 4px 10px; } .a-tot b { color: var(--text); }
 .a-lista { display: flex; flex-direction: column; gap: 6px; padding-bottom: 80px; }
@@ -722,12 +725,14 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <div class="lista-tareas" id="t-kanban"></div>
     </section>
     <section id="content-archivos" class="tab-content">
-      <div class="pils">
-        <label class="pil on" id="pil-atipo" title="Tipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span id="pl-atipo">Todo</span><select id="a-tipo" class="over" onchange="renderArchivosTodo()"><option value="">Todo</option><option value="presupuesto">Presupuestos</option><option value="factura">Facturas</option><option value="pago">Pagos</option><option value="foto">Fotos y planos</option></select></label>
-        <label class="pil" id="pil-aest" title="Estado"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span id="pl-aest">Estado</span><select id="a-est" class="over" onchange="renderArchivosTodo()"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="pagado">Pagados</option><option value="rechazado">Rechazados</option></select></label>
-        <label class="pil" id="pil-atarea" title="Tarea"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span id="pl-atarea">Tarea</span><select id="a-tarea" class="over" onchange="renderArchivosTodo()"><option value="">Todas las tareas</option></select></label>
+      <div class="pils tipos" id="a-tipos">
+        <button class="pil on" data-t="" onclick="aTipo('')">Todo</button>
+        <button class="pil" data-t="presupuesto" onclick="aTipo('presupuesto')">Presupuestos</button>
+        <button class="pil" data-t="factura" onclick="aTipo('factura')">Facturas</button>
+        <button class="pil" data-t="pago" onclick="aTipo('pago')">Pagos</button>
+        <button class="pil" data-t="foto" onclick="aTipo('foto')">Fotos</button>
+        <button class="pil" data-t="plano" onclick="aTipo('plano')">Planos</button>
       </div>
-      <div class="a-tot" id="a-tot"></div>
       <div id="a-lista" class="a-lista"></div>
       <button class="fab" onclick="subirGeneral()" title="Subir archivo o registrar pago" aria-label="Subir"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </section>
@@ -1481,17 +1486,12 @@ function refrescarArchivos(tipo){
   try { if (tipo === 'foto' || tipo === 'plano' || tipo === 'otro') renderGaleria(); else if (tipo === 'pago') renderPagos(); else if (tipo) renderArchivos(tipo); } catch (e) {}
   const sec = document.getElementById('content-archivos'); if (sec && sec.classList.contains('active')) renderArchivosTodo();
 }
+let _aTipo = '';
+function aTipo(t){ _aTipo = t; document.querySelectorAll('#a-tipos .pil').forEach(b => b.classList.toggle('on', b.dataset.t === t)); renderArchivosTodo(); }
 function renderArchivosTodo(){
-  const selT = document.getElementById('a-tarea'), vT = selT.value;
-  selT.innerHTML = '<option value="">Todas las tareas</option>' + TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}">${esc(t.titulo_corto || t.titulo)}</option>`).join('') + '<option value="(sin)">Sin tarea</option>'; selT.value = vT;
-  const tipo = document.getElementById('a-tipo').value, est = document.getElementById('a-est').value, tar = selT.value;
-  const pl = (id, sel, def) => { const s = document.getElementById(sel); document.getElementById('pl-' + id).textContent = s.value ? s.options[s.selectedIndex].text : def; document.getElementById('pil-' + id).classList.toggle('on', !!s.value); };
-  pl('atipo', 'a-tipo', 'Todo'); pl('aest', 'a-est', 'Estado'); pl('atarea', 'a-tarea', 'Tarea');
-  const okTipo = a => !tipo ? true : tipo === 'foto' ? (a.tipo === 'foto' || a.tipo === 'plano' || a.tipo === 'otro') : a.tipo === tipo;
-  const okTar = a => !tar ? true : tar === '(sin)' ? !a.tarea_id : a.tarea_id === Number(tar);
-  const L = ARCHIVOS.filter(a => okTipo(a) && (!est || a.estado === est) && okTar(a));
-  const sum = f => ARCHIVOS.filter(f).reduce((s, a) => s + Number(a.importe || 0), 0);
-  document.getElementById('a-tot').innerHTML = `<span><b>${plata(sum(a => a.tipo === 'presupuesto' && a.estado === 'aprobado'))}</b> presupuestos aprobados</span><span><b>${plata(sum(a => a.tipo === 'factura' && a.estado === 'pendiente'))}</b> facturas por pagar</span><span><b>${plata(sum(a => a.tipo === 'pago'))}</b> pagado</span><span class="mini">${L.length} archivo(s)</span>`;
+  const tipo = _aTipo;
+  const okTipo = a => !tipo ? true : tipo === 'foto' ? (a.tipo === 'foto' || a.tipo === 'otro') : a.tipo === tipo;
+  const L = ARCHIVOS.filter(okTipo);
   const acc = a => {
     const mio = (a.subido_por || '').toLowerCase() === YO.email; let h = '';
     if (esAdmin() && (a.tipo === 'presupuesto' || a.tipo === 'factura')){
