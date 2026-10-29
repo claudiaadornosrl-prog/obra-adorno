@@ -513,7 +513,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .ficha .detlog .fl.sis { font-size: 12px; color: var(--muted); }
 .ficha .detlog .fl-del { opacity: .5; vertical-align: middle; } .ficha .detlog .fl-del:hover { opacity: 1; }
 .ficha .rowt { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-.ficha .nov-in.adj { background: var(--primary-bg); border-radius: 10px; padding: 6px 8px; }
+.ficha .nov-in.adj { background: var(--primary-bg); border-radius: 10px; padding: 6px 8px; flex-wrap: wrap; } .ficha .rowt { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .ficha .rowt .acc { margin-left: auto; display: inline-flex; }
 /* v9: la ficha no se desborda a los costados en el celular */
 #ov { padding: 10px; } #ov .box { box-sizing: border-box; max-width: min(720px, 100%); overflow-x: hidden; overflow-wrap: anywhere; }
 #ov .box input, #ov .box select, #ov .box textarea, #ov .box button { max-width: 100%; min-width: 0; box-sizing: border-box; }
@@ -808,7 +808,8 @@ function _i(n){ return ({
   users: '<svg class="ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   flag: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
   cal: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
-  clock: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  dollar: '<svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  edit: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><polyline points="12 6 12 12 16 14"/></svg>',
   check: '<svg class="ico" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
   undo: '<svg class="ico" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
   trash: '<svg class="ico" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
@@ -1022,16 +1023,18 @@ function fichaTarea(id, tab){
       <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 130px" title="Fecha límite de la etapa (opcional)"><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
     </section>
     <section id="ft-archivos" class="ft ${_fichaTab === 'archivos' ? 'on' : ''}">
-      ${arch.length ? arch.map(a => `<div class="rowt"><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a> <span class="mini">· ${a.tipo}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span></div>`).join('') : '<div class="mini">Sin archivos todavía.</div>'}
-      <div class="nov-in" style="margin-top:8px"><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir archivo" aria-label="Subir">${_i('clip')}</button><span class="mini">Subir foto, presupuesto, factura o plano a esta tarea</span></div>
+      ${arch.length ? arch.map(a => `<div class="rowt">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a>` : `<span>${_i('file')} ${esc(a.nombre)}</span>`} <span class="mini">· ${a.tipo}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span>${esAdmin() && (a.tipo === 'presupuesto' || a.tipo === 'factura') && a.estado === 'pendiente' ? `<span class="acc"><button class="btn ico chico" onclick="estadoArchivo(${a.id},'aprobado','${a.tipo}').then(()=>fichaTarea(${id},'archivos'))" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','${a.tipo}').then(()=>fichaTarea(${id},'archivos'))" title="Rechazar" aria-label="Rechazar">${_i('x')}</button></span>` : ''}</div>`).join('') : '<div class="mini">Sin archivos todavía.</div>'}
+      <div class="nov-in" style="margin-top:8px;gap:10px"><button class="btn primary ico" onclick="presupuestoRapido(${id},'presupuesto')" title="Cargar un presupuesto (con o sin archivo)" aria-label="Cargar presupuesto">${_i('dollar')}</button><span class="mini">Presupuesto</span><button class="btn ico" onclick="presupuestoRapido(${id},'factura')" title="Cargar una factura" aria-label="Cargar factura">${_i('file')}</button><span class="mini">Factura</span><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir foto o plano" aria-label="Subir">${_i('clip')}</button><span class="mini">Foto</span></div>
     </section>
     <input type="file" id="m-file" multiple style="display:none" onchange="mostrarAdj(${id})">
-    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n"></span><select id="m-ftipo"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Subir" aria-label="Subir">${_i('up')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
+    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="flex:1 1 100%"></span><select id="m-ftipo" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico chico" onclick="document.getElementById('m-file').click()" title="Elegir archivo" aria-label="Elegir archivo">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
     <div class="mini" style="margin-top:10px;text-align:right">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</div>
   </div>`);
 }
 function fichaTab(tab){ _fichaTab = tab; document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
-function mostrarAdj(id){ const f = document.getElementById('m-file').files; if (!f.length) return; document.getElementById('m-adj-n').textContent = f.length === 1 ? f[0].name : f.length + ' archivos'; const tipo = /\.(pdf|xls|xlsx|doc|docx)$/i.test(f[0].name) ? 'presupuesto' : 'foto'; document.getElementById('m-ftipo').value = tipo; document.getElementById('m-adj').style.display = 'flex'; }
+function mostrarAdj(id){ const f = document.getElementById('m-file').files; if (!f.length) return; document.getElementById('m-adj-n').textContent = '📎 ' + (f.length === 1 ? f[0].name : f.length + ' archivos'); const sel = document.getElementById('m-ftipo'); if (document.getElementById('m-adj').style.display === 'none') sel.value = /\.(pdf|xls|xlsx|doc|docx)$/i.test(f[0].name) ? 'presupuesto' : 'foto'; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; }
+function adjCampos(){ const t = document.getElementById('m-ftipo').value, on = t === 'presupuesto' || t === 'factura'; for (const i of ['m-fprov','m-fimp']) document.getElementById(i).style.display = on ? '' : 'none'; }
+function presupuestoRapido(id, tipo){ document.getElementById('m-file').value = ''; document.getElementById('m-adj-n').textContent = tipo === 'presupuesto' ? 'Presupuesto: proveedor e importe; el archivo es opcional (clip).' : 'Factura: proveedor e importe; adjuntá el PDF o la foto con el clip.'; document.getElementById('m-ftipo').value = tipo; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; document.getElementById('m-fprov').focus(); }
 async function guardarCampo(id, campo, valor){
   const { error } = await sb.from('obra_tareas').update({ [campo]: valor }).eq('id', id);
   if (error) return toast(error.message, 'error');
@@ -1141,10 +1144,21 @@ async function subirArchivo(tipo, pre){
   await cargar(); if (pre === 'o') renderGaleria(); else renderArchivos(t); renderResumen();
 }
 async function subirDesdeTarea(id){
-  const inp = document.getElementById('m-file'); const files = [...(inp.files || [])]; if (!files.length) return toast('Elegí el archivo', 'error');
-  const t = document.getElementById('m-ftipo').value;
-  try { for (const f of files) await subirUno(f, t, { tarea_id: id, fecha: hoyAR() }); } catch (e) { return toast('No se pudo subir: ' + e.message, 'error'); }
-  toast('Adjuntado', 'success'); await cargar(); fichaTarea(id, 'archivos'); renderTablero();
+  const files = [...(document.getElementById('m-file').files || [])], t = document.getElementById('m-ftipo').value;
+  const esPlata = t === 'presupuesto' || t === 'factura';
+  const prov = document.getElementById('m-fprov').value.trim() || null, imp = document.getElementById('m-fimp').value ? Number(document.getElementById('m-fimp').value) : null;
+  const extra = { tarea_id: id, fecha: hoyAR(), ...(esPlata ? { proveedor: prov, importe: imp } : {}) };
+  if (esPlata && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
+  if (!files.length){
+    if (!esPlata) return toast('Elegí el archivo', 'error');
+    const nombre = (t === 'presupuesto' ? 'Presupuesto' : 'Factura') + ' - ' + prov;
+    const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo: t, nombre, path: null, subido_por: YO.email, ...extra });
+    if (error) return toast(error.message, 'error');
+    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'archivo', texto: `Cargó ${t}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  } else {
+    try { for (const f of files) await subirUno(f, t, extra); } catch (e) { return toast('No se pudo subir: ' + e.message, 'error'); }
+  }
+  toast('Guardado', 'success'); await cargar(); fichaTarea(id, 'archivos'); renderTablero();
 }
 async function abrirArchivo(path){
   const { data, error } = await sb.storage.from('obra').createSignedUrl(path, 3600);
