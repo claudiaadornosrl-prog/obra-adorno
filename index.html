@@ -488,6 +488,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 @keyframes b-conf { 0% { transform: translate3d(0,0,0) rotateZ(0); opacity: 1; } 100% { transform: translate3d(var(--dx), -55px, var(--dz)) rotateZ(360deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .v3 * { animation: none !important; } }
 #ov .box .nov-in > input[type=date] { flex: 0 0 118px !important; font-size: 12px; padding: 7px 4px; }
+.grupos-ed { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin: 4px 0 8px; } .grupos-ed .chips { display: flex; flex-wrap: wrap; gap: 4px; } .grupos-ed .chip .btn { width: 18px; height: 18px; vertical-align: middle; }
 /* v13: prioridad por etapa */
 .etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
 /* v13: ficha de tarea (preview 3) */
@@ -888,13 +889,15 @@ function renderResumen(){
 function irTablero(){ switchTab('tablero'); }
 
 // ── Tareas (tablero) ──
-function grupos(){ return [...new Set(TAREAS.map(t => (t.grupo || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)); }
+// v14: una tarea puede tener varios grupos (se guardan en `grupo` separados por coma)
+const gruposDe = t => (t.grupo || '').split(',').map(x => x.trim()).filter(Boolean);
+function grupos(){ return [...new Set(TAREAS.flatMap(gruposDe))].sort((a, b) => a.localeCompare(b)); }
 function llenarGrupos(){ const sel = document.getElementById('t-grupo'), v = sel.value; sel.innerHTML = '<option value="">Grupo</option>' + grupos().map(g => `<option>${esc(g)}</option>`).join('') + '<option value="(sin)">Sin grupo</option>'; sel.value = v; }
 function renderTablero(){
   llenarGrupos();
   const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, gr = document.getElementById('t-grupo').value, est = document.getElementById('t-est').value;
   const okEst = t => est === 'todas' ? true : est ? t.estado === est : (t.estado === 'pendiente' || t.estado === 'en_curso');
-  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !t.grupo : t.grupo === gr)) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
+  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !gruposDe(t).length : gruposDe(t).includes(gr))) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
   // orden: prioridad (alta > normal > baja) → fecha límite más cercana → en curso antes que pendiente → título. Terminadas/canceladas al final.
   const PR = { alta: 0, normal: 1, baja: 2 }, ES = { en_curso: 0, pendiente: 1, terminada: 2, cancelada: 3 };
   L.sort((a, b) => (ES[a.estado] >= 2) - (ES[b.estado] >= 2) || PR[a.prioridad] - PR[b.prioridad] || (a.fecha_limite || '9') .localeCompare(b.fecha_limite || '9') || ES[a.estado] - ES[b.estado] || a.titulo.localeCompare(b.titulo));
@@ -945,7 +948,7 @@ function card(t){
       <div class="tt">${esc(t.titulo)}</div>
       <div class="pct">${E.length ? `${eh}/${E.length} · ` : ''}${pct}%</div>
     </div></div>
-    <div class="meta">${fecha}${(() => { const u = E.filter(e => !e.hecha && e.prioridad === 'alta').length; return u && t.estado !== 'terminada' && t.estado !== 'cancelada' ? `<span class="chip red" title="Etapas de prioridad alta que se pueden hacer ya">🚩 ${u} para ya</span>` : ''; })()}${t.grupo ? `<span class="chip grupo">👷 ${esc(t.grupo)}</span>` : ''}</div>
+    <div class="meta">${fecha}${(() => { const u = E.filter(e => !e.hecha && e.prioridad === 'alta').length; return u && t.estado !== 'terminada' && t.estado !== 'cancelada' ? `<span class="chip red" title="Etapas de prioridad alta que se pueden hacer ya">🚩 ${u} para ya</span>` : ''; })()}${gruposDe(t).map(g => `<span class="chip grupo">👷 ${esc(g)}</span>`).join('')}</div>
     <div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
@@ -966,7 +969,7 @@ function abrirTarea(id, tab){
       <label style="grid-column:1/-1">Título <input id="m-titulo" value="" placeholder="Qué hay que hacer"></label>
       <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…"></textarea></label>
       <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option>${esc(r)}</option>`).join('')}</select></label>
-      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón…"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
+      <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón… (varios: separados por coma)"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
       <label style="display:none">Responsable <select id="m-resp">${Object.entries(RESP).map(([k,v]) => `<option value="${k}" ${t.responsable === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
       <label>Prioridad <select id="m-prio">${['alta','normal','baja'].map(p => `<option ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
       <label>Fecha límite <input id="m-fecha" type="date"></label>
@@ -998,7 +1001,7 @@ function fichaTarea(id, tab){
       <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
     <div class="datos">
       <label class="dato" title="Rubro">${_i('brick')}<b>${esc(t.rubro || 'Rubro')}</b><select class="over" onchange="guardarCampo(${id},'rubro',this.value)"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
-      <button class="dato" title="Grupo que lo trabaja" onclick="editarGrupo(${id})">${_i('users')}<b>${esc(t.grupo || 'Grupo')}</b></button>
+      <button class="dato" title="Grupos que lo trabajan" onclick="editarGrupo(${id})">${_i('users')}<b>${(() => { const G = gruposDe(t); return G.length > 1 ? G.length + ' grupos' : esc(G[0] || 'Grupo'); })()}</b></button>
       <label class="dato pr-${t.prioridad}" title="Prioridad">${_i('flag')}<b>${t.prioridad[0].toUpperCase() + t.prioridad.slice(1)}</b><select class="over" onchange="guardarCampo(${id},'prioridad',this.value)">${['alta','normal','baja'].map(p => `<option value="${p}" ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
       <label class="dato ${abierta && t.fecha_limite && d < 0 ? 'venc' : ''}" title="Fecha límite">${_i('cal')}<b>${t.fecha_limite ? fmtF(t.fecha_limite).slice(0,5) : 'Fecha'}</b><input class="over" type="date" value="${t.fecha_limite || ''}" onchange="guardarCampo(${id},'fecha_limite',this.value || null)"></label>
       <label class="dato est-${t.estado}" title="Estado">${_i(estIco)}<b>${EST[t.estado]}</b><select class="over" onchange="cambiarEstadoFicha(${id},this.value)">${Object.entries(EST).map(([k,v]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
@@ -1041,10 +1044,15 @@ function renombrarTarea(id){
 }
 async function guardarTitulo(id){ const v = document.getElementById('f-tit').value.trim(); if (!v) return toast('El título no puede quedar vacío', 'error'); await guardarCampo(id, 'titulo', v); }
 function editarGrupo(id){
-  const t = tareaDe(id), box = document.getElementById('f-grupo-ed');
-  box.innerHTML = `<div class="nov-in" style="margin:6px 0"><input id="f-grupo" list="dl-grupos" value="${esc(t.grupo || '')}" placeholder="Grupo que lo trabaja (Ezequiel Gomez, Gastón…)" onkeydown="if(event.key==='Enter') guardarCampo(${id},'grupo',this.value.trim()||null)"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist><button class="btn primary ico" onclick="guardarCampo(${id},'grupo',document.getElementById('f-grupo').value.trim()||null)" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="document.getElementById('f-grupo-ed').innerHTML=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>`;
+  const t = tareaDe(id), G = gruposDe(t), box = document.getElementById('f-grupo-ed');
+  box.innerHTML = `<div class="grupos-ed">
+    <div class="chips">${G.map((g, i) => `<span class="chip grupo">👷 ${esc(g)} <button class="btn ico chico" onclick="sacarGrupo(${id},${i})" title="Sacar este grupo" aria-label="Sacar">${_i('x')}</button></span>`).join('') || '<span class="mini">Sin grupo asignado.</span>'}</div>
+    <div class="nov-in" style="margin-top:6px"><input id="f-grupo" list="dl-grupos" placeholder="Agregar grupo (Ezequiel Gomez, Gastón…)" onkeydown="if(event.key==='Enter') sumarGrupo(${id})"><datalist id="dl-grupos">${grupos().filter(g => !G.includes(g)).map(g => `<option value="${esc(g)}">`).join('')}</datalist><button class="btn primary ico" onclick="sumarGrupo(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button><button class="btn ico" onclick="document.getElementById('f-grupo-ed').innerHTML=''" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>`;
   document.getElementById('f-grupo').focus();
 }
+async function _setGrupos(id, G){ const { error } = await sb.from('obra_tareas').update({ grupo: G.join(', ') || null }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); fichaTarea(id); editarGrupo(id); renderTablero(); }
+async function sumarGrupo(id){ const v = document.getElementById('f-grupo').value.trim(); if (!v) return; const G = gruposDe(tareaDe(id)); if (G.some(g => g.toLowerCase() === v.toLowerCase())) return toast('Ese grupo ya está', 'error'); await _setGrupos(id, [...G, v]); }
+async function sacarGrupo(id, i){ const G = gruposDe(tareaDe(id)); G.splice(i, 1); await _setGrupos(id, G); }
 function editarDesc(id){
   const t = tareaDe(id), el = document.getElementById('f-desc');
   el.innerHTML = `<textarea id="f-desc-t" rows="4" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:14px">${esc(t.descripcion || '')}</textarea><div style="display:flex;gap:6px;margin-top:4px"><button class="btn primary ico" onclick="guardarCampo(${id},'descripcion',document.getElementById('f-desc-t').value.trim()||null)" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="fichaTarea(${id})" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>`;
