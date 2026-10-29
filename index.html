@@ -433,7 +433,9 @@ nav.tabs button .count:not(:empty) { display: inline-block; }
   .kebab-tabs-btn { display: flex; }
   nav.tabs { display: none; position: absolute; top: calc(100% + 4px); left: 8px; right: auto; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); flex-direction: column; padding: 6px; z-index: 200; margin: 0; min-width: 210px; overflow: visible; }
   nav.tabs.open { display: flex; }
-  nav.tabs button { justify-content: flex-start; color: var(--text); opacity: 1; border-left: 3px solid transparent; border-radius: 6px; height: auto; padding: 10px 12px; }
+  nav.tabs { align-items: stretch; }
+  nav.tabs button { justify-content: flex-start; width: 100%; text-align: left; color: var(--text); opacity: 1; border-left: 3px solid transparent; border-radius: 6px; height: auto; padding: 10px 12px; }
+  nav.tabs button .count { margin-left: auto; }
   nav.tabs button .lb { max-width: none; opacity: 1; margin-left: 8px; }
   nav.tabs button:hover { background: #fafafa; }
   nav.tabs button.active { border-left-color: var(--primary); background: var(--primary-bg); color: var(--primary-dark); }
