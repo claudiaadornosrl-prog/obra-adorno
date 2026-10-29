@@ -518,6 +518,12 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .nueva3 .guardar { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .nueva3 .guardar .big { width: 46px; height: 46px; border-radius: 14px; background: var(--primary); color: #fff; border: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(180,83,9,.35); cursor: pointer; }
 @media (max-width: 800px) { .nueva3 { margin: -10px; } }
+/* v26: etapas con fecha editable y reordenables */
+.etapa { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.etapa .asa { color: #cbd5e1; font-size: 13px; letter-spacing: -2px; cursor: grab; padding: 0 2px; }
+.etapa .fecha-et { position: relative; cursor: pointer; } .etapa .fecha-et .over { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.etapa.arrastrando { background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.18); transform: scale(1.02); z-index: 5; border-radius: 10px; }
+#m-etapas.reordenando { touch-action: none; } #m-etapas.reordenando .etapa { touch-action: none; }
 /* v13: prioridad por etapa */
 .etapa .bandera { color: #cbd5e1; } .etapa .bandera.on { color: var(--red); } .etapa.urgente:not(.hecha) { background: #fff1f2; border-radius: 8px; }
 /* v13: ficha de tarea (preview 3) */
@@ -1103,6 +1109,7 @@ function fichaTarea(id, tab){
     <input type="file" id="m-file" multiple style="display:none" onchange="mostrarAdj(${id})">
     <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="flex:1 1 100%"></span><select id="m-ftipo" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico chico" onclick="document.getElementById('m-file').click()" title="Elegir archivo" aria-label="Elegir archivo">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
   </div>`);
+  setTimeout(() => initDragEtapas(id), 0);
 }
 function fichaTab(tab){ _fichaTab = tab; const adj = document.getElementById('m-adj'); if (adj){ adj.style.display = 'none'; document.getElementById('m-file').value = ''; } document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','presupuestos','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
 function mostrarAdj(id){ const f = document.getElementById('m-file').files; if (!f.length) return; document.getElementById('m-adj-n').textContent = '📎 ' + (f.length === 1 ? f[0].name : f.length + ' archivos'); const sel = document.getElementById('m-ftipo'); if (document.getElementById('m-adj').style.display === 'none') sel.value = /\.(pdf|xls|xlsx|doc|docx)$/i.test(f[0].name) ? 'presupuesto' : 'foto'; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; }
@@ -1187,11 +1194,53 @@ function etapasHtml(tid){
       ? `<input type="checkbox" disabled title="Se habilita cuando lleguen los ${cant} presupuestos">`
       : `<input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)">`;
     const cotiz = cot ? `<span class="cotiz ${listo ? 'ok' : ''}"><button class="btn ico chico" onclick="cantPresup(${e.id},-1)" title="Pedir uno menos" aria-label="Menos">−</button><b title="Presupuestos que llegaron / que pedimos">${n}/${cant}</b><button class="btn ico chico" onclick="cantPresup(${e.id},1)" title="Pedir uno más" aria-label="Más">+</button><button class="btn primary ico chico" onclick="presupuestoRapido(${tid},'presupuesto',${e.id})" title="Cargar un presupuesto que llegó" aria-label="Cargar presupuesto">${_i('dollar')}</button></span>` : '';
-    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}"><label>${check} <span class="tt">${esc(e.titulo)}</span></label>${cotiz}
+    const fechaEt = `<label class="fecha-et ${e.fecha_limite ? 'chip ' + (!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray') : 'btn ico chico'}" title="${e.fecha_limite ? 'Fecha estimada: tocá para cambiarla' : 'Ponerle una fecha estimada'}">${e.fecha_limite ? fmtF(e.fecha_limite) : _i('cal')}<input type="date" class="over" value="${e.fecha_limite || ''}" onchange="fechaEtapa(${e.id}, this.value)"></label>`;
+    return `<div class="etapa ${e.hecha ? 'hecha' : ''} ${e.prioridad === 'alta' ? 'urgente' : ''} ${cot ? 'cot' : ''}" data-id="${e.id}"><span class="asa" aria-hidden="true">⋮⋮</span><label>${check} <span class="tt">${esc(e.titulo)}</span></label>${cotiz}
       <button class="btn ico chico bandera ${e.prioridad === 'alta' ? 'on' : ''}" onclick="prioEtapa(${e.id})" title="${e.prioridad === 'alta' ? 'Prioridad alta: se puede hacer ya (tocá para sacarla)' : 'Marcar como prioridad alta (se puede hacer ya)'}" aria-label="Prioridad">${_i('flag')}</button>
-      ${e.fecha_limite ? `<span class="chip ${!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray'}">${fmtF(e.fecha_limite)}</span>` : ''}
+      ${fechaEt}
       ${e.hecha ? `<span class="mini">✓ ${esc(quien(e.hecha_por))} ${fmtTs(e.hecha_at)}</span>` : ''}
       <span class="spacer"></span><button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
+}
+async function fechaEtapa(id, valor){
+  const e = ETAPAS.find(x => x.id === id);
+  const { error } = await sb.from('obra_etapas').update({ fecha_limite: valor || null }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await cargar(); fichaTarea(e.tarea_id, 'etapas');
+}
+// 2. reordenar etapas: mantener presionada (~0,5 s) y arrastrar
+function initDragEtapas(tid){
+  const cont = document.getElementById('m-etapas'); if (!cont || cont._drag) return; cont._drag = true;
+  let timer = null, el = null, startY = 0, moviendo = false;
+  const stopTouch = ev => { if (moviendo) ev.preventDefault(); };
+  cont.addEventListener('pointerdown', ev => {
+    if (ev.button && ev.button !== 0) return; if (ev.target.closest('button, input, select, .over')) return;
+    el = ev.target.closest('.etapa'); if (!el) return; startY = ev.clientY; moviendo = false;
+    timer = setTimeout(() => { moviendo = true; el.classList.add('arrastrando'); cont.classList.add('reordenando'); try { navigator.vibrate && navigator.vibrate(30); } catch (_) {} }, 450);
+    document.addEventListener('touchmove', stopTouch, { passive: false });
+  });
+  cont.addEventListener('pointermove', ev => {
+    if (!el) return;
+    if (!moviendo) { if (Math.abs(ev.clientY - startY) > 8) { clearTimeout(timer); el = null; } return; }
+    ev.preventDefault();
+    const sobre = document.elementsFromPoint(ev.clientX, ev.clientY).find(n => n.classList && n.classList.contains('etapa') && n !== el);
+    if (!sobre) return;
+    const r = sobre.getBoundingClientRect();
+    if (ev.clientY < r.top + r.height / 2) cont.insertBefore(el, sobre); else cont.insertBefore(el, sobre.nextSibling);
+  });
+  const fin = async () => {
+    clearTimeout(timer); document.removeEventListener('touchmove', stopTouch);
+    if (!el) return; const fue = moviendo; const e0 = el; el = null; moviendo = false;
+    e0.classList.remove('arrastrando'); cont.classList.remove('reordenando');
+    if (!fue) return;
+    e0.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); }, { capture: true, once: true });
+    const ids = [...cont.querySelectorAll('.etapa')].map(n => Number(n.dataset.id));
+    const cambios = ids.map((id, i) => ({ id, orden: i + 1 })).filter(c => { const e = ETAPAS.find(x => x.id === c.id); return e && e.orden !== c.orden; });
+    if (!cambios.length) return;
+    const rs = await Promise.all(cambios.map(c => sb.from('obra_etapas').update({ orden: c.orden }).eq('id', c.id)));
+    const err = rs.find(r => r.error); if (err) return toast(err.error.message, 'error');
+    await cargar(); fichaTarea(tid, 'etapas');
+  };
+  cont.addEventListener('pointerup', fin); cont.addEventListener('pointercancel', fin); cont.addEventListener('contextmenu', ev => { if (moviendo || timer) ev.preventDefault(); });
 }
 async function cantPresup(id, delta){
   const e = ETAPAS.find(x => x.id === id); const nueva = Math.max(1, Math.min(20, (e.cant_presupuestos || 3) + delta));
