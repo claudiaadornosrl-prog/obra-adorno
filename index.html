@@ -558,11 +558,19 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov .box .nov, #ov .box .rowt, #ov .box h3, #ov .box .etapa { overflow-wrap: anywhere; word-break: break-word; }
 /* v8 (JP 29-oct): Hoy, Equipo y Manual ocultos; el código queda por si vuelven */
 #tab-resumen, #tab-equipo, nav.tabs button[title="Manual"] { display: none !important; }
-/* v6: filtros en un renglón + lista por prioridad */
-.filters.fila1 { flex-wrap: nowrap; gap: 8px; padding: 8px 10px; }
-.filters.fila1 > input, .filters.fila1 > select { flex: 1 1 0; min-width: 0; padding: 6px 6px; font-size: 13px; text-overflow: ellipsis; }
-.filters.fila1 > #t-q { flex: 1.4 1 0; }
-.filters.fila1 > .btn { flex: 0 0 auto; }
+/* v28 (JP eligió "píldoras"): barra de filtros redondeada, sin recuadros; ➕ flotante */
+.pils { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+.pil { position: relative; display: flex; align-items: center; gap: 5px; background: #fff; border-radius: 999px; padding: 8px 11px; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 12.5px; font-weight: 600; color: #334155; white-space: nowrap; cursor: pointer; min-width: 0; flex: 0 1 auto; }
+.pil .ico { width: 15px; height: 15px; color: var(--muted); flex: none; }
+.pil span { overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+.pil.on { background: var(--primary-bg); color: var(--primary-dark); } .pil.on .ico { color: var(--primary); }
+.pil .over { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.pil.busca { flex: 1 1 60px; cursor: text; } .pil.busca input { border: 0; outline: 0; background: transparent; font: inherit; font-size: 13px; width: 100%; min-width: 0; padding: 0; color: var(--text); }
+.pil.busca input::placeholder { color: var(--muted); font-weight: 600; }
+.pils-stat { text-align: right; font-size: 11px; color: var(--muted); margin: 0 4px 10px; }
+.fab { position: fixed; right: 16px; bottom: 88px; width: 54px; height: 54px; border-radius: 50%; border: 0; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(180,83,9,.4); cursor: pointer; z-index: 150; }
+.fab .ico { width: 26px; height: 26px; } .fab:hover { background: var(--primary-dark); }
+#content-tablero:not(.active) .fab { display: none; }
 .filters.fila1 .stat { white-space: nowrap; }
 .lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px 12px; align-items: start; }
 /* v11/v12: tarjeta circular "variante 1": anillo = % etapas (color según estado) · relleno = prioridad (rojo alta · amarillo normal · verde baja) */
@@ -578,8 +586,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tcirc .pct { font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 1px; }
 .tcirc .meta { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 18px; }
 .tcirc:hover .anillo { filter: drop-shadow(0 4px 8px rgba(0,0,0,.14)); }
-@media (max-width: 800px) { .lista-tareas { grid-template-columns: repeat(2, 1fr); gap: 6px; } .tcirc .anillo { width: 142px; height: 142px; padding: 7px; } .tcirc .tt { font-size: 11.5px; } }
-@media (max-width: 800px) { .filters.fila1 .stat { display: none; } .filters.fila1 { gap: 4px; padding: 8px 6px; } .filters.fila1 > input, .filters.fila1 > select { font-size: 12px; padding: 6px 2px; flex: 1.15 1 0; } .filters.fila1 > #t-q { flex: 0.7 1 0; } .filters.fila1 > .btn.grande { width: 34px; height: 34px; } }
+@media (max-width: 800px) { .lista-tareas { grid-template-columns: repeat(2, 1fr); gap: 6px; } .tcirc .anillo { width: 142px; height: 142px; padding: 7px; } .tcirc .tt { font-size: 11.5px; } .pils { gap: 4px; } .pil { padding: 8px 8px; font-size: 12px; gap: 4px; } .pil span { max-width: 78px; } .pil.busca { flex: 1 1 40px; } .pil.busca input { font-size: 16px; } }
 .grp-h { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 10px 4px 6px; display: flex; align-items: center; gap: 6px; }
 .grp-h .count { background: #eef2f7; border-radius: 10px; padding: 0 8px; font-size: 12px; }
 .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; } @media (max-width: 800px) { .kanban { grid-template-columns: 1fr; } }
@@ -651,14 +658,14 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <div class="card"><h3>💰 Plata</h3><div id="r-plata"></div></div>
     </section>
     <section id="content-tablero" class="tab-content active">
-      <div class="filters fila1">
-        <button class="btn primary ico grande" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-        <input id="t-q" placeholder="🔎 Buscar…">
-        <select id="t-rubro" onchange="renderTablero()" title="Rubro"><option value="">Rubro</option></select>
-        <select id="t-grupo" onchange="renderTablero()" title="Grupo que lo trabaja"><option value="">Grupo</option></select>
-        <select id="t-est" onchange="renderTablero()" title="Estado"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select>
-        <div class="stat" id="t-stat"></div>
+      <div class="pils">
+        <label class="pil busca" title="Buscar"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="t-q" placeholder="Buscar" autocomplete="off"></label>
+        <label class="pil" id="pil-rubro" title="Rubro"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h18M3 16h18M9 4v6M15 10v6M9 16v4"/></svg><span id="pl-rubro">Rubro</span><select id="t-rubro" class="over" onchange="renderTablero()"><option value="">Rubro: todos</option></select></label>
+        <label class="pil" id="pil-grupo" title="Grupo que lo trabaja"><svg class="ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="pl-grupo">Grupo</span><select id="t-grupo" class="over" onchange="renderTablero()"><option value="">Grupo: todos</option></select></label>
+        <label class="pil on" id="pil-est" title="Estado"><svg class="ico" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg><span id="pl-est">Abiertas</span><select id="t-est" class="over" onchange="renderTablero()"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select></label>
       </div>
+      <div class="stat pils-stat" id="t-stat"></div>
+      <button class="fab" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <div class="lista-tareas" id="t-kanban"></div>
     </section>
     <section id="content-presupuestos" class="tab-content">
@@ -954,9 +961,15 @@ function irTablero(){ switchTab('tablero'); }
 // v14: una tarea puede tener varios grupos (se guardan en `grupo` separados por coma)
 const gruposDe = t => (t.grupo || '').split(',').map(x => x.trim()).filter(Boolean);
 function grupos(){ return [...new Set(TAREAS.flatMap(gruposDe))].sort((a, b) => a.localeCompare(b)); }
-function llenarGrupos(){ const sel = document.getElementById('t-grupo'), v = sel.value; sel.innerHTML = '<option value="">Grupo</option>' + grupos().map(g => `<option>${esc(g)}</option>`).join('') + '<option value="(sin)">Sin grupo</option>'; sel.value = v; }
+function llenarGrupos(){ const sel = document.getElementById('t-grupo'), v = sel.value; sel.innerHTML = '<option value="">Grupo: todos</option>' + grupos().map(g => `<option>${esc(g)}</option>`).join('') + '<option value="(sin)">Sin grupo</option>'; sel.value = v; }
+function pintarPils(){
+  const ru = document.getElementById('t-rubro'), gr = document.getElementById('t-grupo'), es = document.getElementById('t-est');
+  document.getElementById('pl-rubro').textContent = ru.value || 'Rubro'; document.getElementById('pil-rubro').classList.toggle('on', !!ru.value);
+  document.getElementById('pl-grupo').textContent = gr.value === '(sin)' ? 'Sin grupo' : (gr.value || 'Grupo'); document.getElementById('pil-grupo').classList.toggle('on', !!gr.value);
+  document.getElementById('pl-est').textContent = es.options[es.selectedIndex].text; document.getElementById('pil-est').classList.toggle('on', es.value !== 'todas');
+}
 function renderTablero(){
-  llenarGrupos();
+  llenarGrupos(); pintarPils();
   const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, gr = document.getElementById('t-grupo').value, est = document.getElementById('t-est').value;
   const okEst = t => est === 'todas' ? true : est ? t.estado === est : (t.estado === 'pendiente' || t.estado === 'en_curso');
   const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !gruposDe(t).length : gruposDe(t).includes(gr))) && (!q || (t.titulo + ' ' + (t.titulo_corto || '') + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
