@@ -28,10 +28,10 @@ function _manualSecciones() {
       pasos: ['Solo Adorno registra pagos: importe, fecha, a quién, medio, la factura que cancela (queda marcada como pagada) y el comprobante.', 'Al arquitecto le llega un mail con el detalle de cada pago, y lo ve en esta pestaña.', 'En Hoy → Plata se ve el total pagado.'] },
     { icon: '📷', titulo: 'Fotos y planos', desc: 'Galería de fotos de avance, planos y renders. Se pueden subir varias a la vez.',
       pasos: ['Elegí tipo (foto, plano, otro), la tarea si corresponde, y una nota de qué se ve.', 'Tocando la miniatura se abre en grande.'] },
-    { icon: '🔔', titulo: 'Recordatorios automáticos', desc: 'Para que nada quede colgado, el sistema avisa solo.',
-      pasos: ['Todos los días a las 9:00 (lunes a sábado) el arquitecto recibe un mail con sus tareas vencidas, las que vencen en 3 días y las que llevan más de una semana sin novedades. Si no hay nada, no manda nada.', 'Cuando Adorno le asigna una tarea nueva, le llega un mail al momento.', 'JP recibe una notificación push cada vez que el arquitecto comenta, sube un archivo o cambia un estado, y un resumen diario con vencidas, presupuestos por aprobar y facturas por pagar.'] },
+    { icon: '🔔', titulo: 'Avisos en el celular (push)', desc: 'Nada va por mail: todo llega como notificación. Para recibirlas hay que activarlas una vez en cada dispositivo.',
+      pasos: ['En el celular, instalá la app: iPhone → Safari → Compartir → "Agregar a pantalla de inicio"; Android → Chrome → "Instalar". Abrila desde el ícono.', 'Tocá la campanita 🔔 del encabezado y aceptá los permisos. Queda amarilla cuando está activa.', 'Al arquitecto le llega: tarea nueva, comentario de Adorno, presupuesto aprobado o rechazado, factura pagada, pago registrado, y a las 9:00 (lunes a sábado) un resumen con lo vencido, lo que vence en 3 días y lo que lleva más de una semana sin novedades.', 'A JP le llega cada comentario, archivo, etapa o cambio de estado del arquitecto, y el resumen diario.'] },
     { icon: '👥', titulo: 'Equipo (solo Adorno)', desc: 'Quiénes entran al módulo y quiénes reciben mails.',
-      pasos: ['Primero crear el usuario en Supabase (Authentication → Users → Add user, con email y clave) y después agregarlo acá con el mismo email.', 'El ícono ➤ prende/apaga los mails; el interruptor le saca o devuelve el acceso.', '"Ver qué mandaría hoy" muestra el mail y el push del recordatorio sin mandar nada.'] },
+      pasos: ['Primero crear el usuario en Supabase (Authentication → Users → Add user, con email y clave) y después agregarlo acá con el mismo email.', 'El ícono ➤ prende/apaga los avisos; el interruptor le saca o devuelve el acceso.', '"Ver qué mandaría hoy" muestra el mail y el push del recordatorio sin mandar nada.'] },
   ];
 }
 
