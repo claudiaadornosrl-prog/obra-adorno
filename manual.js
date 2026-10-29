@@ -22,6 +22,8 @@ function _manualSecciones() {
       pasos: ['Subir: elegí el archivo, completá proveedor e importe, y tocá el ícono de subir.', 'Adorno: ✓ aprueba, ⊘ rechaza, ↶ vuelve a pendiente. El total de arriba es la suma de lo que estás viendo.', 'Abrí el archivo tocando su nombre (el link dura una hora; volvé a tocar si venció).'] },
     { icon: '🧾', titulo: 'Facturas', desc: 'Facturas y tickets de lo comprado para la obra. Adorno las marca como pagadas.',
       pasos: ['Igual que los presupuestos: archivo, proveedor, importe, fecha y tarea.', 'Adorno: $ marca pagada, ⊘ rechaza. "Por pagar" es lo que falta pagar.'] },
+    { icon: '💸', titulo: 'Pagos', desc: 'Lo que Adorno le paga al arquitecto o a los proveedores de la obra, con comprobante opcional.',
+      pasos: ['Solo Adorno registra pagos: importe, fecha, a quién, medio, la factura que cancela (queda marcada como pagada) y el comprobante.', 'Al arquitecto le llega un mail con el detalle de cada pago, y lo ve en esta pestaña.', 'En Hoy → Plata se ve el total pagado.'] },
     { icon: '📷', titulo: 'Fotos y planos', desc: 'Galería de fotos de avance, planos y renders. Se pueden subir varias a la vez.',
       pasos: ['Elegí tipo (foto, plano, otro), la tarea si corresponde, y una nota de qué se ve.', 'Tocando la miniatura se abre en grande.'] },
     { icon: '🔔', titulo: 'Recordatorios automáticos', desc: 'Para que nada quede colgado, el sistema avisa solo.',

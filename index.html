@@ -497,6 +497,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <button id="tab-tablero" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
       <button id="tab-presupuestos" onclick="switchTab('presupuestos')" title="Presupuestos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 11v7"/><path d="M10 13.5h3a1.5 1.5 0 0 1 0 3h-2"/></svg><span class="lb">Presupuestos</span><span class="count" id="cnt-presupuestos"></span></button>
       <button id="tab-facturas" onclick="switchTab('facturas')" title="Facturas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/></svg><span class="lb">Facturas</span><span class="count" id="cnt-facturas"></span></button>
+      <button id="tab-pagos" onclick="switchTab('pagos')" title="Pagos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="lb">Pagos</span><span class="count" id="cnt-pagos"></span></button>
       <button id="tab-fotos" onclick="switchTab('fotos')" title="Fotos y planos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="lb">Fotos y planos</span><span class="count" id="cnt-fotos"></span></button>
       <button id="tab-equipo" onclick="switchTab('equipo')" title="Equipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lb">Equipo</span><span class="count" id="cnt-equipo"></span></button>
     </nav>
@@ -561,6 +562,25 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       </div>
       <div class="filters"><label>Estado</label><select id="f-est" onchange="renderArchivos('factura')"><option value="">Todas</option><option value="pendiente">Por pagar</option><option value="pagado">Pagadas</option><option value="rechazado">Rechazadas</option></select><div class="stat" id="f-stat"></div></div>
       <div id="f-lista"></div>
+    </section>
+    <section id="content-pagos" class="tab-content">
+      <div class="card" id="pg-form">
+        <h3>Registrar un pago</h3>
+        <div class="mini" style="margin-bottom:8px">Lo que Adorno le paga al arquitecto o a un proveedor de la obra. Al arquitecto le llega un mail con el detalle. Si elegís la factura que cancela, queda marcada como pagada.</div>
+        <div class="form">
+          <label>Importe <input id="pg-imp" type="number" step="0.01" placeholder="0"></label>
+          <label>Fecha <input id="pg-fecha" type="date"></label>
+          <label>A quién <input id="pg-prov" placeholder="Arquitecto, proveedor…"></label>
+          <label>Medio <select id="pg-medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Mercado Pago</option><option>Otro</option></select></label>
+          <label>Factura que cancela <select id="pg-ref"><option value="">(ninguna)</option></select></label>
+          <label>Tarea <select id="pg-tarea"><option value="">(sin tarea)</option></select></label>
+          <label>Comprobante <input type="file" id="pg-file" accept=".pdf,image/*"></label>
+          <label style="grid-column:1/-1">Notas <input id="pg-notas" placeholder="Anticipo, saldo, qué cubre…"></label>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="registrarPago()" title="Registrar el pago" aria-label="Registrar"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><span class="mini">Registrar</span></div>
+      </div>
+      <div class="filters"><div class="stat" id="pg-stat"></div></div>
+      <div id="pg-lista"></div>
     </section>
     <section id="content-fotos" class="tab-content">
       <div class="card">
@@ -722,13 +742,14 @@ async function cargar(){
     sb.from('obra_novedades').select('*').eq('obra_id', OBRA.id).order('id', { ascending: false }).limit(300)]);
   TAREAS = t.data || []; ARCHIVOS = a.data || []; PARTS = p.data || []; NOVS = n.data || [];
   const opts = '<option value="">(sin tarea)</option>' + TAREAS.filter(x => x.estado !== 'cancelada').map(x => `<option value="${x.id}">${esc(x.titulo)}</option>`).join('');
-  for (const id of ['p-tarea','f-tarea','o-tarea']) document.getElementById(id).innerHTML = opts;
+  for (const id of ['p-tarea','f-tarea','o-tarea','pg-tarea']) document.getElementById(id).innerHTML = opts;
+  document.getElementById('pg-ref').innerHTML = '<option value="">(ninguna)</option>' + ARCHIVOS.filter(a => a.tipo === 'factura' && a.estado === 'pendiente').map(a => `<option value="${a.id}">${esc(a.nombre)}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''}</option>`).join('');
   const abiertas = TAREAS.filter(x => x.estado === 'pendiente' || x.estado === 'en_curso').length;
   document.getElementById('cnt-tablero').textContent = abiertas || '';
   const pres = ARCHIVOS.filter(x => x.tipo === 'presupuesto' && x.estado === 'pendiente').length;
   document.getElementById('cnt-presupuestos').textContent = pres || '';
 }
-function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'tablero') renderTablero(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'equipo') renderEquipo(); }
+function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'tablero') renderTablero(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'pagos') renderPagos(); if (k === 'equipo') renderEquipo(); }
 const tareaDe = id => TAREAS.find(t => t.id === Number(id));
 const partDe = email => PARTS.find(p => (p.email || '').toLowerCase() === String(email || '').toLowerCase());
 function quien(email){ const p = partDe(email); if (p) return p.nombre; if (!email) return '—'; return email.split('@')[0] === 'juanpsimonelli' ? 'JP' : email.split('@')[0]; }
@@ -756,7 +777,8 @@ function renderResumen(){
     <div><div class="l">Presupuestos por aprobar</div><div class="v">${cnt('presupuesto','pendiente')} · ${plata(sum('presupuesto','pendiente'))}</div></div>
     <div><div class="l">Presupuestos aprobados</div><div class="v">${cnt('presupuesto','aprobado')} · ${plata(sum('presupuesto','aprobado'))}</div></div>
     <div><div class="l">Facturas por pagar</div><div class="v">${cnt('factura','pendiente')} · ${plata(sum('factura','pendiente'))}</div></div>
-    <div><div class="l">Facturas pagadas</div><div class="v">${cnt('factura','pagado')} · ${plata(sum('factura','pagado'))}</div></div></div>`;
+    <div><div class="l">Facturas pagadas</div><div class="v">${cnt('factura','pagado')} · ${plata(sum('factura','pagado'))}</div></div>
+    <div><div class="l">Pagos hechos</div><div class="v">${cnt('pago')} · ${plata(sum('pago'))}</div></div></div>`;
 }
 function irTablero(){ switchTab('tablero'); }
 
@@ -895,9 +917,9 @@ async function estadoArchivo(id, estado, tipo){
 }
 async function borrarArchivo(id, tipo){
   const a = ARCHIVOS.find(x => x.id === id); if (!a || !confirm('¿Borrar ' + a.nombre + '?')) return;
-  await sb.storage.from('obra').remove([a.path]);
+  if (a.path) await sb.storage.from('obra').remove([a.path]);
   const { error } = await sb.from('obra_archivos').delete().eq('id', id); if (error) return toast(error.message, 'error');
-  await cargar(); tipo === 'foto' ? renderGaleria() : renderArchivos(tipo); renderResumen();
+  await cargar(); tipo === 'foto' ? renderGaleria() : tipo === 'pago' ? renderPagos() : renderArchivos(tipo); renderResumen();
 }
 async function renderGaleria(){
   const L = ARCHIVOS.filter(a => a.tipo === 'foto' || a.tipo === 'plano' || a.tipo === 'otro');
@@ -907,6 +929,36 @@ async function renderGaleria(){
     <div class="mini"><b>${esc(a.nombre)}</b><br>${a.tipo} · ${fmtF(a.fecha)} · ${esc(quien(a.subido_por))}${a.tarea_id && tareaDe(a.tarea_id) ? '<br>' + esc(tareaDe(a.tarea_id).titulo) : ''}${a.notas ? '<br>' + esc(a.notas) : ''}</div>
     ${(esAdmin() || (a.subido_por || '').toLowerCase() === YO.email) ? `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'foto')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</div>`).join('');
   for (const a of L){ if ((a.mime || '').startsWith('image/')){ const u = await urlFirmada(a.path); const th = document.querySelector(`#gal-${a.id} .thumb`); if (th && u) th.style.backgroundImage = `url("${u}")`; } }
+}
+
+// ── Pagos ──
+async function registrarPago(){
+  const g = id => document.getElementById('pg-' + id).value;
+  const importe = Number(g('imp')); if (!importe) return toast('Falta el importe', 'error');
+  const file = document.getElementById('pg-file').files[0] || null;
+  const d = { obra_id: OBRA.id, tipo: 'pago', nombre: file ? file.name : 'Pago ' + fmtF(g('fecha') || hoyAR()), importe, fecha: g('fecha') || hoyAR(), proveedor: g('prov') || null, medio: g('medio'),
+    ref_id: g('ref') ? Number(g('ref')) : null, tarea_id: g('tarea') ? Number(g('tarea')) : null, notas: g('notas') || null, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
+  if (file){
+    d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(file.name)}`; d.mime = file.type || null;
+    const up = await sb.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' });
+    if (up.error) return toast('No se pudo subir el comprobante: ' + up.error.message, 'error');
+  }
+  const { error } = await sb.from('obra_archivos').insert(d); if (error) return toast(error.message, 'error');
+  if (d.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: d.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(importe)}${d.proveedor ? ' a ' + d.proveedor : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  toast('Pago registrado', 'success');
+  for (const id of ['imp','prov','notas','file']) document.getElementById('pg-' + id).value = '';
+  await cargar(); renderPagos(); renderResumen();
+}
+function renderPagos(){
+  document.getElementById('pg-form').style.display = esAdmin() ? '' : 'none';
+  const L = ARCHIVOS.filter(a => a.tipo === 'pago'); const tot = L.reduce((s, a) => s + Number(a.importe || 0), 0);
+  document.getElementById('pg-stat').innerHTML = `${L.length} pago(s) · <strong>${plata(tot)}</strong>`;
+  document.getElementById('pg-lista').innerHTML = L.length ? `<table><tr><th>Fecha</th><th>A quién</th><th>Medio</th><th>Factura</th><th>Tarea</th><th>Notas</th><th>Comprobante</th><th class="num">Importe</th><th></th></tr>` +
+    L.map(a => { const f = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
+      return `<tr><td>${fmtF(a.fecha)}</td><td>${esc(a.proveedor || '')}</td><td class="mini">${esc(a.medio || '')}</td><td class="mini">${f ? esc(f.nombre) : ''}</td><td class="mini">${a.tarea_id && tareaDe(a.tarea_id) ? esc(tareaDe(a.tarea_id).titulo) : ''}</td><td class="mini">${esc(a.notas || '')}</td>
+        <td>${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ver</a>` : '<span class="mini">—</span>'}</td><td class="num">${plata(a.importe)}</td>
+        <td>${esAdmin() ? `<button class="btn ico" onclick="borrarArchivo(${a.id},'pago')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</td></tr>`; }).join('') + '</table>'
+    : '<div class="empty">Todavía no hay pagos registrados.</div>';
 }
 
 // ── Equipo (solo Adorno) ──
@@ -932,6 +984,6 @@ async function probarRecordatorio(){
 }
 
 </script>
-<script src="manual.js?v=1"></script>
+<script src="manual.js?v=2"></script>
 </body>
 </html>
