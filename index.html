@@ -518,6 +518,24 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .nueva3 .guardar { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .nueva3 .guardar .big { width: 46px; height: 46px; border-radius: 14px; background: var(--primary); color: #fff; border: 0; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(180,83,9,.35); cursor: pointer; }
 @media (max-width: 800px) { .nueva3 { margin: -10px; } }
+/* v31: Archivos unificado */
+.a-tot { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 6px 4px 10px; } .a-tot b { color: var(--text); }
+.a-lista { display: flex; flex-direction: column; gap: 6px; padding-bottom: 80px; }
+.arow { display: grid; grid-template-columns: 34px 1fr auto auto; gap: 8px; align-items: center; background: #fff; border-radius: 12px; padding: 8px 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.arow .aico { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--muted); background: #f1f5f9; }
+.arow.t-presupuesto .aico { background: #fef3c7; color: #92400e; } .arow.t-factura .aico { background: #e0f2fe; color: #075985; } .arow.t-pago .aico { background: #dcfce7; color: #166534; }
+.arow .amain { min-width: 0; } .arow .an { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .arow .an a { color: var(--primary-dark); text-decoration: none; }
+.arow .amain .mini { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .arow .anota { white-space: normal; font-style: italic; }
+.arow .aimp { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 13px; white-space: nowrap; }
+.arow .aacc { display: flex; gap: 0; }
+@media (max-width: 800px) { .arow { grid-template-columns: 30px 1fr auto; } .arow .aacc { grid-column: 1 / -1; justify-content: flex-end; margin-top: -4px; } .arow .aico { width: 30px; height: 30px; } }
+.subir3 .cab { padding: 16px 16px 20px; } .subir3 .tit-fija { color: #fff; font-size: 17px; font-weight: 700; }
+.subir3 .seg { display: flex; flex-wrap: wrap; gap: 5px; } .subir3 .seg span { border: 1.5px solid #f3e8c8; background: #fff; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.subir3 .seg span.on { background: var(--primary-bg); border-color: #fcd34d; color: var(--primary-dark); }
+.subir3 .form input, .subir3 .form select { background: #fff; border-color: #f3e8c8; }
+.subir3 .btn.adjuntar { width: auto; height: 36px; padding: 0 12px; gap: 6px; border: 1px dashed #d6d3d1; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--primary-dark); background: #fff; display: inline-flex; align-items: center; }
+.subir3 .btn.adjuntar.ok { border-style: solid; border-color: #86efac; background: #f0fdf4; color: #166534; }
+#content-archivos .fab { display: flex; }
 /* v30: la ficha de tarea existente con el mismo banner ámbar que el alta */
 .ficha.nueva3 .cab { padding: 14px 14px 40px; }
 .ficha.nueva3 .cab h3 { color: #fff; font-size: 17px; line-height: 1.2; }
@@ -596,7 +614,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .pils-stat { text-align: right; font-size: 11px; color: var(--muted); margin: 0 4px 10px; }
 .fab { position: fixed; right: 16px; bottom: 88px; width: 54px; height: 54px; border-radius: 50%; border: 0; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(180,83,9,.4); cursor: pointer; z-index: 150; }
 .fab .ico { width: 26px; height: 26px; } .fab:hover { background: var(--primary-dark); }
-#content-tablero:not(.active) .fab { display: none; }
+.tab-content:not(.active) .fab { display: none; }
 .filters.fila1 .stat { white-space: nowrap; }
 .lista-tareas { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px 12px; align-items: start; }
 /* v11/v12: tarjeta circular "variante 1": anillo = % etapas (color según estado) · relleno = prioridad (rojo alta · amarillo normal · verde baja) */
@@ -660,10 +678,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
     <nav class="tabs" id="tabs">
       <button id="tab-tablero" class="active" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
       <button id="tab-resumen" onclick="switchTab('resumen')" title="Hoy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="lb">Hoy</span><span class="count" id="cnt-resumen"></span></button>
-      <button id="tab-presupuestos" onclick="switchTab('presupuestos')" title="Presupuestos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 11v7"/><path d="M10 13.5h3a1.5 1.5 0 0 1 0 3h-2"/></svg><span class="lb">Presupuestos</span><span class="count" id="cnt-presupuestos"></span></button>
-      <button id="tab-facturas" onclick="switchTab('facturas')" title="Facturas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/></svg><span class="lb">Facturas</span><span class="count" id="cnt-facturas"></span></button>
-      <button id="tab-pagos" onclick="switchTab('pagos')" title="Pagos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="lb">Pagos</span><span class="count" id="cnt-pagos"></span></button>
-      <button id="tab-fotos" onclick="switchTab('fotos')" title="Fotos y planos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="lb">Fotos y planos</span><span class="count" id="cnt-fotos"></span></button>
+      <button id="tab-archivos" onclick="switchTab('archivos')" title="Archivos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="lb">Archivos</span><span class="count" id="cnt-archivos"></span></button>
       <button id="tab-equipo" onclick="switchTab('equipo')" title="Equipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lb">Equipo</span><span class="count" id="cnt-equipo"></span></button>
     </nav>
     <div class="header-right">
@@ -693,6 +708,16 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <div class="stat pils-stat" id="t-stat"></div>
       <button class="fab" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <div class="lista-tareas" id="t-kanban"></div>
+    </section>
+    <section id="content-archivos" class="tab-content">
+      <div class="pils">
+        <label class="pil on" id="pil-atipo" title="Tipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span id="pl-atipo">Todo</span><select id="a-tipo" class="over" onchange="renderArchivosTodo()"><option value="">Todo</option><option value="presupuesto">Presupuestos</option><option value="factura">Facturas</option><option value="pago">Pagos</option><option value="foto">Fotos y planos</option></select></label>
+        <label class="pil" id="pil-aest" title="Estado"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span id="pl-aest">Estado</span><select id="a-est" class="over" onchange="renderArchivosTodo()"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="pagado">Pagados</option><option value="rechazado">Rechazados</option></select></label>
+        <label class="pil" id="pil-atarea" title="Tarea"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span id="pl-atarea">Tarea</span><select id="a-tarea" class="over" onchange="renderArchivosTodo()"><option value="">Todas las tareas</option></select></label>
+      </div>
+      <div class="a-tot" id="a-tot"></div>
+      <div id="a-lista" class="a-lista"></div>
+      <button class="fab" onclick="subirGeneral()" title="Subir archivo o registrar pago" aria-label="Subir"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </section>
     <section id="content-presupuestos" class="tab-content">
       <div class="card">
@@ -946,9 +971,9 @@ async function cargar(){
   const abiertas = TAREAS.filter(x => x.estado === 'pendiente' || x.estado === 'en_curso').length;
   document.getElementById('cnt-tablero').textContent = abiertas || '';
   const pres = ARCHIVOS.filter(x => x.tipo === 'presupuesto' && x.estado === 'pendiente').length;
-  document.getElementById('cnt-presupuestos').textContent = pres || '';
+  const cntA = document.getElementById('cnt-archivos'); if (cntA) cntA.textContent = pres || '';
 }
-function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'tablero') renderTablero(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'pagos') renderPagos(); if (k === 'equipo') renderEquipo(); }
+function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'tablero') renderTablero(); if (k === 'archivos') renderArchivosTodo(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'pagos') renderPagos(); if (k === 'equipo') renderEquipo(); }
 const tareaDe = id => TAREAS.find(t => t.id === Number(id));
 const partDe = email => PARTS.find(p => (p.email || '').toLowerCase() === String(email || '').toLowerCase());
 function quien(email){ const p = partDe(email); if (p) return p.nombre; if (!email) return '—'; return email.split('@')[0] === 'juanpsimonelli' ? 'JP' : email.split('@')[0]; }
@@ -1386,13 +1411,13 @@ async function estadoArchivo(id, estado, tipo){
   const { error } = await sb.from('obra_archivos').update({ estado }).eq('id', id); if (error) return toast(error.message, 'error');
   const a = ARCHIVOS.find(x => x.id === id);
   if (a && a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `${tipo === 'factura' ? 'Factura' : 'Presupuesto'} ${a.nombre}: ${estado}`, autor_email: YO.email, autor_nombre: YO.nombre });
-  await cargar(); renderArchivos(tipo); renderResumen();
+  await cargar(); refrescarArchivos(tipo); renderResumen();
 }
 async function borrarArchivo(id, tipo){
   const a = ARCHIVOS.find(x => x.id === id); if (!a || !confirm('¿Borrar ' + a.nombre + '?')) return;
   if (a.path) await sb.storage.from('obra').remove([a.path]);
   const { error } = await sb.from('obra_archivos').delete().eq('id', id); if (error) return toast(error.message, 'error');
-  await cargar(); tipo === 'foto' ? renderGaleria() : tipo === 'pago' ? renderPagos() : renderArchivos(tipo); renderResumen();
+  await cargar(); refrescarArchivos(tipo); renderResumen();
 }
 async function renderGaleria(){
   const L = ARCHIVOS.filter(a => a.tipo === 'foto' || a.tipo === 'plano' || a.tipo === 'otro');
@@ -1402,6 +1427,104 @@ async function renderGaleria(){
     <div class="mini"><b>${esc(a.nombre)}</b><br>${a.tipo} · ${fmtF(a.fecha)} · ${esc(quien(a.subido_por))}${a.tarea_id && tareaDe(a.tarea_id) ? '<br>' + esc(tareaDe(a.tarea_id).titulo) : ''}${a.notas ? '<br>' + esc(a.notas) : ''}</div>
     ${(esAdmin() || (a.subido_por || '').toLowerCase() === YO.email) ? `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'foto')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</div>`).join('');
   for (const a of L){ if ((a.mime || '').startsWith('image/')){ const u = await urlFirmada(a.path); const th = document.querySelector(`#gal-${a.id} .thumb`); if (th && u) th.style.backgroundImage = `url("${u}")`; } }
+}
+
+// ── Archivos unificado (v31, JP): presupuestos + facturas + pagos + fotos/planos en una sola lista ──
+const TIPO_LBL = { presupuesto: 'Presupuesto', factura: 'Factura', pago: 'Pago', foto: 'Foto', plano: 'Plano', otro: 'Archivo' };
+function chipEstado(a){
+  if (a.tipo === 'pago') return `<span class="chip green">pagado</span>`;
+  if (a.tipo !== 'presupuesto' && a.tipo !== 'factura') return '';
+  const e = a.estado, txt = e === 'pendiente' ? (a.tipo === 'factura' ? 'por pagar' : 'por aprobar') : e;
+  return `<span class="chip ${e === 'aprobado' || e === 'pagado' ? 'green' : e === 'rechazado' ? 'red' : 'amber'}">${txt}</span>`;
+}
+function refrescarArchivos(tipo){
+  try { if (tipo === 'foto' || tipo === 'plano' || tipo === 'otro') renderGaleria(); else if (tipo === 'pago') renderPagos(); else if (tipo) renderArchivos(tipo); } catch (e) {}
+  const sec = document.getElementById('content-archivos'); if (sec && sec.classList.contains('active')) renderArchivosTodo();
+}
+function renderArchivosTodo(){
+  const selT = document.getElementById('a-tarea'), vT = selT.value;
+  selT.innerHTML = '<option value="">Todas las tareas</option>' + TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}">${esc(t.titulo_corto || t.titulo)}</option>`).join('') + '<option value="(sin)">Sin tarea</option>'; selT.value = vT;
+  const tipo = document.getElementById('a-tipo').value, est = document.getElementById('a-est').value, tar = selT.value;
+  const pl = (id, sel, def) => { const s = document.getElementById(sel); document.getElementById('pl-' + id).textContent = s.value ? s.options[s.selectedIndex].text : def; document.getElementById('pil-' + id).classList.toggle('on', !!s.value); };
+  pl('atipo', 'a-tipo', 'Todo'); pl('aest', 'a-est', 'Estado'); pl('atarea', 'a-tarea', 'Tarea');
+  const okTipo = a => !tipo ? true : tipo === 'foto' ? (a.tipo === 'foto' || a.tipo === 'plano' || a.tipo === 'otro') : a.tipo === tipo;
+  const okTar = a => !tar ? true : tar === '(sin)' ? !a.tarea_id : a.tarea_id === Number(tar);
+  const L = ARCHIVOS.filter(a => okTipo(a) && (!est || a.estado === est) && okTar(a));
+  const sum = f => ARCHIVOS.filter(f).reduce((s, a) => s + Number(a.importe || 0), 0);
+  document.getElementById('a-tot').innerHTML = `<span><b>${plata(sum(a => a.tipo === 'presupuesto' && a.estado === 'aprobado'))}</b> presupuestos aprobados</span><span><b>${plata(sum(a => a.tipo === 'factura' && a.estado === 'pendiente'))}</b> facturas por pagar</span><span><b>${plata(sum(a => a.tipo === 'pago'))}</b> pagado</span><span class="mini">${L.length} archivo(s)</span>`;
+  const acc = a => {
+    const mio = (a.subido_por || '').toLowerCase() === YO.email; let h = '';
+    if (esAdmin() && (a.tipo === 'presupuesto' || a.tipo === 'factura')){
+      if (a.estado === 'pendiente') h += a.tipo === 'factura'
+        ? `<button class="btn primary ico chico" onclick="subirGeneral('pago', ${a.id})" title="Registrar el pago de esta factura" aria-label="Pagar">${_i('money')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','factura')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`
+        : `<button class="btn primary ico chico" onclick="estadoArchivo(${a.id},'aprobado','presupuesto')" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','presupuesto')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`;
+      else h += `<button class="btn ico chico" onclick="estadoArchivo(${a.id},'pendiente','${a.tipo}')" title="Volver a pendiente" aria-label="Volver a pendiente">${_i('undo')}</button>`;
+    }
+    if (esAdmin() || (mio && a.tipo !== 'pago')) h += `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'${a.tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`;
+    return h;
+  };
+  const ICO_T = { presupuesto: 'dollar', factura: 'file', pago: 'money', foto: 'clip', plano: 'clip', otro: 'clip' };
+  document.getElementById('a-lista').innerHTML = L.length ? L.map(a => { const t = a.tarea_id ? tareaDe(a.tarea_id) : null; const ref = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
+    const det = [TIPO_LBL[a.tipo] || a.tipo, fmtF(a.fecha), a.proveedor, t ? (t.titulo_corto || t.titulo) : null, a.medio, ref ? 'cancela ' + ref.nombre : null, 'subió ' + quien(a.subido_por)].filter(Boolean).map(esc).join(' · ');
+    return `<div class="arow t-${a.tipo}">
+      <div class="aico">${_i(ICO_T[a.tipo] || 'file')}</div>
+      <div class="amain"><div class="an">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${esc(a.nombre)}</a>` : esc(a.nombre)}${a.path ? '' : ' <span class="mini">(sin archivo)</span>'}</div><div class="mini">${det}</div>${a.notas ? `<div class="mini anota">${esc(a.notas)}</div>` : ''}</div>
+      <div class="aimp">${a.importe ? `<b>${plata(a.importe)}</b>` : ''}${chipEstado(a)}</div>
+      <div class="aacc">${acc(a)}</div></div>`; }).join('') : '<div class="empty">Nada por acá todavía.</div>';
+}
+// Subir archivo / registrar pago desde Archivos (modal genérico)
+function subirGeneral(tipoIni, refId){
+  const puedePago = esAdmin(); const ref = refId ? ARCHIVOS.find(x => x.id === refId) : null;
+  const tipos = [['presupuesto','Presupuesto'],['factura','Factura'],...(puedePago ? [['pago','Pago']] : []),['foto','Foto de avance'],['plano','Plano / render'],['otro','Otro archivo']];
+  ovBox(`<div class="nueva3 subir3">
+    <div class="cab"><button class="btn ico cierra" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button>
+      <div class="tit-fija">${ref ? 'Pagar factura' : 'Subir a la obra'}</div>${ref ? `<div class="mini" style="color:#fde68a">${esc(ref.nombre)}${ref.proveedor ? ' · ' + esc(ref.proveedor) : ''} · ${plata(ref.importe)}</div>` : ''}</div>
+    <div class="cuerpo">
+      <div class="seg" id="g-tipos">${tipos.map(([k, v]) => `<span class="${(tipoIni || 'presupuesto') === k ? 'on' : ''}" data-k="${k}" onclick="gTipo('${k}')">${v}</span>`).join('')}</div>
+      <select id="g-tipo" style="display:none">${tipos.map(([k]) => `<option value="${k}" ${(tipoIni || 'presupuesto') === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
+      <div class="form" style="margin-top:10px">
+        <label class="g-plata">Proveedor / a quién <input id="g-prov" list="dl-prov" value="${ref ? esc(ref.proveedor || '') : ''}"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist></label>
+        <label class="g-plata">Importe <input id="g-imp" type="number" inputmode="decimal" step="0.01" value="${ref ? (ref.importe || '') : ''}"></label>
+        <label>Fecha <input id="g-fecha" type="date" value="${hoyAR()}"></label>
+        <label>Tarea <select id="g-tarea"><option value="">(sin tarea)</option>${TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}" ${ref && ref.tarea_id === t.id ? 'selected' : ''}>${esc(t.titulo_corto || t.titulo)}</option>`).join('')}</select></label>
+        <label class="g-pago">Medio <select id="g-medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Mercado Pago</option><option>Otro</option></select></label>
+        <label class="g-pago">Factura que cancela <select id="g-ref"><option value="">(ninguna)</option>${ARCHIVOS.filter(a => a.tipo === 'factura' && (a.estado === 'pendiente' || a.id === refId)).map(a => `<option value="${a.id}" ${a.id === refId ? 'selected' : ''}>${esc(a.nombre)}${a.proveedor ? ' · ' + esc(a.proveedor) : ''} · ${plata(a.importe)}</option>`).join('')}</select></label>
+        <label style="grid-column:1/-1">Notas <input id="g-notas" placeholder="Qué incluye, nº de factura, anticipo o saldo…"></label>
+      </div>
+      <div class="nov-in" style="margin-top:10px"><button class="btn adjuntar" id="g-adj-btn" onclick="document.getElementById('g-file').click()">${_i('clip')}<span>Adjuntar PDF o foto</span></button><input type="file" id="g-file" multiple accept="application/pdf,image/*,.xls,.xlsx,.doc,.docx,.dwg,.dxf,.zip" style="display:none" onchange="const f=this.files; const b=document.getElementById('g-adj-btn'); b.classList.toggle('ok', !!f.length); b.querySelector('span').textContent = f.length ? '✓ ' + (f.length === 1 ? f[0].name : f.length + ' archivos') : 'Adjuntar PDF o foto'"></div>
+      <div class="guardar"><button class="big" onclick="guardarGeneral()" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini" id="g-hint">Guardar</span></div>
+    </div></div>`);
+  gTipo(tipoIni || 'presupuesto');
+}
+function gTipo(k){
+  document.getElementById('g-tipo').value = k; document.querySelectorAll('#g-tipos span').forEach(x => x.classList.toggle('on', x.dataset.k === k));
+  const plata_ = k === 'presupuesto' || k === 'factura' || k === 'pago';
+  document.querySelectorAll('.g-plata').forEach(x => x.style.display = plata_ ? '' : 'none'); document.querySelectorAll('.g-pago').forEach(x => x.style.display = k === 'pago' ? '' : 'none');
+  document.getElementById('g-hint').textContent = k === 'pago' ? 'Registrar el pago (el comprobante es opcional)' : plata_ ? 'Guardar (el archivo es opcional)' : 'Subir';
+}
+async function guardarGeneral(){
+  const g = id => document.getElementById('g-' + id).value, tipo = g('tipo'), files = [...document.getElementById('g-file').files];
+  const prov = g('prov').trim() || null, imp = g('imp') ? Number(g('imp')) : null, fecha = g('fecha') || hoyAR(), tarea_id = g('tarea') ? Number(g('tarea')) : null, notas = g('notas').trim() || null;
+  const plata_ = tipo === 'presupuesto' || tipo === 'factura' || tipo === 'pago';
+  if (plata_ && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
+  if (!plata_ && !files.length) return toast('Elegí el archivo', 'error');
+  try {
+    if (tipo === 'pago'){
+      const file = files[0] || null;
+      const d = { obra_id: OBRA.id, tipo: 'pago', nombre: 'Pago a ' + prov + ' ' + fmtF(fecha), importe: imp, fecha, proveedor: prov, medio: g('medio'), ref_id: g('ref') ? Number(g('ref')) : null, tarea_id, notas, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
+      if (file){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(file.name)}`; d.mime = file.type || null; const up = await sb.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' }); if (up.error) throw up.error; }
+      const { error } = await sb.from('obra_archivos').insert(d); if (error) throw error;
+      if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${prov}`, autor_email: YO.email, autor_nombre: YO.nombre });
+    } else if (!files.length){
+      const nombre = (tipo === 'presupuesto' ? 'Presupuesto' : 'Factura') + ' - ' + prov;
+      const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre, path: null, proveedor: prov, importe: imp, fecha, tarea_id, notas, subido_por: YO.email }); if (error) throw error;
+      if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Cargó ${tipo}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
+    } else {
+      const extra = { tarea_id, fecha, notas, ...(plata_ ? { proveedor: prov, importe: imp } : {}) };
+      for (const f of files) await subirUno(f, tipo, extra);
+    }
+  } catch (e) { return toast('No se pudo guardar: ' + e.message, 'error'); }
+  toast('Guardado', 'success'); cerrarOv(); await cargar(); renderArchivosTodo(); renderTablero(); try { renderResumen(); } catch (e) {}
 }
 
 // ── Pagos ──
