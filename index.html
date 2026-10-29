@@ -411,6 +411,8 @@ tr.dim { color: var(--muted); }
 header { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15); padding: 10px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
 header h1 { margin: 0; font-size: 17px; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
 header h1 .lb-obra { font-weight: 400; opacity: .85; font-size: 14px; }
+.menu-notif { display: none !important; } .menu-notif.activo .ico { color: var(--amber); } .menu-notif.activo .lb::after { content: ' · activados'; color: var(--muted); font-weight: 400; }
+@media (max-width: 900px) { .menu-notif { display: flex !important; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 10px !important; } #btn-notif { display: none !important; } }
 @media (max-width: 900px) { header h1 .lb-app { display: none; } header h1 .lb-obra { font-weight: 600; opacity: 1; font-size: 16px; } header h1 { gap: 6px; } }
 header h1 { cursor: pointer; border-radius: 9px; padding: 2px 6px; margin-left: -6px; } header h1:hover { background: rgba(255,255,255,.14); } header h1 .chev { width: 14px; height: 14px; opacity: .7; margin-left: -4px; }
 .lista-obras { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
@@ -689,6 +691,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <button id="tab-resumen" onclick="switchTab('resumen')" title="Hoy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="lb">Hoy</span><span class="count" id="cnt-resumen"></span></button>
       <button id="tab-archivos" onclick="switchTab('archivos')" title="Archivos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="lb">Archivos</span><span class="count" id="cnt-archivos"></span></button>
       <button id="tab-equipo" onclick="switchTab('equipo')" title="Equipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lb">Equipo</span><span class="count" id="cnt-equipo"></span></button>
+      <button id="tab-notif" class="menu-notif" onclick="activarNotif()" title="Avisos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="lb">Avisos</span><span class="count" id="cnt-notif"></span></button>
     </nav>
     <div class="header-right">
       <button class="hbtn" id="btn-notif" onclick="activarNotif()" title="Activar los avisos en este celular/PC" aria-label="Avisos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="lb">Avisos</span></button>
@@ -1603,7 +1606,7 @@ async function estadoNotif(){
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || Notification.permission !== 'granted') return;
     const reg = await navigator.serviceWorker.ready; const sub = await _getSubFresca(reg); if (!sub) return;
     const { data } = await sb.from('rrhh_push_subscriptions').select('id').eq('endpoint', sub.endpoint).eq('app', 'obra').eq('activa', true).limit(1);
-    if (data && data.length) document.getElementById('btn-notif').classList.add('activo');
+    if (data && data.length) document.querySelectorAll('#btn-notif, #tab-notif').forEach(b => b.classList.add('activo'));
   } catch (_) {}
 }
 async function activarNotif(){
@@ -1618,7 +1621,7 @@ async function activarNotif(){
     const { error } = await sb.from('rrhh_push_subscriptions').upsert({ endpoint: raw.endpoint, p256dh: raw.keys.p256dh, auth: raw.keys.auth, app: 'obra', activa: true, plataforma: 'obra',
       local_generico: grupoPush(), user_agent: (navigator.userAgent || '').slice(0, 200), last_seen_at: new Date().toISOString() }, { onConflict: 'endpoint,app' });
     if (error) return toast('No se pudo guardar: ' + error.message, 'error');
-    document.getElementById('btn-notif').classList.add('activo'); toast('Avisos activados en este dispositivo', 'success');
+    document.querySelectorAll('#btn-notif, #tab-notif').forEach(b => b.classList.add('activo')); toast('Avisos activados en este dispositivo', 'success');
   } catch (e) { toast('No se pudo activar: ' + e.message, 'error'); }
 }
 
