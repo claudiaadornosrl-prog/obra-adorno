@@ -537,7 +537,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tcirc .anillo.amber { --c: #f59e0b; } .tcirc .anillo.green { --c: #16a34a; } .tcirc .anillo.canc { --c: #cbd5e1; }
 .tcirc .interior { --pr-bg: #fef3c7; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #fff 0, var(--pr-bg) 70%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.06); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6px 10px; box-sizing: border-box; }
 .tcirc.p-alta .interior { --pr-bg: #fecaca; } .tcirc.p-normal .interior { --pr-bg: #fde68a; } .tcirc.p-baja .interior { --pr-bg: #bbf7d0; }
-.tcirc .tt { font-weight: 800; font-size: 12px; line-height: 1.15; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: 2px; }
+.tcirc .tt { font-weight: 800; font-size: 13.5px; line-height: 1.15; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: 2px; }
 .tcirc .pct { font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 1px; }
 .tcirc .meta { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 18px; }
 .tcirc .foot { display: flex; align-items: center; gap: 4px; width: 100%; justify-content: space-between; margin-top: -4px; }
@@ -899,7 +899,7 @@ function renderTablero(){
   llenarGrupos();
   const q = document.getElementById('t-q').value.trim().toLowerCase(), ru = document.getElementById('t-rubro').value, gr = document.getElementById('t-grupo').value, est = document.getElementById('t-est').value;
   const okEst = t => est === 'todas' ? true : est ? t.estado === est : (t.estado === 'pendiente' || t.estado === 'en_curso');
-  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !gruposDe(t).length : gruposDe(t).includes(gr))) && (!q || (t.titulo + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
+  const L = TAREAS.filter(t => okEst(t) && (!ru || t.rubro === ru) && (!gr || (gr === '(sin)' ? !gruposDe(t).length : gruposDe(t).includes(gr))) && (!q || (t.titulo + ' ' + (t.titulo_corto || '') + ' ' + (t.descripcion || '')).toLowerCase().includes(q)));
   // orden: prioridad (alta > normal > baja) → fecha límite más cercana → en curso antes que pendiente → título. Terminadas/canceladas al final.
   const PR = { alta: 0, normal: 1, baja: 2 }, ES = { en_curso: 0, pendiente: 1, terminada: 2, cancelada: 3 };
   L.sort((a, b) => (ES[a.estado] >= 2) - (ES[b.estado] >= 2) || PR[a.prioridad] - PR[b.prioridad] || (a.fecha_limite || '9') .localeCompare(b.fecha_limite || '9') || ES[a.estado] - ES[b.estado] || a.titulo.localeCompare(b.titulo));
@@ -947,7 +947,7 @@ function card(t){
   return `<div class="tcirc p-${t.prioridad} e-${t.estado}" onclick="abrirTarea(${t.id})" title="${esc(t.titulo)} · prioridad ${t.prioridad} · ${estTxt}">
     <div class="anillo ${estCls}" style="--p:${pct}"><div class="interior">
       ${muneco(t.estado)}
-      <div class="tt">${esc(t.titulo)}</div>
+      <div class="tt">${esc(t.titulo_corto || t.titulo)}</div>
       <div class="pct">${E.length ? `${eh}/${E.length} · ` : ''}${pct}%</div>
     </div></div>
     <div class="meta">${fecha}${(() => { const u = E.filter(e => !e.hecha && e.prioridad === 'alta').length; return u && t.estado !== 'terminada' && t.estado !== 'cancelada' ? `<span class="chip red" title="Etapas de prioridad alta que se pueden hacer ya">🚩 ${u} para ya</span>` : ''; })()}${gruposDe(t).map(g => `<span class="chip grupo">👷 ${esc(g)}</span>`).join('')}</div>
@@ -969,6 +969,7 @@ function abrirTarea(id, tab){
   ovBox(`<div class="m-head"><h3 style="margin:0">Nueva tarea</h3><div class="spacer"></div><button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
     <div class="form" style="margin-top:10px">
       <label style="grid-column:1/-1">Título <input id="m-titulo" value="" placeholder="Qué hay que hacer"></label>
+      <label style="grid-column:1/-1">Nombre corto para el círculo <input id="m-tcorto" maxlength="24" placeholder="Opcional, ej.: Bibliotecas"></label>
       <label style="grid-column:1/-1">Detalle <textarea id="m-desc" rows="3" placeholder="Medidas, materiales, a quién pedirle, lo que haga falta…"></textarea></label>
       <label>Rubro <select id="m-rubro"><option value="">—</option>${RUBROS.map(r => `<option>${esc(r)}</option>`).join('')}</select></label>
       <label>Grupo que lo trabaja <input id="m-grupo" list="dl-grupos" placeholder="Ezequiel Gomez, Gastón… (varios: separados por coma)"><datalist id="dl-grupos">${grupos().map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
@@ -1017,7 +1018,6 @@ function fichaTarea(id, tab){
         ${lineas}
       </div>
       <div class="nov-in" style="margin-top:8px"><input id="m-nov" placeholder="Agregar al detalle…" onkeydown="if(event.key==='Enter') agregarNovedad(${id})"><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Adjuntar archivo" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="agregarNovedad(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button></div>
-      <div class="mini" style="margin-top:4px">Lo que agregás le llega al otro como aviso.</div>
     </section>
     <section id="ft-etapas" class="ft ${_fichaTab === 'etapas' ? 'on' : ''}">
       <div id="m-etapas">${etapasHtml(id)}</div>
@@ -1034,7 +1034,6 @@ function fichaTarea(id, tab){
     </section>
     <input type="file" id="m-file" multiple style="display:none" onchange="mostrarAdj(${id})">
     <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="flex:1 1 100%"></span><select id="m-ftipo" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico chico" onclick="document.getElementById('m-file').click()" title="Elegir archivo" aria-label="Elegir archivo">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
-    <div class="mini" style="margin-top:10px;text-align:right">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</div>
   </div>`);
 }
 function fichaTab(tab){ _fichaTab = tab; document.querySelectorAll('#ov .ftabs span').forEach((s, i) => s.classList.toggle('on', ['detalle','etapas','presupuestos','archivos'][i] === tab)); document.querySelectorAll('#ov .ft').forEach(s => s.classList.toggle('on', s.id === 'ft-' + tab)); }
@@ -1049,10 +1048,19 @@ async function guardarCampo(id, campo, valor){
 async function cambiarEstadoFicha(id, estado){ const t = tareaDe(id); if (t.estado === estado) return; await cambiarEstado(id, estado); fichaTarea(id); }
 function renombrarTarea(id){
   const t = tareaDe(id), h = document.getElementById('f-head');
-  h.innerHTML = `<input id="f-tit" value="${esc(t.titulo)}" style="flex:1;font-size:16px;font-weight:700" onkeydown="if(event.key==='Enter') guardarTitulo(${id}); if(event.key==='Escape') fichaTarea(${id})"><button class="btn primary ico" onclick="guardarTitulo(${id})" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="fichaTarea(${id})" title="Cancelar" aria-label="Cancelar">${_i('x')}</button>`;
+  h.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
+      <input id="f-tit" value="${esc(t.titulo)}" placeholder="Título completo" style="font-size:16px;font-weight:700" onkeydown="if(event.key==='Enter') guardarTitulo(${id}); if(event.key==='Escape') fichaTarea(${id})">
+      <input id="f-tcorto" value="${esc(t.titulo_corto || '')}" placeholder="Nombre corto para el círculo (ej.: Bibliotecas)" maxlength="24" onkeydown="if(event.key==='Enter') guardarTitulo(${id}); if(event.key==='Escape') fichaTarea(${id})"></div>
+    <button class="btn primary ico" onclick="guardarTitulo(${id})" title="Guardar" aria-label="Guardar">${_i('check')}</button><button class="btn ico" onclick="fichaTarea(${id})" title="Cancelar" aria-label="Cancelar">${_i('x')}</button>`;
   const i = document.getElementById('f-tit'); i.focus(); i.select();
 }
-async function guardarTitulo(id){ const v = document.getElementById('f-tit').value.trim(); if (!v) return toast('El título no puede quedar vacío', 'error'); await guardarCampo(id, 'titulo', v); }
+async function guardarTitulo(id){
+  const v = document.getElementById('f-tit').value.trim(), c = document.getElementById('f-tcorto').value.trim() || null;
+  if (!v) return toast('El título no puede quedar vacío', 'error');
+  const { error } = await sb.from('obra_tareas').update({ titulo: v, titulo_corto: c }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await cargar(); fichaTarea(id); renderTablero();
+}
 function editarGrupo(id){
   const t = tareaDe(id), G = gruposDe(t), box = document.getElementById('f-grupo-ed');
   box.innerHTML = `<div class="grupos-ed">
@@ -1069,7 +1077,7 @@ function editarDesc(id){
   document.getElementById('f-desc-t').focus();
 }
 async function guardarTarea(id){
-  const d = { titulo: document.getElementById('m-titulo').value.trim(), descripcion: document.getElementById('m-desc').value.trim() || null, rubro: document.getElementById('m-rubro').value || null, grupo: document.getElementById('m-grupo').value.trim() || null,
+  const d = { titulo: document.getElementById('m-titulo').value.trim(), titulo_corto: (document.getElementById('m-tcorto') || {}).value?.trim() || null, descripcion: document.getElementById('m-desc').value.trim() || null, rubro: document.getElementById('m-rubro').value || null, grupo: document.getElementById('m-grupo').value.trim() || null,
     responsable: document.getElementById('m-resp').value, prioridad: document.getElementById('m-prio').value, fecha_limite: document.getElementById('m-fecha').value || null, estado: document.getElementById('m-estado').value };
   if (!d.titulo) return toast('Falta el título', 'error');
   let r;
