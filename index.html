@@ -462,6 +462,8 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tcard:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); } .tcard.p-alta { border-left-color: var(--red); } .tcard.p-baja { opacity: .85; }
 .tcard .tt { font-weight: 600; font-size: 14px; margin-bottom: 6px; } .tcard .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .tcard .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.etp { height: 5px; background: #e2e8f0; border-radius: 3px; margin: 6px 0 2px; overflow: hidden; } .etp i { display: block; height: 100%; background: var(--green); }
+.etapa { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--border); font-size: 14px; flex-wrap: wrap; } .etapa label { display: flex; align-items: center; gap: 6px; cursor: pointer; } .etapa.hecha .tt { text-decoration: line-through; color: var(--muted); } .etapa .spacer { flex: 1; }
 .m-head { display: flex; align-items: center; gap: 8px; } .m-head .spacer { flex: 1; }
 .form textarea { resize: vertical; }
 .nov-in { display: flex; gap: 6px; align-items: center; } .nov-in textarea, .nov-in input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 14px; }
@@ -695,7 +697,7 @@ async function doLogout() { await sb.auth.signOut(); location.reload(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
 
 
-let OBRA = null, ROL = null, YO = { email: '', nombre: '' }, TAREAS = [], ARCHIVOS = [], PARTS = [], NOVS = [];
+let OBRA = null, ROL = null, YO = { email: '', nombre: '' }, TAREAS = [], ARCHIVOS = [], PARTS = [], NOVS = [], ETAPAS = [];
 const esAdmin = () => ROL === 'admin';
 const RUBROS = ['Albañilería','Electricidad','Plomería','Pintura','Vidriería','Carpintería','Herrería','Mobiliario','Iluminación','Aire acondicionado','Cartelería','Trámites / habilitación','Limpieza','Otro'];
 const EST = { pendiente: 'Pendiente', en_curso: 'En curso', terminada: 'Terminada', cancelada: 'Cancelada' };
@@ -735,12 +737,13 @@ async function init(){
   renderResumen();
 }
 async function cargar(){
-  const [t, a, p, n] = await Promise.all([
+  const [t, a, p, n, et] = await Promise.all([
     sb.from('obra_tareas').select('*').eq('obra_id', OBRA.id).order('orden').order('fecha_limite', { nullsFirst: false }).order('id'),
     sb.from('obra_archivos').select('*').eq('obra_id', OBRA.id).order('fecha', { ascending: false, nullsFirst: false }).order('id', { ascending: false }),
     sb.from('obra_participantes').select('*').eq('obra_id', OBRA.id).order('id'),
-    sb.from('obra_novedades').select('*').eq('obra_id', OBRA.id).order('id', { ascending: false }).limit(300)]);
-  TAREAS = t.data || []; ARCHIVOS = a.data || []; PARTS = p.data || []; NOVS = n.data || [];
+    sb.from('obra_novedades').select('*').eq('obra_id', OBRA.id).order('id', { ascending: false }).limit(300),
+    sb.from('obra_etapas').select('*').eq('obra_id', OBRA.id).order('orden').order('id')]);
+  TAREAS = t.data || []; ARCHIVOS = a.data || []; PARTS = p.data || []; NOVS = n.data || []; ETAPAS = et.data || [];
   const opts = '<option value="">(sin tarea)</option>' + TAREAS.filter(x => x.estado !== 'cancelada').map(x => `<option value="${x.id}">${esc(x.titulo)}</option>`).join('');
   for (const id of ['p-tarea','f-tarea','o-tarea','pg-tarea']) document.getElementById(id).innerHTML = opts;
   document.getElementById('pg-ref').innerHTML = '<option value="">(ninguna)</option>' + ARCHIVOS.filter(a => a.tipo === 'factura' && a.estado === 'pendiente').map(a => `<option value="${a.id}">${esc(a.nombre)}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''}</option>`).join('');
@@ -768,7 +771,9 @@ function renderResumen(){
     <div class="kpi ${venc.length ? 'red' : ''}"><div class="v">${venc.length}</div><div class="l">Vencidas</div></div>
     <div class="kpi"><div class="v">${pct}%</div><div class="l">Avance<div class="bar"><i style="width:${pct}%"></i></div></div></div>`;
   const fila = t => `<div class="rowt" onclick="abrirTarea(${t.id})"><span class="chip ${diasA(t.fecha_limite) < 0 ? 'red' : 'amber'}">${diasA(t.fecha_limite) < 0 ? 'venció ' + fmtF(t.fecha_limite) : diasA(t.fecha_limite) === 0 ? 'hoy' : 'en ' + diasA(t.fecha_limite) + ' d'}</span> ${esc(t.titulo)} <span class="mini">· ${RESP[t.responsable]}</span></div>`;
-  document.getElementById('r-venc').innerHTML = (venc.length + prox.length) ? venc.map(fila).join('') + prox.map(fila).join('') : '<div class="mini">Nada vencido ni por vencer esta semana.</div>';
+  const etp = ETAPAS.filter(e => !e.hecha && e.fecha_limite && diasA(e.fecha_limite) <= 7 && tareaDe(e.tarea_id) && tareaDe(e.tarea_id).estado !== 'terminada' && tareaDe(e.tarea_id).estado !== 'cancelada');
+  const filaE = e => { const d = diasA(e.fecha_limite); return `<div class="rowt" onclick="abrirTarea(${e.tarea_id})"><span class="chip ${d < 0 ? 'red' : 'amber'}">${d < 0 ? 'venció ' + fmtF(e.fecha_limite) : d === 0 ? 'hoy' : 'en ' + d + ' d'}</span> ${esc(tareaDe(e.tarea_id).titulo)} → ${esc(e.titulo)}</div>`; };
+  document.getElementById('r-venc').innerHTML = (venc.length + prox.length + etp.length) ? venc.map(fila).join('') + prox.map(fila).join('') + etp.map(filaE).join('') : '<div class="mini">Nada vencido ni por vencer esta semana.</div>';
   document.getElementById('r-nov').innerHTML = NOVS.slice(0, 12).map(x => { const t = x.tarea_id ? tareaDe(x.tarea_id) : null;
     return `<div class="rowt" ${t ? `onclick="abrirTarea(${t.id})"` : ''}><span class="mini">${fmtTs(x.creado_at)} · <b>${esc(quien(x.autor_email))}</b>${t ? ' · ' + esc(t.titulo) : ''}</span><br>${esc(x.texto)}</div>`; }).join('') || '<div class="mini">Todavía no hay novedades.</div>';
   const sum = (tipo, est) => ARCHIVOS.filter(a => a.tipo === tipo && (!est || a.estado === est)).reduce((s, a) => s + Number(a.importe || 0), 0);
@@ -795,13 +800,15 @@ function card(t){
   const d = diasA(t.fecha_limite), abierta = t.estado === 'pendiente' || t.estado === 'en_curso';
   const fecha = t.fecha_limite ? `<span class="chip ${abierta && d < 0 ? 'red' : abierta && d <= 3 ? 'amber' : 'gray'}">${abierta && d < 0 ? '⚠ ' : ''}${fmtF(t.fecha_limite)}</span>` : '';
   const nn = NOVS.filter(n => n.tarea_id === t.id).length, na = ARCHIVOS.filter(a => a.tarea_id === t.id).length;
+  const E = ETAPAS.filter(e => e.tarea_id === t.id), eh = E.filter(e => e.hecha).length;
+  const prog = E.length ? `<div class="etp" title="${eh} de ${E.length} etapas"><i style="width:${Math.round(eh * 100 / E.length)}%"></i></div><span class="mini">${eh}/${E.length} etapas</span>` : '';
   const acc = t.estado === 'pendiente' ? `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'en_curso')" title="Empezar: la pasa a En curso" aria-label="Empezar">${_i('play')}</button>`
             : t.estado === 'en_curso' ? `<button class="btn primary ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'terminada')" title="Terminada" aria-label="Terminada">${_i('check')}</button>`
             : `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
   return `<div class="tcard p-${t.prioridad}" onclick="abrirTarea(${t.id})">
     <div class="tt">${esc(t.titulo)}</div>
     <div class="meta">${fecha}<span class="chip gray">${RESP[t.responsable]}</span>${t.rubro ? `<span class="mini">${esc(t.rubro)}</span>` : ''}${t.prioridad === 'alta' ? '<span class="chip red">alta</span>' : ''}</div>
-    <div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
+    ${prog}<div class="foot"><span class="mini">${nn ? '💬 ' + nn + ' ' : ''}${na ? '📎 ' + na : ''}</span><span class="acc">${acc}</span></div></div>`;
 }
 async function cambiarEstado(id, estado){
   const { error } = await sb.from('obra_tareas').update({ estado }).eq('id', id);
@@ -831,6 +838,11 @@ function abrirTarea(id){
     <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><button class="btn primary ico grande" onclick="guardarTarea(${id || 0})" title="Guardar" aria-label="Guardar">${_i('save')}</button><span class="mini">Guardar</span>
       ${id ? `<span class="mini" style="margin-left:auto">Creada por ${esc(quien(t.creado_por))} el ${fmtTs(t.creado_at)}${t.fecha_fin ? ' · terminada el ' + fmtF(t.fecha_fin) : ''}</span>` : ''}</div>
     ${id ? `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+    <h4 style="margin:0 0 6px">Etapas</h4>
+    <div class="mini" style="margin-bottom:6px">Los pasos de esta tarea. Se tildan a medida que se hacen; la fecha y el responsable son opcionales.</div>
+    <div id="m-etapas">${etapasHtml(id)}</div>
+    <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa (por ej.: pedir 3 presupuestos)" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><input id="m-et-fecha" type="date" style="flex:0 0 150px"><select id="m-et-resp" style="flex:0 0 130px"><option value="">(resp. de la tarea)</option>${Object.entries(RESP).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
     <h4 style="margin:0 0 6px">Novedades y comentarios</h4>
     <div class="nov-in"><textarea id="m-nov" rows="2" placeholder="Contá cómo va, qué falta, qué se compró…"></textarea><button class="btn primary ico grande" onclick="agregarNovedad(${id})" title="Enviar comentario" aria-label="Enviar">${_i('send')}</button></div>
     <div class="nov-in" style="margin-top:6px"><input type="file" id="m-file" multiple style="flex:1"><select id="m-ftipo"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select><button class="btn ico" onclick="subirDesdeTarea(${id})" title="Adjuntar a esta tarea" aria-label="Adjuntar">${_i('clip')}</button></div>
@@ -861,6 +873,34 @@ async function agregarNovedad(id){
   await cargar(); abrirTarea(id); renderTablero();
 }
 async function borrarNovedad(nid, tid){ await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); abrirTarea(tid); }
+
+// ── Etapas ──
+function etapasHtml(tid){
+  const E = ETAPAS.filter(e => e.tarea_id === tid); if (!E.length) return '<div class="mini">Sin etapas todavía.</div>';
+  return E.map(e => { const d = diasA(e.fecha_limite);
+    return `<div class="etapa ${e.hecha ? 'hecha' : ''}"><label><input type="checkbox" ${e.hecha ? 'checked' : ''} onchange="tildarEtapa(${e.id}, this.checked)"> <span class="tt">${esc(e.titulo)}</span></label>
+      ${e.fecha_limite ? `<span class="chip ${!e.hecha && d < 0 ? 'red' : !e.hecha && d <= 3 ? 'amber' : 'gray'}">${fmtF(e.fecha_limite)}</span>` : ''}${e.responsable ? `<span class="chip gray">${RESP[e.responsable]}</span>` : ''}
+      ${e.hecha ? `<span class="mini">✓ ${esc(quien(e.hecha_por))} ${fmtTs(e.hecha_at)}</span>` : ''}
+      <span class="spacer"></span><button class="btn ico chico" onclick="borrarEtapa(${e.id})" title="Sacar la etapa" aria-label="Sacar">${_i('x')}</button></div>`; }).join('');
+}
+async function agregarEtapa(tid){
+  const titulo = document.getElementById('m-et-titulo').value.trim(); if (!titulo) return;
+  const orden = ETAPAS.filter(e => e.tarea_id === tid).length + 1;
+  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: document.getElementById('m-et-resp').value || null, creado_por: YO.email });
+  if (error) return toast(error.message, 'error');
+  await cargar(); document.getElementById('m-etapas').innerHTML = etapasHtml(tid); document.getElementById('m-et-titulo').value = ''; document.getElementById('m-et-titulo').focus(); renderTablero();
+}
+async function tildarEtapa(id, hecha){
+  const e = ETAPAS.find(x => x.id === id); const { error } = await sb.from('obra_etapas').update({ hecha }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, tipo: 'avance', texto: (hecha ? '✓ Etapa hecha: ' : '↶ Etapa reabierta: ') + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+  await cargar(); abrirTarea(e.tarea_id); renderTablero();
+}
+async function borrarEtapa(id){
+  const e = ETAPAS.find(x => x.id === id); if (!confirm('¿Sacar la etapa "' + e.titulo + '"?')) return;
+  const { error } = await sb.from('obra_etapas').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  await cargar(); document.getElementById('m-etapas').innerHTML = etapasHtml(e.tarea_id); renderTablero();
+}
 
 // ── Archivos (bucket privado `obra`) ──
 const limpiarNombre = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '_').slice(0, 80);
@@ -984,6 +1024,6 @@ async function probarRecordatorio(){
 }
 
 </script>
-<script src="manual.js?v=2"></script>
+<script src="manual.js?v=3"></script>
 </body>
 </html>
