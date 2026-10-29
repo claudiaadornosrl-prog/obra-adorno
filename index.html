@@ -531,6 +531,35 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 /* v40: píldoras de tipo tocables en Archivos */
 .pils.tipos { overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; } .pils.tipos::-webkit-scrollbar { display: none; }
 .pils.tipos .pil { flex: none; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 13px; }
+/* v44 (JP): login pixel "nivel de obra" */
+@font-face { font-family: 'Pixel8'; src: url('fonts/PressStart2P.ttf') format('truetype'); font-display: swap; }
+#login.lp { position: relative; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: center; padding: 56px 18px 0; min-height: 100vh; min-height: 100dvh; background: linear-gradient(#60a5fa 0%, #93c5fd 45%, #bfdbfe 70%, #86efac 100%); }
+.lp .lp-nube { position: absolute; width: 70px; height: 26px; background: #fff; border-radius: 20px; animation: lp-nube 30s linear infinite; } .lp .lp-nube::before { content: ''; position: absolute; left: 18px; top: -14px; width: 34px; height: 34px; border-radius: 50%; background: #fff; }
+.lp .lp-nube.n1 { top: 60px; animation-delay: -6s; } .lp .lp-nube.n2 { top: 130px; animation-delay: -19s; transform: scale(.7); }
+@keyframes lp-nube { from { transform: translateX(-120px); } to { transform: translateX(110vw); } }
+.lp .lp-loma { position: absolute; bottom: 24px; border-radius: 50% 50% 0 0; background: #4ade80; box-shadow: inset 0 -20px 0 #22c55e; } .lp .lp-loma.a { left: -60px; width: 260px; height: 120px; } .lp .lp-loma.b { right: -80px; width: 220px; height: 80px; background: #86efac; }
+.lp .lp-arbusto { position: absolute; bottom: 26px; width: 90px; height: 36px; background: #16a34a; border-radius: 40px 40px 0 0; } .lp .lp-arbusto::before { content: ''; position: absolute; left: 22px; top: -16px; width: 46px; height: 46px; border-radius: 50%; background: #16a34a; } .lp .lp-arbusto.a { left: 8px; } .lp .lp-arbusto.b { right: 14px; transform: scale(.7); }
+.lp .lp-canio { position: absolute; right: 10px; bottom: 30px; width: 70px; height: 90px; } .lp .lp-canio::before { content: ''; position: absolute; left: 6px; right: 6px; bottom: 0; top: 18px; background: linear-gradient(90deg, #166534, #22c55e 40%, #15803d); } .lp .lp-canio::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 22px; border-radius: 4px; background: linear-gradient(90deg, #166534, #4ade80 40%, #15803d); box-shadow: 0 3px 0 #14532d; }
+.lp .lp-piso { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: repeating-linear-gradient(90deg, #a16207 0 34px, #854d0e 34px 37px); border-top: 5px solid #713f12; } .lp .lp-piso::after { content: ''; position: absolute; inset: 11px 0 auto; height: 3px; background: #854d0e; }
+.lp .lp-caja { position: relative; z-index: 3; width: 100%; max-width: 250px; padding: 12px 12px 10px; display: grid; gap: 6px; background: #f59e0b; box-shadow: 0 0 0 4px #92400e, 0 0 0 8px #fbbf24, 0 0 0 12px #92400e, inset -6px -6px 0 #d97706, inset 6px 6px 0 #fde68a, 14px 18px 0 rgba(0,0,0,.18); }
+.lp .lp-caja.golpe { animation: lp-golpe .45s steps(4) 1; } @keyframes lp-golpe { 0% { transform: translateY(0); } 35% { transform: translateY(-22px) scale(1.03); } 70% { transform: translateY(4px); } 100% { transform: translateY(0); } }
+.lp .lp-caja .rem { position: absolute; width: 6px; height: 6px; background: #78350f; left: 4px; top: 4px; } .lp .lp-caja .r2 { left: auto; right: 4px; } .lp .lp-caja .r3 { top: auto; bottom: 4px; } .lp .lp-caja .r4 { top: auto; bottom: 4px; left: auto; right: 4px; }
+.lp .lp-caja .q { position: absolute; right: 10px; top: 6px; font-family: 'Pixel8', monospace; font-size: 54px; line-height: 1; color: rgba(255,255,255,.35); text-shadow: 3px 3px 0 rgba(146,64,14,.3); pointer-events: none; }
+.lp .lp-caja .tit { position: relative; display: flex; align-items: center; justify-content: space-between; font-family: 'Pixel8', monospace; font-size: 13px; color: #78350f; text-shadow: 2px 2px 0 #fde68a; padding: 2px 2px 4px; } .lp .lp-caja .tit span { font-size: 7px; letter-spacing: -.02em; }
+.lp .lp-caja input { position: relative; width: 100%; box-sizing: border-box; border: 0; border-radius: 999px; box-shadow: 0 0 0 3px #92400e, inset 0 3px 0 #fde68a; padding: 9px 14px; background: #fbbf24; color: #451a03; font-size: 16px; font-family: inherit; outline: none; }
+.lp .lp-caja input::placeholder { color: #92400e; opacity: .8; } .lp .lp-caja input:focus { background: #fcd34d; }
+.lp .lp-caja #btn-login { position: relative; width: 100%; margin-top: 4px; padding: 11px 8px 9px; font-family: 'Pixel8', monospace; font-size: 11px; color: #fff; background: #dc2626; border: 0; border-radius: 0; box-shadow: 0 0 0 3px #7f1d1d, inset -4px -4px 0 #991b1b, inset 4px 4px 0 #f87171; cursor: pointer; }
+.lp .lp-caja #btn-login:disabled { opacity: .6; } .lp .lp-caja #btn-login:active { box-shadow: 0 0 0 3px #7f1d1d, inset 4px 4px 0 #991b1b; }
+.lp #login-error { position: relative; color: #7f1d1d; font-size: 12px; font-weight: 700; min-height: 0; margin-top: 2px; text-align: center; }
+.lp .lp-moneda { position: absolute; left: 50%; top: 10px; width: 26px; height: 26px; margin-left: -13px; background: #fbbf24; box-shadow: 0 0 0 3px #92400e, inset -5px -5px 0 #d97706; display: flex; align-items: center; justify-content: center; font-family: 'Pixel8', monospace; font-size: 10px; color: #92400e; opacity: 0; z-index: 2; }
+.lp .lp-moneda.salta { animation: lp-moneda 1s steps(6) 1 forwards; } @keyframes lp-moneda { 0% { opacity: 1; transform: translateY(0) rotateY(0); } 60% { opacity: 1; transform: translateY(-110px) rotateY(540deg); } 100% { opacity: 0; transform: translateY(-80px) rotateY(720deg); } }
+.lp .lp-sprite { position: absolute; left: 50%; bottom: 34px; width: 0; height: 0; z-index: 2; }
+.lp .lp-sprite.festejo { animation: lp-salto 1.5s cubic-bezier(.35,.9,.45,1) 1 forwards; }
+@keyframes lp-salto { 0% { transform: translateY(0); } 12% { transform: translateY(10px) scaleY(.92); } 48% { transform: translateY(var(--alto, -300px)); } 82% { transform: translateY(0) scaleY(.95); } 100% { transform: translateY(0); } }
+.lp .lp-cuerpo { position: absolute; bottom: 0; width: 0; height: 0; animation: lp-bob 1.2s steps(2) infinite; } @keyframes lp-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.lp .festejo .lp-cuerpo { animation: lp-giro 1.5s steps(8) 1; } @keyframes lp-giro { 0%,100% { transform: scaleX(1); } 25% { transform: scaleX(.2); } 50% { transform: scaleX(-1); } 75% { transform: scaleX(.2); } }
+.lp .lp-px { position: absolute; left: 0; top: 0; }
+@media (prefers-reduced-motion: reduce) { .lp * { animation: none !important; } }
 /* v43: pestaña Resumen */
 
 .r-sec { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); position: relative; }
@@ -723,17 +752,20 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 </style>
 </head>
 <body>
-<div id="login">
-  <div class="login-card">
-    <h1>🏗 Obra</h1>
-    <div class="sub">Seguimiento de la obra del local de Martínez, con el arquitecto<br>Claudia Adorno SRL</div>
-    <label>Email</label>
-    <input type="email" id="email" placeholder="tu_email@ejemplo.com" autocomplete="username">
-    <label>Contraseña</label>
-    <input type="password" id="pass" placeholder="••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+<div id="login" class="lp">
+  <div class="lp-nube n1"></div><div class="lp-nube n2"></div>
+  <div class="lp-loma a"></div><div class="lp-loma b"></div><div class="lp-arbusto a"></div><div class="lp-arbusto b"></div><div class="lp-canio"></div>
+  <div class="lp-caja" id="lp-caja">
+    <i class="rem"></i><i class="rem r2"></i><i class="rem r3"></i><i class="rem r4"></i><div class="q">?</div>
+    <div class="tit">Obra<span>Claudia Adorno SRL</span></div>
+    <input type="email" id="email" placeholder="Email" autocomplete="username">
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
     <button onclick="doLogin()" id="btn-login">Entrar</button>
     <div id="login-error"></div>
   </div>
+  <div class="lp-moneda" id="lp-moneda">A</div>
+  <div class="lp-sprite" id="lp-sprite"></div>
+  <div class="lp-piso"></div>
 </div>
 <div id="app">
   <div id="franja-prueba" class="prueba" style="display:none">🧪 MODO PRUEBA · solo se ven los comprobantes de test</div>
@@ -945,7 +977,7 @@ async function doLogin() {
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    await entrar(data.user);
+    window._festejar = true; await entrar(data.user);
   } catch (e) { errEl.textContent = 'Error: ' + (e.message || 'desconocido'); }
   finally { document.getElementById('btn-login').disabled = false; }
 }
@@ -954,6 +986,7 @@ async function entrar(user) {
   if (!ok) { /* sin signOut: sesión compartida (SSO) */ document.getElementById('login-error').textContent = 'Tu usuario no tiene acceso a este módulo. Si sos el arquitecto, pedile a JP que te agregue al equipo.'; return; }
   session = { email: user.email, user };
   document.getElementById('user-info').textContent = user.email;
+  if (window._festejar){ window._festejar = false; try { await festejoLogin(); } catch (e) {} }
   document.getElementById('login').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('franja-prueba').style.display = MODO_PRUEBA ? 'block' : 'none';
@@ -967,6 +1000,30 @@ async function doLogout() { await sb.auth.signOut(); location.reload(); }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
 
 
+// ── v44 (JP): login "nivel de obra" · sprite pixel propio + cajita; al entrar salta, golpea la caja y grita ──
+const LP_SPRITE = ['.....RRRRRRR....','....RRRRRRRRRR..','....KKKSSSKS....','...KSKSSSSKSSS..','...KSKKSSSSKSSS.','...KKSSSSSKKKK..','.....SSSSSSSS...','....RRRBRRBRR...','...RRRRBRRBRRRR.','..RRRRBBBBBBRRRR','..SSRRBYBBYBRRSS','..SSSBBBBBBBBSSS','..SS.BBBBBBBB.SS','.....BBB..BBB...','....NNNN..NNNN..','...NNNNN..NNNNN.'];
+const LP_PAL = { R: '#dc2626', B: '#1d4ed8', S: '#f5c89a', K: '#3f2a1a', Y: '#facc15', N: '#78350f' };
+function lpSprite(px){ const sh = []; LP_SPRITE.forEach((row, y) => [...row].forEach((c, x) => { if (LP_PAL[c]) sh.push(`${x * px}px ${(y - LP_SPRITE.length) * px}px 0 0 ${LP_PAL[c]}`); }));
+  return `<div class="lp-cuerpo" style="left:${-8 * px}px;transform-origin:${8 * px}px -${LP_SPRITE.length * px / 2}px"><div class="lp-px" style="width:${px}px;height:${px}px;box-shadow:${sh.join(',')}"></div></div>`; }
+(function(){ const el = document.getElementById('lp-sprite'); if (!el) return; const px = window.innerHeight < 640 ? 9 : window.innerHeight < 760 ? 11 : 13; el.innerHTML = lpSprite(px); el.dataset.px = px; })();
+let _lpAC = null;
+function lpJingle(){ try {
+  _lpAC = _lpAC || new (window.AudioContext || window.webkitAudioContext)(); if (_lpAC.state === 'suspended') _lpAC.resume();
+  const AC = _lpAC, t0 = AC.currentTime, notas = [523.25, 659.25, 783.99, 1046.5, 1318.5], g = AC.createGain(); g.gain.value = .12; g.connect(AC.destination);
+  notas.forEach((f, i) => { const o = AC.createOscillator(); o.type = 'square'; o.frequency.value = f; const e = AC.createGain(); e.gain.setValueAtTime(0, t0 + i * .09); e.gain.linearRampToValueAtTime(1, t0 + i * .09 + .01); e.gain.exponentialRampToValueAtTime(.001, t0 + i * .09 + .16); o.connect(e); e.connect(g); o.start(t0 + i * .09); o.stop(t0 + i * .09 + .2); });
+  const sw = AC.createOscillator(); sw.type = 'triangle'; sw.frequency.setValueAtTime(300, t0); sw.frequency.exponentialRampToValueAtTime(900, t0 + .25); const se = AC.createGain(); se.gain.setValueAtTime(.08, t0); se.gain.exponentialRampToValueAtTime(.001, t0 + .3); sw.connect(se); se.connect(g); sw.start(t0); sw.stop(t0 + .3);
+} catch (e) {} }
+function lpVoz(){ try { if (!('speechSynthesis' in window)) return; const u = new SpeechSynthesisUtterance('¡Yahúúú!'); u.lang = 'es-AR'; u.pitch = 1.8; u.rate = 1.15;
+  const voces = speechSynthesis.getVoices(); const v = voces.find(x => /^es/i.test(x.lang) && /female|mujer|Mónica|Paulina|Helena|Google/i.test(x.name)) || voces.find(x => /^es/i.test(x.lang)); if (v) u.voice = v;
+  speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {} }
+function festejoLogin(){ return new Promise(res => {
+  const sp = document.getElementById('lp-sprite'), caja = document.getElementById('lp-caja'), m = document.getElementById('lp-moneda');
+  if (!sp || !caja || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return res();
+  const cabeza = sp.getBoundingClientRect().top - LP_SPRITE.length * Number(sp.dataset.px || 13); const alto = cabeza - caja.getBoundingClientRect().bottom; sp.style.setProperty('--alto', (-Math.max(40, alto - 4)) + 'px');
+  sp.classList.add('festejo');
+  setTimeout(() => { caja.classList.add('golpe'); m.classList.add('salta'); lpJingle(); lpVoz(); }, 620);
+  setTimeout(res, 1550);
+}); }
 let OBRA = null, ROL = null, YO = { email: '', nombre: '' }, TAREAS = [], ARCHIVOS = [], PARTS = [], NOVS = [], ETAPAS = [];
 const esAdmin = () => ROL === 'admin';
 const RUBROS = ['Albañilería','Electricidad','Plomería','Pintura','Vidriería','Carpintería','Herrería','Mobiliario','Iluminación','Aire acondicionado','Cartelería','Trámites / habilitación','Limpieza','Otro'];
