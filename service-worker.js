@@ -1,5 +1,5 @@
 // Service Worker · network-first para HTML, cache-first para assets
-const CACHE_VERSION = 'obra-v42-proveedor';
+const CACHE_VERSION = 'obra-v43-resumen';
 const CACHE_ASSETS = ['fonts/URWGothic-Book.ttf', './', './index.html', './manual.js', './manifest.webmanifest'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_VERSION).then(c => c.addAll(CACHE_ASSETS)).catch(err => console.warn('[SW]', err)));
@@ -14,7 +14,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.hostname.includes('supabase.co') || url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdnjs.cloudflare.com')) return;
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
-    e.respondWith(fetch(req).then(r => { if (r && r.ok) { const c = r.clone(); caches.open(CACHE_VERSION).then(x => x.put('./index.html', c)); } return r; })
+    e.respondWith(fetch(req).then(r => { if (r && r.ok) { const c = r.clone(); if (/\/(index\.html)?$/.test(url.pathname)) caches.open(CACHE_VERSION).then(x => x.put('./index.html', c)); } return r; })
       .catch(() => caches.match('./index.html')));
     return;
   }

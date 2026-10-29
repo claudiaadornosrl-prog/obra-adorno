@@ -531,6 +531,57 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 /* v40: píldoras de tipo tocables en Archivos */
 .pils.tipos { overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; } .pils.tipos::-webkit-scrollbar { display: none; }
 .pils.tipos .pil { flex: none; border: 0; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 13px; }
+/* v43: pestaña Resumen */
+
+.r-sec { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); position: relative; }
+.r-sec h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--dark, #92400e); display: flex; align-items: center; gap: 6px; }
+.r-sec.oculto { opacity: .45; } .r-sec.oculto h2::after { content: 'oculto para el cliente'; font-size: 10px; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 4px; }
+.r-avance .r-big { display: flex; gap: 14px; align-items: center; }
+.r-pct { font-size: 46px; font-weight: 700; line-height: 1; color: var(--primary, #b45309); } .r-pct small { font-size: 20px; margin-left: 2px; }
+.r-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .r-txt b { font-size: 15px; } .r-txt span { font-size: 13px; color: var(--muted); }
+.r-bar { height: 8px; background: #fde68a; border-radius: 4px; overflow: hidden; margin-top: 6px; } .r-bar i { display: block; height: 100%; background: var(--primary, #b45309); border-radius: 4px; }
+.r-kp { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 13px; color: var(--muted); } .r-kp b { color: var(--text, #1e293b); font-size: 15px; margin-right: 2px; } .r-kp .rojo b { color: var(--red, #b91c1c); }
+.r-nota p { margin: 0; font-size: 15px; white-space: normal; }
+.r-it { position: relative; } .r-it.oculto { opacity: .4; } .r-it.oculto > *:not(.r-ojo) { text-decoration: line-through; }
+.r-tarea { padding: 9px 0; border-bottom: 1px solid var(--border, #f3e8c8); } .r-tarea:last-of-type { border-bottom: 0; }
+.r-tt { display: flex; align-items: center; gap: 8px; } .r-tt b { flex: 1; font-size: 15px; }
+.r-chip { font-size: 12px; font-weight: 700; background: #fef3c7; color: #92400e; border-radius: 999px; padding: 2px 9px; white-space: nowrap; } .r-chip.ok { background: #dcfce7; color: #15803d; } .r-chip i { font-style: normal; color: #15803d; }
+.r-tarea ul { margin: 6px 0 2px; padding-left: 4px; list-style: none; font-size: 14px; } .r-tarea li { padding: 2px 0; } .r-tarea li small { color: var(--muted); }
+.r-mini { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.r-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.r-foto { display: block; text-decoration: none; color: inherit; } .r-foto img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; background: #f1f5f9; display: block; }
+.r-foto span { display: block; font-size: 12px; margin-top: 3px; color: var(--muted); } .r-foto small { display: block; }
+.r-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border, #f3e8c8); } .r-it:last-of-type .r-row { border-bottom: 0; }
+.r-row span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .r-row b { font-size: 14px; } .r-row small { font-size: 12px; color: var(--muted); }
+.r-row em { font-style: normal; font-weight: 700; white-space: nowrap; font-size: 14px; } .r-row em.fecha { color: var(--primary, #b45309); } .r-row em.rojo { color: var(--red, #b91c1c); }
+.r-tot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; background: #fffbeb; border-radius: 10px; padding: 10px; }
+.r-tot div { display: flex; flex-direction: column; min-width: 0; } .r-tot small { font-size: 11px; color: var(--muted); } .r-tot b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 420px) { .r-tot { grid-template-columns: 1fr; } }
+.r-vacio { font-size: 13.5px; color: var(--muted); font-style: italic; }
+.r-ojo { position: absolute; right: -6px; top: 2px; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+.r-ojo svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .r-ojo.off { color: var(--red, #b91c1c); }
+.r-sec > h2 .r-ojo { position: static; margin-left: auto; }
+
+#content-informe .pils.tipos { align-items: center; }
+.card.prog { border: 0; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 12px 14px; margin: 6px 0 12px; }
+.card.prog.on { background: #fffbeb; }
+.prog-h { display: flex; gap: 10px; align-items: flex-start; } .prog-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .prog-t b { font-size: 14px; }
+.sw { position: relative; display: inline-block; width: 42px; height: 24px; flex: none; margin-top: 2px; } .sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+.sw i { position: absolute; inset: 0; background: #cbd5e1; border-radius: 999px; transition: .2s; } .sw i::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.sw input:checked + i { background: var(--primary); } .sw input:checked + i::before { transform: translateX(18px); }
+.prog-pils { margin-top: 10px; flex-wrap: wrap; } .prog-pils .pil { background: #f1f5f9; box-shadow: none; } .card.prog.on .prog-pils .pil { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.prog-pils .pil.busca { flex: 1 1 120px; } .prog-pils .pil.busca input { font-size: 13px; }
+.arow.t-resumen .aico { background: #fef3c7; color: #92400e; } .arow.t-resumen.enviado .aico { background: #dcfce7; color: #15803d; }
+.ficha.resu .cab .tit { background: rgba(255,255,255,.16); border: 0; color: #fff; border-radius: 9px; padding: 7px 10px; font: inherit; font-size: 16px; font-weight: 700; width: 100%; box-sizing: border-box; }
+.ficha.resu .cab .tit::placeholder { color: rgba(255,255,255,.75); }
+.ficha.resu .datos4 .dato { cursor: default; }
+.r-nota-in { width: 100%; box-sizing: border-box; border: 1px solid #f3e8c8; border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; background: #fff; resize: vertical; margin-top: 4px; }
+.r-prev { --dark: #92400e; --border: #f3e8c8; } .r-prev .r-sec { padding: 12px 14px; } .r-prev .r-it { padding-right: 26px; } .r-prev .r-sec > h2 { padding-right: 0; }
+.r-acc { display: flex; align-items: center; gap: 4px; margin-top: 10px; flex-wrap: wrap; }
+.r-acc .r-url { flex: 1 1 90px; min-width: 0; border: 1px solid #f3e8c8; border-radius: 9px; padding: 7px 9px; font: inherit; font-size: 12px; color: var(--muted); background: #fff; }
+.r-acc .btn.compartir { flex: 1 1 100%; justify-content: center; gap: 8px; border-radius: 12px; padding: 11px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; cursor: pointer; }
+.r-acc .btn.compartir .ico { width: 18px; height: 18px; }
+@media (min-width: 560px) { .r-acc .btn.compartir { flex: 0 0 auto; padding: 9px 18px; } }
 /* v31: Archivos unificado */
 .a-tot { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 6px 4px 10px; } .a-tot b { color: var(--text); }
 .a-lista { display: flex; flex-direction: column; gap: 6px; padding-bottom: 80px; }
@@ -694,6 +745,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       <button id="tab-tablero" class="active" onclick="switchTab('tablero')" title="Tareas"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg><span class="lb">Tareas</span><span class="count" id="cnt-tablero"></span></button>
       <button id="tab-resumen" onclick="switchTab('resumen')" title="Hoy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="lb">Hoy</span><span class="count" id="cnt-resumen"></span></button>
       <button id="tab-archivos" onclick="switchTab('archivos')" title="Archivos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="lb">Archivos</span><span class="count" id="cnt-archivos"></span></button>
+      <button id="tab-informe" onclick="switchTab('informe')" title="Resumen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg><span class="lb">Resumen</span><span class="count" id="cnt-informe"></span></button>
       <button id="tab-equipo" onclick="switchTab('equipo')" title="Equipo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lb">Equipo</span><span class="count" id="cnt-equipo"></span></button>
       <button id="tab-notif" class="menu-notif" onclick="activarNotif()" title="Avisos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="lb">Avisos</span><span class="count" id="cnt-notif"></span></button>
     </nav>
@@ -736,6 +788,17 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
       </div>
       <div id="a-lista" class="a-lista"></div>
       <button class="fab" onclick="subirGeneral()" title="Subir archivo o registrar pago" aria-label="Subir"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    </section>
+    <section id="content-informe" class="tab-content">
+      <div class="pils tipos" id="i-per">
+        <button class="pil on" data-p="semanal" onclick="iPer('semanal')">Semanal</button>
+        <button class="pil" data-p="quincenal" onclick="iPer('quincenal')">Quincenal</button>
+        <button class="pil" data-p="mensual" onclick="iPer('mensual')">Mensual</button>
+      </div>
+      <div class="stat pils-stat" id="i-rango"></div>
+      <div id="i-prog"></div>
+      <div id="i-lista" class="a-lista"></div>
+      <button class="fab" onclick="generarResumen()" title="Generar resumen del período" aria-label="Generar resumen"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </section>
     <section id="content-presupuestos" class="tab-content">
       <div class="card">
@@ -991,10 +1054,191 @@ async function cargar(){
   const pres = ARCHIVOS.filter(x => x.tipo === 'presupuesto' && x.estado === 'pendiente').length;
   const cntA = document.getElementById('cnt-archivos'); if (cntA) cntA.textContent = pres || '';
 }
-function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'tablero') renderTablero(); if (k === 'archivos') renderArchivosTodo(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'pagos') renderPagos(); if (k === 'equipo') renderEquipo(); }
+function onTab(k){ if (k === 'resumen') renderResumen(); if (k === 'informe') cargarResumenes(); if (k === 'tablero') renderTablero(); if (k === 'archivos') renderArchivosTodo(); if (k === 'presupuestos') renderArchivos('presupuesto'); if (k === 'facturas') renderArchivos('factura'); if (k === 'fotos') renderGaleria(); if (k === 'pagos') renderPagos(); if (k === 'equipo') renderEquipo(); }
 const tareaDe = id => TAREAS.find(t => t.id === Number(id));
 const partDe = email => PARTS.find(p => (p.email || '').toLowerCase() === String(email || '').toLowerCase());
 function quien(email){ const p = partDe(email); if (p) return p.nombre; if (!email) return '—'; return email.split('@')[0] === 'juanpsimonelli' ? 'JP' : email.split('@')[0]; }
+
+// ── Resumen para el cliente (v43) ──
+
+// ── Render del resumen para el cliente (compartido entre la app y resumen.html) ──
+const R_ESC = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R_F = d => d ? d.slice(8,10) + '/' + d.slice(5,7) : '';
+const R_FA = d => d ? d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4) : '';
+const R_PLATA = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const R_PER = { semanal: 'Resumen semanal', quincenal: 'Resumen quincenal', mensual: 'Resumen mensual' };
+function resumenHTML(R, ed){
+  const C = R.contenido || {}, oc = new Set(R.ocultos || []), A = C.avance || {}, T = C.totales || {};
+  const vis = k => ed || !oc.has(k);
+  const ojo = k => ed ? `<button class="r-ojo ${oc.has(k) ? 'off' : ''}" onclick="toggleOculto('${k}')" title="${oc.has(k) ? 'Mostrar al cliente' : 'Ocultar al cliente'}" aria-label="Mostrar u ocultar"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>${oc.has(k) ? '<line x1="3" y1="3" x2="21" y2="21"/>' : ''}</svg></button>` : '';
+  const it = (k, html, cls) => vis(k) ? `<div class="r-it ${cls || ''} ${oc.has(k) ? 'oculto' : ''}" data-k="${k}">${html}${ojo(k)}</div>` : '';
+  const sec = (k, titulo, inner, extra) => { if (!inner || (!ed && oc.has(k))) return ''; return `<section class="r-sec ${oc.has(k) ? 'oculto' : ''}" data-k="${k}"><h2>${titulo}${ojo(k)}</h2>${extra || ''}${inner}</section>`; };
+  const delta = (A.pct || 0) - (A.pct_antes || 0);
+  let h = `<section class="r-sec r-avance"><div class="r-big"><div class="r-pct">${A.pct || 0}<small>%</small></div><div class="r-txt"><b>Avance general de la obra</b><span>${delta > 0 ? '+' + delta + ' % en este período' : delta < 0 ? delta + ' % (se recalculó el plan)' : 'Sin cambios en el porcentaje'}</span><div class="r-bar"><i style="width:${A.pct || 0}%"></i></div></div></div>
+    <div class="r-kp"><span><b>${A.terminadas || 0}</b> terminada${A.terminadas === 1 ? '' : 's'}</span><span><b>${A.en_curso || 0}</b> en curso</span><span><b>${A.pendientes || 0}</b> por empezar</span>${A.atrasadas ? `<span class="rojo"><b>${A.atrasadas}</b> atrasada${A.atrasadas === 1 ? '' : 's'}</span>` : ''}</div></section>`;
+  if (R.nota && R.nota.trim()) h += `<section class="r-sec r-nota"><h2>Nota del arquitecto</h2><p>${R_ESC(R.nota).replace(/\n/g, '<br>')}</p></section>`;
+  // Qué se hizo
+  const mov = (C.con_movimiento || []).map(t => { const d = (t.pct || 0) - (t.pct_antes || 0);
+    const chip = t.terminada ? '<span class="r-chip ok">✓ Terminada</span>' : `<span class="r-chip">${t.pct || 0} %${d > 0 ? ' <i>+' + d + '</i>' : ''}</span>`;
+    const et = (t.etapas_hechas || []).map(e => `<li>✓ ${R_ESC(e.titulo)}<small> · ${R_F(e.fecha)}</small></li>`).join('');
+    return it('t:' + t.id, `<div class="r-tt"><b>${R_ESC(t.titulo)}</b>${chip}</div>${t.grupo ? `<div class="r-mini">A cargo de ${R_ESC(t.grupo)}</div>` : ''}${et ? `<ul>${et}</ul>` : ''}${!t.terminada && t.siguiente ? `<div class="r-mini">Próximo paso: ${R_ESC(t.siguiente)}</div>` : ''}${t.n_fotos ? `<div class="r-mini">📷 ${t.n_fotos} foto${t.n_fotos > 1 ? 's' : ''}</div>` : ''}`, 'r-tarea'); }).join('');
+  h += sec('sec:mov', 'Qué se hizo en este período', mov || (ed ? '<div class="r-vacio">No hubo etapas terminadas ni tareas cerradas en el período.</div>' : ''));
+  if (!mov && !ed) h += `<section class="r-sec"><h2>Qué se hizo en este período</h2><div class="r-vacio">No hubo avances para informar en este período.</div></section>`;
+  // Fotos
+  const fotos = (C.fotos || []).map(f => it('f:' + f.id, `<a class="r-foto" href="${R_ESC(f.url || '#')}" target="_blank" rel="noopener"><img src="${R_ESC(f.url || '')}" alt="${R_ESC(f.tarea || f.nombre || '')}" loading="lazy"><span>${R_ESC(f.tarea || '')}${f.notas ? ' · ' + R_ESC(f.notas) : ''}<small>${R_F(f.fecha)}</small></span></a>`, 'r-fi')).join('');
+  h += sec('sec:fotos', 'Fotos', fotos ? `<div class="r-grid">${fotos}</div>` : '');
+  // Decisiones y presupuestos
+  const apr = (C.presupuestos_aprobados || []).map(a => it('pa:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.tarea || a.nombre)}</b><small>${R_ESC(a.proveedor || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const pend = (C.presupuestos_pendientes || []).map(a => it('pp:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.tarea || a.nombre)}</b><small>${R_ESC(a.proveedor || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  h += sec('sec:apr', 'Presupuestos aprobados en el período', apr);
+  h += sec('sec:pend', 'Presupuestos recibidos, a definir', pend, '<div class="r-mini" style="margin-bottom:6px">Cotizaciones que están esperando una decisión.</div>');
+  // Plata
+  const pagos = (C.pagos || []).map(a => it('pg:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.proveedor || 'Pago')}</b><small>${R_ESC(a.tarea || '')}${a.fecha ? ' · ' + R_F(a.fecha) : ''}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const fpend = (C.facturas_pendientes || []).map(a => it('fp:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.proveedor || 'Factura')}</b><small>${R_ESC(a.tarea || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const tot = `<div class="r-tot"><div><small>Pagado en el período</small><b>${R_PLATA(T.pagado_periodo)}</b></div><div><small>Pagado acumulado</small><b>${R_PLATA(T.pagado_total)}</b></div><div><small>Presupuestos aprobados</small><b>${R_PLATA(T.aprobado_total)}</b></div></div>`;
+  h += sec('sec:plata', 'Pagos del período', pagos ? pagos + tot : (ed ? '<div class="r-vacio">Sin pagos en el período.</div>' + tot : ''));
+  h += sec('sec:fpend', 'Facturas por pagar', fpend);
+  // Lo que viene / atrasos / sin movimiento
+  const prox = (C.proximo || []).map((x, i) => it('px:' + i, `<div class="r-row"><span><b>${R_ESC(x.tarea)}</b><small>${R_ESC(x.que)}</small></span><em class="fecha">${R_F(x.fecha)}</em></div>`)).join('');
+  h += sec('sec:prox', 'Lo que viene', prox || (ed ? '<div class="r-vacio">No hay fechas comprometidas para el próximo período.</div>' : ''));
+  const atr = (C.atrasadas || []).map(t => it('at:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b><small>vencía el ${R_FA(t.fecha_limite)}</small></span><em class="rojo">${t.dias} d</em></div>`)).join('');
+  h += sec('sec:atr', 'Atrasos', atr);
+  const sin = (C.sin_movimiento || []).map(t => it('s:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b>${t.siguiente ? `<small>Próximo paso: ${R_ESC(t.siguiente)}</small>` : ''}</span><em>${t.pct || 0} %</em></div>`)).join('');
+  h += sec('sec:sin', 'Sin novedades en el período', sin);
+  return h;
+}
+
+let RESUMENES = [], PROG = null, _iPer = 'semanal', _R = null, _rSaveT = null;
+const I_DIAS = { semanal: 7, quincenal: 15, mensual: 30 };
+const DIAS_SEM = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function iPer(p){ _iPer = p; document.querySelectorAll('#i-per .pil').forEach(b => b.classList.toggle('on', b.dataset.p === p)); pintarRango(); }
+function rangoDe(p){ const hasta = hoyAR(); const d = new Date(hasta + 'T00:00:00'); d.setDate(d.getDate() - (I_DIAS[p] - 1)); const desde = d.toISOString().slice(0, 10); return { desde, hasta }; }
+function pintarRango(){ const r = rangoDe(_iPer); const el = document.getElementById('i-rango'); if (el) el.textContent = 'Período: ' + fmtF(r.desde).slice(0, 5) + ' al ' + fmtF(r.hasta) + ' · tocá ➕ para armarlo'; }
+async function cargarResumenes(){
+  const [r, p] = await Promise.all([
+    sb.from('obra_resumenes').select('id,obra_id,periodo,desde,hasta,titulo,estado,token,generado_auto,creado_por,creado_at,enviado_at').eq('obra_id', OBRA.id).order('id', { ascending: false }),
+    sb.from('obra_resumen_prog').select('*').eq('obra_id', OBRA.id).maybeSingle()]);
+  RESUMENES = r.data || []; PROG = p.data || null; pintarRango(); renderInforme();
+}
+function proximoEnvio(pr){
+  if (!pr || !pr.activo) return '';
+  const hoy = new Date(hoyAR() + 'T00:00:00'); const d = new Date(hoy);
+  if (pr.periodo === 'mensual'){ d.setDate(pr.dia_mes); if (d < hoy || (d.getTime() === hoy.getTime() && new Date().getHours() >= pr.hora)) d.setMonth(d.getMonth() + 1); }
+  else { let k = (pr.dia_semana - hoy.getDay() + 7) % 7; if (k === 0 && new Date().getHours() >= pr.hora) k = 7; d.setDate(hoy.getDate() + k);
+    if (pr.periodo === 'quincenal' && pr.ultimo_generado){ const u = new Date(pr.ultimo_generado + 'T00:00:00'); while ((d - u) / 86400000 < 14) d.setDate(d.getDate() + 7); } }
+  return `${DIAS_SEM[d.getDay()]} ${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')} a las ${pr.hora} hs`;
+}
+function renderInforme(){
+  const pr = PROG || { activo: false, periodo: 'semanal', dia_semana: 5, dia_mes: 1, hora: 18, destinatario: '' };
+  const on = !!pr.activo;
+  document.getElementById('i-prog').innerHTML = `<div class="card prog ${on ? 'on' : ''}">
+    <div class="prog-h"><label class="sw"><input type="checkbox" ${on ? 'checked' : ''} onchange="guardarProg({ activo: this.checked })"><i></i></label><div class="prog-t"><b>Resumen programado</b><span class="mini">${on ? 'Próximo borrador: ' + proximoEnvio(pr) + '. Te llega un aviso para revisarlo y compartirlo.' : 'Apagado. Prendelo para que el sistema arme el borrador solo y te avise.'}</span></div></div>
+    <div class="pils prog-pils">
+      <label class="pil"><span>${({ semanal: 'Semanal', quincenal: 'Quincenal', mensual: 'Mensual' })[pr.periodo]}</span><select class="over" onchange="guardarProg({ periodo: this.value })"><option value="semanal" ${pr.periodo === 'semanal' ? 'selected' : ''}>Semanal</option><option value="quincenal" ${pr.periodo === 'quincenal' ? 'selected' : ''}>Quincenal</option><option value="mensual" ${pr.periodo === 'mensual' ? 'selected' : ''}>Mensual</option></select></label>
+      ${pr.periodo === 'mensual'
+        ? `<label class="pil"><span>Día ${pr.dia_mes}</span><select class="over" onchange="guardarProg({ dia_mes: Number(this.value) })">${Array.from({ length: 28 }, (_, i) => `<option value="${i + 1}" ${pr.dia_mes === i + 1 ? 'selected' : ''}>Día ${i + 1}</option>`).join('')}</select></label>`
+        : `<label class="pil"><span>${DIAS_SEM[pr.dia_semana][0].toUpperCase() + DIAS_SEM[pr.dia_semana].slice(1)}</span><select class="over" onchange="guardarProg({ dia_semana: Number(this.value) })">${DIAS_SEM.map((d, i) => `<option value="${i}" ${pr.dia_semana === i ? 'selected' : ''}>${d[0].toUpperCase() + d.slice(1)}</option>`).join('')}</select></label>`}
+      <label class="pil"><span>${pr.hora} hs</span><select class="over" onchange="guardarProg({ hora: Number(this.value) })">${Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${pr.hora === i ? 'selected' : ''}>${i} hs</option>`).join('')}</select></label>
+      <label class="pil busca" title="Para quién es (nombre del cliente)">${_i('users')}<input value="${esc(pr.destinatario || '')}" placeholder="Para quién" onchange="guardarProg({ destinatario: this.value.trim() || null })"></label>
+    </div></div>`;
+  const L = RESUMENES;
+  document.getElementById('i-lista').innerHTML = L.length ? L.map(r => `<div class="arow t-resumen ${r.estado}" onclick="abrirResumen(${r.id})">
+      <div class="aico">${_i('file')}</div>
+      <div class="amain"><div class="an">${esc(r.titulo || R_PER[r.periodo])}</div><div class="mini">${fmtF(r.desde).slice(0, 5)} al ${fmtF(r.hasta)}${r.generado_auto ? ' · automático' : ''}</div></div>
+      <div class="aimp">${r.estado === 'enviado' ? `<span class="chip green">Enviado ${fmtF(String(r.enviado_at || '').slice(0, 10)).slice(0, 5)}</span>` : '<span class="chip amber">Borrador</span>'}</div>
+      <div class="aacc"><button class="btn ico" onclick="event.stopPropagation(); compartirResumen(${r.id})" title="Compartir con el cliente" aria-label="Compartir">${_i('send')}</button></div></div>`).join('')
+    : `<div class="mini" style="padding:18px 8px;text-align:center">Todavía no hay resúmenes. Tocá ➕ para armar el ${_iPer} de hoy: lo revisás, le agregás una nota y lo compartís por WhatsApp.</div>`;
+}
+async function guardarProg(patch){
+  const base = PROG || { obra_id: OBRA.id, activo: false, periodo: 'semanal', dia_semana: 5, dia_mes: 1, hora: 18, destinatario: null };
+  const row = { ...base, ...patch, obra_id: OBRA.id, actualizado_por: YO.email, actualizado_at: new Date().toISOString() };
+  const { data, error } = await sb.from('obra_resumen_prog').upsert(row, { onConflict: 'obra_id' }).select().single();
+  if (error) return toast(error.message, 'error');
+  PROG = data; renderInforme(); if ('activo' in patch) toast(patch.activo ? 'Resumen programado: ' + proximoEnvio(PROG) : 'Programación apagada', 'success');
+}
+async function firmarFotos(C){
+  const F = (C && C.fotos) || []; const paths = F.filter(f => f.path).map(f => f.path); if (!paths.length) return C;
+  const { data } = await sb.storage.from('obra').createSignedUrls(paths, 60 * 60 * 24 * 90);
+  (data || []).forEach(d => { const f = F.find(x => x.path === d.path); if (f && d.signedUrl) f.url = d.signedUrl; });
+  return C;
+}
+async function generarResumen(){
+  const { desde, hasta } = rangoDe(_iPer);
+  toast('Armando el resumen…');
+  const { data: C, error } = await sb.rpc('obra_generar_resumen', { p_obra: OBRA.id, p_desde: desde, p_hasta: hasta });
+  if (error) return toast(error.message, 'error');
+  await firmarFotos(C);
+  const { data, error: e2 } = await sb.from('obra_resumenes').insert({ obra_id: OBRA.id, periodo: _iPer, desde, hasta, titulo: R_PER[_iPer], contenido: C, creado_por: YO.email }).select().single();
+  if (e2) return toast(e2.message, 'error');
+  RESUMENES.unshift(data); renderInforme(); abrirResumen(data.id);
+}
+async function abrirResumen(id){
+  const { data: r, error } = await sb.from('obra_resumenes').select('*').eq('id', id).single(); if (error || !r) return toast('No se pudo abrir', 'error');
+  _R = r; _R.ocultos = Array.isArray(r.ocultos) ? r.ocultos : [];
+  const C = r.contenido || {}, A = C.avance || {}, T = C.totales || {}, delta = (A.pct || 0) - (A.pct_antes || 0);
+  const url = urlResumen(r);
+  ovBox(`<div class="ficha nueva3 resu">
+    <div class="cab">
+      <div class="m-head" style="align-items:flex-start"><div style="flex:1;min-width:0"><input id="r-tit" class="tit" value="${esc(r.titulo || '')}" placeholder="Título del resumen" oninput="rCambio()"><div class="mini" style="color:rgba(255,255,255,.85);margin-top:4px">${fmtF(r.desde)} al ${fmtF(r.hasta)} · ${r.estado === 'enviado' ? 'enviado el ' + fmtTs(r.enviado_at) : 'borrador'}${r.generado_auto ? ' · generado automáticamente' : ''}</div></div>
+      <button class="btn ico" onclick="cerrarResumen()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>
+    <div class="datos datos4">
+      <div class="dato" title="Avance general">${_i('play')}<b>${A.pct || 0} %${delta > 0 ? ' (+' + delta + ')' : ''}</b></div>
+      <div class="dato" title="Tareas con movimiento">${_i('brick')}<b>${(C.con_movimiento || []).length} con avance</b></div>
+      <div class="dato" title="Fotos del período">${_i('clip')}<b>${(C.fotos || []).length} fotos</b></div>
+      <div class="dato" title="Pagado en el período">${_i('dollar')}<b>${plata(T.pagado_periodo)}</b></div>
+    </div>
+    <div class="cuerpo">
+      <textarea id="r-nota" class="r-nota-in" rows="2" placeholder="Nota para el cliente (opcional): cómo viene la obra, qué pasó esta semana, qué necesitás que decida…" oninput="rCambio()">${esc(r.nota || '')}</textarea>
+      <div class="mini" style="margin:8px 2px 6px">Así lo ve el cliente. Con el ojito ocultás lo que no querés mandar.</div>
+      <div id="r-prev" class="r-prev">${resumenHTML(_R, true)}</div>
+      <div class="r-acc">
+        <button class="btn ico" onclick="copiarLink()" title="Copiar el link" aria-label="Copiar link">${_i('clip')}</button>
+        <input class="r-url" value="${esc(url)}" readonly onclick="this.select()">
+        <a class="btn ico" href="${esc(url)}" target="_blank" rel="noopener" title="Ver como el cliente" aria-label="Ver">${_i('eye')}</a>
+        ${r.estado === 'enviado' ? `<button class="btn ico" onclick="marcarEnviado(false)" title="Volver a borrador" aria-label="Volver a borrador">${_i('undo')}</button>` : ''}
+        <button class="btn ico" onclick="borrarResumen()" title="Borrar este resumen" aria-label="Borrar">${_i('trash')}</button>
+        <button class="btn primary compartir" onclick="compartirResumen(${r.id})">${_i('send')}<span>Compartir</span></button>
+      </div>
+    </div></div>`);
+}
+function urlResumen(r){ return location.origin + location.pathname.replace(/[^/]*$/, '') + 'resumen.html?t=' + r.token; }
+function rCambio(){ clearTimeout(_rSaveT); _rSaveT = setTimeout(() => guardarResumen(), 700); }
+function toggleOculto(k){ if (!_R) return; const i = _R.ocultos.indexOf(k); if (i >= 0) _R.ocultos.splice(i, 1); else _R.ocultos.push(k); document.getElementById('r-prev').innerHTML = resumenHTML(_R, true); rCambio(); }
+async function guardarResumen(){
+  if (!_R) return; const tit = document.getElementById('r-tit'), nota = document.getElementById('r-nota'); if (!tit) return;
+  _R.titulo = tit.value.trim() || null; _R.nota = nota.value.trim() || null;
+  const { error } = await sb.from('obra_resumenes').update({ titulo: _R.titulo, nota: _R.nota, ocultos: _R.ocultos }).eq('id', _R.id);
+  if (error) return toast(error.message, 'error');
+  const i = RESUMENES.findIndex(x => x.id === _R.id); if (i >= 0) RESUMENES[i].titulo = _R.titulo;
+  if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = resumenHTML(_R, true); renderInforme();
+}
+async function cerrarResumen(){ clearTimeout(_rSaveT); await guardarResumen(); _R = null; cerrarOv(); }
+async function copiarLink(){ if (!_R) return; try { await navigator.clipboard.writeText(urlResumen(_R)); toast('Link copiado', 'success'); } catch (e) { const i = document.querySelector('.r-url'); if (i){ i.select(); document.execCommand('copy'); toast('Link copiado', 'success'); } } }
+async function compartirResumen(id){
+  let r = _R && _R.id === id ? _R : RESUMENES.find(x => x.id === id); if (!r) return;
+  if (_R && _R.id === id){ clearTimeout(_rSaveT); await guardarResumen(); }
+  if (!r.contenido){ const { data } = await sb.from('obra_resumenes').select('*').eq('id', id).single(); if (data) r = data; }
+  // las fotos llevan links firmados: se renuevan al compartir (90 días)
+  if (r.contenido && (r.contenido.fotos || []).length){ await firmarFotos(r.contenido); await sb.from('obra_resumenes').update({ contenido: r.contenido }).eq('id', id); }
+  const url = urlResumen(r), A = (r.contenido && r.contenido.avance) || {};
+  const texto = `${r.titulo || R_PER[r.periodo]}\n${fmtF(r.desde)} al ${fmtF(r.hasta)} · avance ${A.pct || 0} %\n${url}`;
+  let ok = false;
+  if (navigator.share){ try { await navigator.share({ title: r.titulo || 'Resumen de obra', text: texto, url }); ok = true; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  if (!ok){ try { await navigator.clipboard.writeText(texto); } catch (e) {} window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener'); }
+  if (r.estado !== 'enviado') await marcarEnviado(true, id);
+}
+async function marcarEnviado(si, id){
+  id = id || (_R && _R.id); if (!id) return;
+  const patch = si ? { estado: 'enviado', enviado_at: new Date().toISOString() } : { estado: 'borrador', enviado_at: null };
+  const { error } = await sb.from('obra_resumenes').update(patch).eq('id', id); if (error) return toast(error.message, 'error');
+  const i = RESUMENES.findIndex(x => x.id === id); if (i >= 0) Object.assign(RESUMENES[i], patch); if (_R && _R.id === id) Object.assign(_R, patch);
+  renderInforme(); if (si) toast('Marcado como enviado', 'success'); else if (_R && _R.id === id) abrirResumen(id);
+}
+async function borrarResumen(){
+  if (!_R) return; if (!await preguntar('¿Borrar este resumen? El link que hayas compartido deja de funcionar.', 'Borrar')) return;
+  const { error } = await sb.from('obra_resumenes').delete().eq('id', _R.id); if (error) return toast(error.message, 'error');
+  RESUMENES = RESUMENES.filter(x => x.id !== _R.id); _R = null; cerrarOv(); renderInforme(); toast('Resumen borrado', 'success');
+}
 
 // ── Hoy ──
 function renderResumen(){

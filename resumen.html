@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Resumen de obra</title>
+<link rel="icon" href="icon-192-v2.png">
+<style>
+@font-face { font-family: 'URW Gothic'; src: url('fonts/URWGothic-Book.ttf') format('truetype'); font-weight: 300 700; font-display: swap; }
+:root { --primary: #b45309; --dark: #92400e; --bg: #fef3c7; --text: #1e293b; --muted: #64748b; --border: #f3e8c8; --green: #15803d; --red: #b91c1c; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fffbeb; color: var(--text); font-family: 'URW Gothic', 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
+.cab { background: var(--primary); color: #fff; padding: 26px 18px 54px; }
+.cab .obra { font-size: 13px; opacity: .85; text-transform: uppercase; letter-spacing: .06em; }
+.cab h1 { margin: 4px 0 2px; font-size: 24px; line-height: 1.15; font-weight: 700; }
+.cab .rango { font-size: 14px; opacity: .9; }
+main { max-width: 720px; margin: -36px auto 0; padding: 0 12px 40px; }
+
+.r-sec { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); position: relative; }
+.r-sec h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--dark, #92400e); display: flex; align-items: center; gap: 6px; }
+.r-sec.oculto { opacity: .45; } .r-sec.oculto h2::after { content: 'oculto para el cliente'; font-size: 10px; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 4px; }
+.r-avance .r-big { display: flex; gap: 14px; align-items: center; }
+.r-pct { font-size: 46px; font-weight: 700; line-height: 1; color: var(--primary, #b45309); } .r-pct small { font-size: 20px; margin-left: 2px; }
+.r-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .r-txt b { font-size: 15px; } .r-txt span { font-size: 13px; color: var(--muted); }
+.r-bar { height: 8px; background: #fde68a; border-radius: 4px; overflow: hidden; margin-top: 6px; } .r-bar i { display: block; height: 100%; background: var(--primary, #b45309); border-radius: 4px; }
+.r-kp { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 13px; color: var(--muted); } .r-kp b { color: var(--text, #1e293b); font-size: 15px; margin-right: 2px; } .r-kp .rojo b { color: var(--red, #b91c1c); }
+.r-nota p { margin: 0; font-size: 15px; white-space: normal; }
+.r-it { position: relative; } .r-it.oculto { opacity: .4; } .r-it.oculto > *:not(.r-ojo) { text-decoration: line-through; }
+.r-tarea { padding: 9px 0; border-bottom: 1px solid var(--border, #f3e8c8); } .r-tarea:last-of-type { border-bottom: 0; }
+.r-tt { display: flex; align-items: center; gap: 8px; } .r-tt b { flex: 1; font-size: 15px; }
+.r-chip { font-size: 12px; font-weight: 700; background: #fef3c7; color: #92400e; border-radius: 999px; padding: 2px 9px; white-space: nowrap; } .r-chip.ok { background: #dcfce7; color: #15803d; } .r-chip i { font-style: normal; color: #15803d; }
+.r-tarea ul { margin: 6px 0 2px; padding-left: 4px; list-style: none; font-size: 14px; } .r-tarea li { padding: 2px 0; } .r-tarea li small { color: var(--muted); }
+.r-mini { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.r-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.r-foto { display: block; text-decoration: none; color: inherit; } .r-foto img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; background: #f1f5f9; display: block; }
+.r-foto span { display: block; font-size: 12px; margin-top: 3px; color: var(--muted); } .r-foto small { display: block; }
+.r-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border, #f3e8c8); } .r-it:last-of-type .r-row { border-bottom: 0; }
+.r-row span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .r-row b { font-size: 14px; } .r-row small { font-size: 12px; color: var(--muted); }
+.r-row em { font-style: normal; font-weight: 700; white-space: nowrap; font-size: 14px; } .r-row em.fecha { color: var(--primary, #b45309); } .r-row em.rojo { color: var(--red, #b91c1c); }
+.r-tot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; background: #fffbeb; border-radius: 10px; padding: 10px; }
+.r-tot div { display: flex; flex-direction: column; min-width: 0; } .r-tot small { font-size: 11px; color: var(--muted); } .r-tot b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 420px) { .r-tot { grid-template-columns: 1fr; } }
+.r-vacio { font-size: 13.5px; color: var(--muted); font-style: italic; }
+.r-ojo { position: absolute; right: -6px; top: 2px; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
+.r-ojo svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .r-ojo.off { color: var(--red, #b91c1c); }
+.r-sec > h2 .r-ojo { position: static; margin-left: auto; }
+
+.pie { text-align: center; color: var(--muted); font-size: 12px; margin-top: 26px; }
+.err { background: #fff; border-radius: 14px; padding: 24px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="cab"><div class="obra" id="h-obra">Obra</div><h1 id="h-tit">Resumen de obra</h1><div class="rango" id="h-rango"></div></div>
+<main id="main"><div class="err">Cargando el resumen…</div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+
+// ── Render del resumen para el cliente (compartido entre la app y resumen.html) ──
+const R_ESC = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R_F = d => d ? d.slice(8,10) + '/' + d.slice(5,7) : '';
+const R_FA = d => d ? d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4) : '';
+const R_PLATA = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const R_PER = { semanal: 'Resumen semanal', quincenal: 'Resumen quincenal', mensual: 'Resumen mensual' };
+function resumenHTML(R, ed){
+  const C = R.contenido || {}, oc = new Set(R.ocultos || []), A = C.avance || {}, T = C.totales || {};
+  const vis = k => ed || !oc.has(k);
+  const ojo = k => ed ? `<button class="r-ojo ${oc.has(k) ? 'off' : ''}" onclick="toggleOculto('${k}')" title="${oc.has(k) ? 'Mostrar al cliente' : 'Ocultar al cliente'}" aria-label="Mostrar u ocultar"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>${oc.has(k) ? '<line x1="3" y1="3" x2="21" y2="21"/>' : ''}</svg></button>` : '';
+  const it = (k, html, cls) => vis(k) ? `<div class="r-it ${cls || ''} ${oc.has(k) ? 'oculto' : ''}" data-k="${k}">${html}${ojo(k)}</div>` : '';
+  const sec = (k, titulo, inner, extra) => { if (!inner || (!ed && oc.has(k))) return ''; return `<section class="r-sec ${oc.has(k) ? 'oculto' : ''}" data-k="${k}"><h2>${titulo}${ojo(k)}</h2>${extra || ''}${inner}</section>`; };
+  const delta = (A.pct || 0) - (A.pct_antes || 0);
+  let h = `<section class="r-sec r-avance"><div class="r-big"><div class="r-pct">${A.pct || 0}<small>%</small></div><div class="r-txt"><b>Avance general de la obra</b><span>${delta > 0 ? '+' + delta + ' % en este período' : delta < 0 ? delta + ' % (se recalculó el plan)' : 'Sin cambios en el porcentaje'}</span><div class="r-bar"><i style="width:${A.pct || 0}%"></i></div></div></div>
+    <div class="r-kp"><span><b>${A.terminadas || 0}</b> terminada${A.terminadas === 1 ? '' : 's'}</span><span><b>${A.en_curso || 0}</b> en curso</span><span><b>${A.pendientes || 0}</b> por empezar</span>${A.atrasadas ? `<span class="rojo"><b>${A.atrasadas}</b> atrasada${A.atrasadas === 1 ? '' : 's'}</span>` : ''}</div></section>`;
+  if (R.nota && R.nota.trim()) h += `<section class="r-sec r-nota"><h2>Nota del arquitecto</h2><p>${R_ESC(R.nota).replace(/\n/g, '<br>')}</p></section>`;
+  // Qué se hizo
+  const mov = (C.con_movimiento || []).map(t => { const d = (t.pct || 0) - (t.pct_antes || 0);
+    const chip = t.terminada ? '<span class="r-chip ok">✓ Terminada</span>' : `<span class="r-chip">${t.pct || 0} %${d > 0 ? ' <i>+' + d + '</i>' : ''}</span>`;
+    const et = (t.etapas_hechas || []).map(e => `<li>✓ ${R_ESC(e.titulo)}<small> · ${R_F(e.fecha)}</small></li>`).join('');
+    return it('t:' + t.id, `<div class="r-tt"><b>${R_ESC(t.titulo)}</b>${chip}</div>${t.grupo ? `<div class="r-mini">A cargo de ${R_ESC(t.grupo)}</div>` : ''}${et ? `<ul>${et}</ul>` : ''}${!t.terminada && t.siguiente ? `<div class="r-mini">Próximo paso: ${R_ESC(t.siguiente)}</div>` : ''}${t.n_fotos ? `<div class="r-mini">📷 ${t.n_fotos} foto${t.n_fotos > 1 ? 's' : ''}</div>` : ''}`, 'r-tarea'); }).join('');
+  h += sec('sec:mov', 'Qué se hizo en este período', mov || (ed ? '<div class="r-vacio">No hubo etapas terminadas ni tareas cerradas en el período.</div>' : ''));
+  if (!mov && !ed) h += `<section class="r-sec"><h2>Qué se hizo en este período</h2><div class="r-vacio">No hubo avances para informar en este período.</div></section>`;
+  // Fotos
+  const fotos = (C.fotos || []).map(f => it('f:' + f.id, `<a class="r-foto" href="${R_ESC(f.url || '#')}" target="_blank" rel="noopener"><img src="${R_ESC(f.url || '')}" alt="${R_ESC(f.tarea || f.nombre || '')}" loading="lazy"><span>${R_ESC(f.tarea || '')}${f.notas ? ' · ' + R_ESC(f.notas) : ''}<small>${R_F(f.fecha)}</small></span></a>`, 'r-fi')).join('');
+  h += sec('sec:fotos', 'Fotos', fotos ? `<div class="r-grid">${fotos}</div>` : '');
+  // Decisiones y presupuestos
+  const apr = (C.presupuestos_aprobados || []).map(a => it('pa:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.tarea || a.nombre)}</b><small>${R_ESC(a.proveedor || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const pend = (C.presupuestos_pendientes || []).map(a => it('pp:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.tarea || a.nombre)}</b><small>${R_ESC(a.proveedor || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  h += sec('sec:apr', 'Presupuestos aprobados en el período', apr);
+  h += sec('sec:pend', 'Presupuestos recibidos, a definir', pend, '<div class="r-mini" style="margin-bottom:6px">Cotizaciones que están esperando una decisión.</div>');
+  // Plata
+  const pagos = (C.pagos || []).map(a => it('pg:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.proveedor || 'Pago')}</b><small>${R_ESC(a.tarea || '')}${a.fecha ? ' · ' + R_F(a.fecha) : ''}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const fpend = (C.facturas_pendientes || []).map(a => it('fp:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.proveedor || 'Factura')}</b><small>${R_ESC(a.tarea || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
+  const tot = `<div class="r-tot"><div><small>Pagado en el período</small><b>${R_PLATA(T.pagado_periodo)}</b></div><div><small>Pagado acumulado</small><b>${R_PLATA(T.pagado_total)}</b></div><div><small>Presupuestos aprobados</small><b>${R_PLATA(T.aprobado_total)}</b></div></div>`;
+  h += sec('sec:plata', 'Pagos del período', pagos ? pagos + tot : (ed ? '<div class="r-vacio">Sin pagos en el período.</div>' + tot : ''));
+  h += sec('sec:fpend', 'Facturas por pagar', fpend);
+  // Lo que viene / atrasos / sin movimiento
+  const prox = (C.proximo || []).map((x, i) => it('px:' + i, `<div class="r-row"><span><b>${R_ESC(x.tarea)}</b><small>${R_ESC(x.que)}</small></span><em class="fecha">${R_F(x.fecha)}</em></div>`)).join('');
+  h += sec('sec:prox', 'Lo que viene', prox || (ed ? '<div class="r-vacio">No hay fechas comprometidas para el próximo período.</div>' : ''));
+  const atr = (C.atrasadas || []).map(t => it('at:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b><small>vencía el ${R_FA(t.fecha_limite)}</small></span><em class="rojo">${t.dias} d</em></div>`)).join('');
+  h += sec('sec:atr', 'Atrasos', atr);
+  const sin = (C.sin_movimiento || []).map(t => it('s:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b>${t.siguiente ? `<small>Próximo paso: ${R_ESC(t.siguiente)}</small>` : ''}</span><em>${t.pct || 0} %</em></div>`)).join('');
+  h += sec('sec:sin', 'Sin novedades en el período', sin);
+  return h;
+}
+
+(async () => {
+  const t = new URLSearchParams(location.search).get('t') || '';
+  const sb = window.supabase.createClient('https://jfwtiagteuwmyvblgwms.supabase.co', 'sb_publishable_udSPma98Sw9eskeeLCgdCw_S2vIX0Fk', { auth: { persistSession: false } });
+  const { data, error } = await sb.rpc('obra_resumen_publico', { p_token: t });
+  const main = document.getElementById('main');
+  if (error || !data){ main.innerHTML = '<div class="err">Este resumen no existe o el link ya no está disponible.</div>'; return; }
+  const obra = data.obra || {}; document.getElementById('h-obra').textContent = obra.nombre || 'Obra';
+  document.getElementById('h-tit').textContent = data.titulo || R_PER[data.periodo] || 'Resumen de obra'; document.title = (data.titulo || 'Resumen') + ' · ' + (obra.nombre || 'Obra');
+  document.getElementById('h-rango').textContent = 'Del ' + R_FA(data.desde) + ' al ' + R_FA(data.hasta) + (obra.direccion ? ' · ' + obra.direccion : '');
+  main.innerHTML = resumenHTML(data, false) + '<div class="pie">Resumen generado el ' + R_FA(String(data.contenido && data.contenido.generado_at || '').slice(0, 10)) + ' · Seguimiento de obra · Claudia Adorno</div>';
+})();
+</script>
+</body>
+</html>
