@@ -1259,7 +1259,11 @@ async function agregarNovedad(id){
   if (error) return toast(error.message, 'error');
   await cargar(); abrirTarea(id); renderTablero();
 }
-async function borrarNovedad(nid, tid){ await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); abrirTarea(tid); }
+async function borrarNovedad(nid, tid){
+  const n = NOVS.find(x => x.id === nid);
+  if (n && n.etapa_id){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await sb.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
+  await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); fichaTarea(tid, 'detalle'); renderTablero();
+}
 
 // ── Etapas ──
 const _sinAc = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -1356,7 +1360,8 @@ async function prioEtapa(id){
 async function tildarEtapa(id, hecha){
   const e = ETAPAS.find(x => x.id === id); const { error } = await sb.from('obra_etapas').update({ hecha }).eq('id', id);
   if (error) return toast(error.message, 'error');
-  await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, tipo: 'avance', texto: (hecha ? '✓ Etapa hecha: ' : '↶ Etapa reabierta: ') + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+  if (hecha) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+  else await sb.from('obra_novedades').delete().eq('etapa_id', e.id).eq('tipo', 'avance');
   await cargar(); renderTablero();
   const tit = (e.titulo || '').toLowerCase();
   if (hecha && /selecci|elegir|equipo|grupo|mano de obra/.test(tit) && !/presupuest|cotiza/.test(tit)) { fichaTarea(e.tarea_id, 'etapas'); editarGrupo(e.tarea_id); toast('¿Qué grupo lo va a hacer?', 'info'); return; }
