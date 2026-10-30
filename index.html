@@ -855,7 +855,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <div class="form">
           <label>Archivo <input type="file" id="p-file" accept=".pdf,image/*,.xls,.xlsx,.doc,.docx"></label>
           <label>Proveedor <input id="p-prov" placeholder="Nombre del proveedor"></label>
-          <label>Importe <input id="p-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
+          <label>Importe <input id="p-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0"></label>
           <label>Fecha <input id="p-fecha" type="date"></label>
           <label>Tarea <select id="p-tarea"><option value="">(sin tarea)</option></select></label>
           <label style="grid-column:1/-1">Notas <input id="p-notas" placeholder="Qué incluye, forma de pago, validez…"></label>
@@ -872,7 +872,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <div class="form">
           <label>Archivo <input type="file" id="f-file" accept=".pdf,image/*"></label>
           <label>Proveedor <input id="f-prov" placeholder="Nombre del proveedor"></label>
-          <label>Importe <input id="f-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
+          <label>Importe <input id="f-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0"></label>
           <label>Fecha <input id="f-fecha" type="date"></label>
           <label>Tarea <select id="f-tarea"><option value="">(sin tarea)</option></select></label>
           <label style="grid-column:1/-1">Notas <input id="f-notas" placeholder="Nº de factura, qué se compró…"></label>
@@ -887,7 +887,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <h3>Registrar un pago</h3>
         <div class="mini" style="margin-bottom:8px">Lo que Adorno le paga al arquitecto o a un proveedor de la obra. Al arquitecto le llega un mail con el detalle. Si elegís la factura que cancela, queda marcada como pagada.</div>
         <div class="form">
-          <label>Importe <input id="pg-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
+          <label>Importe <input id="pg-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0"></label>
           <label>Fecha <input id="pg-fecha" type="date"></label>
           <label>A quién <input id="pg-prov" placeholder="Arquitecto, proveedor…"></label>
           <label>Medio <select id="pg-medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Mercado Pago</option><option>Otro</option></select></label>
@@ -972,14 +972,20 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { p
 const MODO_PRUEBA = false;
 let session = null;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
-const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const e = Math.round(Math.abs(v)); return (v < 0 && e ? '-' : '') + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : Math.round(n); };
 function mascaraMonto(el, ev){
+  // sin centavos: solo miles. Si pegan o escriben decimales ("1500000,50" o "1500000.5") se redondea al peso.
   let v = el.value; const fin = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd);
-  // al escribir o pegar: un punto al final seguido de 0 a 2 dígitos es la coma decimal (los puntos de miles siempre van con 3 dígitos)
-  if ((!ev || /^insert/.test(ev.inputType || 'insert')) && !v.includes(',')){ const m = v.match(/\.(\d{0,2})$/); if (m) v = v.slice(0, m.index) + ',' + m[1]; }
-  const i = v.indexOf(','); let ent = (i < 0 ? v : v.slice(0, i)).replace(/\D/g, '').replace(/^0+(?=\d)/, ''), dec = i < 0 ? null : v.slice(i + 1).replace(/\D/g, '').slice(0, 2);
-  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (dec == null ? '' : (ent ? '' : '0') + ',' + dec);
+  let dec = '';
+  if (!ev || /^insert/.test(ev.inputType || 'insert')){
+    const ic = v.indexOf(',');
+    if (ic >= 0){ dec = v.slice(ic + 1).replace(/\D/g, ''); v = v.slice(0, ic); }
+    else { const m = v.match(/\.(\d{1,2})$/); if (m){ dec = m[1]; v = v.slice(0, m.index); } }
+  }
+  let ent = v.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (dec && ent && Number('0.' + dec) >= .5) ent = String(Number(ent) + 1);
+  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   if (out !== el.value){ el.value = out; const pos = Math.max(0, out.length - fin); try { el.setSelectionRange(pos, pos); } catch (e) {} }
 }
 document.addEventListener('input', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto')) mascaraMonto(t, e); });
@@ -1151,7 +1157,7 @@ function quien(email){ const p = partDe(email); if (p) return p.nombre; if (!ema
 const R_ESC = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const R_F = d => d ? d.slice(8,10) + '/' + d.slice(5,7) : '';
 const R_FA = d => d ? d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4) : '';
-const R_PLATA = n => { if (n == null || isNaN(n)) return '—'; const v = Number(n), c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + '$ ' + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
+const R_PLATA = n => { if (n == null || isNaN(n)) return '—'; const v = Number(n), e = Math.round(Math.abs(v)); return (v < 0 && e ? '-' : '') + '$ ' + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
 const R_PER = { semanal: 'Resumen semanal', quincenal: 'Resumen quincenal', mensual: 'Resumen mensual' };
 function resumenHTML(R, ed){
   const C = R.contenido || {}, oc = new Set(R.ocultos || []), A = C.avance || {}, T = C.totales || {};
@@ -2030,7 +2036,7 @@ function subirGeneral(tipoIni, refId){
       <select id="g-tipo" style="display:none">${tipos.map(([k]) => `<option value="${k}" ${(tipoIni || 'presupuesto') === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
       <div class="form" style="margin-top:10px">
         <label class="g-plata">Proveedor / a quién <input id="g-prov" list="dl-prov" value="${ref ? esc(ref.proveedor || '') : ''}"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist></label>
-        <label class="g-plata">Importe <input id="g-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00" value="${ref && ref.importe ? fmtMonto(ref.importe) : ''}"></label>
+        <label class="g-plata">Importe <input id="g-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0" value="${ref && ref.importe ? fmtMonto(ref.importe) : ''}"></label>
         <label>Fecha <input id="g-fecha" type="date" value="${hoyAR()}"></label>
         <label>Tarea <select id="g-tarea" onchange="gEtapas()"><option value="">(sin tarea)</option>${TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}" ${ref && ref.tarea_id === t.id ? 'selected' : ''}>${esc(t.titulo_corto || t.titulo)}</option>`).join('')}</select></label>
         <label class="g-presup" id="g-etapa-l">Etapa de cotización <select id="g-etapa"></select></label>

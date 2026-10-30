@@ -44,14 +44,20 @@ input, textarea { width: 100%; border: 1.5px solid var(--border); border-radius:
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
-const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const e = Math.round(Math.abs(v)); return (v < 0 && e ? '-' : '') + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : Math.round(n); };
 function mascaraMonto(el, ev){
+  // sin centavos: solo miles. Si pegan o escriben decimales ("1500000,50" o "1500000.5") se redondea al peso.
   let v = el.value; const fin = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd);
-  // al escribir o pegar: un punto al final seguido de 0 a 2 dígitos es la coma decimal (los puntos de miles siempre van con 3 dígitos)
-  if ((!ev || /^insert/.test(ev.inputType || 'insert')) && !v.includes(',')){ const m = v.match(/\.(\d{0,2})$/); if (m) v = v.slice(0, m.index) + ',' + m[1]; }
-  const i = v.indexOf(','); let ent = (i < 0 ? v : v.slice(0, i)).replace(/\D/g, '').replace(/^0+(?=\d)/, ''), dec = i < 0 ? null : v.slice(i + 1).replace(/\D/g, '').slice(0, 2);
-  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (dec == null ? '' : (ent ? '' : '0') + ',' + dec);
+  let dec = '';
+  if (!ev || /^insert/.test(ev.inputType || 'insert')){
+    const ic = v.indexOf(',');
+    if (ic >= 0){ dec = v.slice(ic + 1).replace(/\D/g, ''); v = v.slice(0, ic); }
+    else { const m = v.match(/\.(\d{1,2})$/); if (m){ dec = m[1]; v = v.slice(0, m.index); } }
+  }
+  let ent = v.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (dec && ent && Number('0.' + dec) >= .5) ent = String(Number(ent) + 1);
+  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   if (out !== el.value){ el.value = out; const pos = Math.max(0, out.length - fin); try { el.setSelectionRange(pos, pos); } catch (e) {} }
 }
 document.addEventListener('input', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto')) mascaraMonto(t, e); });
