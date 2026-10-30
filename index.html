@@ -1750,7 +1750,19 @@ async function estadoArchivo(id, estado, tipo){
   const { error } = await sb.from('obra_archivos').update({ estado }).eq('id', id); if (error) return toast(error.message, 'error');
   const a = ARCHIVOS.find(x => x.id === id);
   if (a && a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `${tipo === 'factura' ? 'Factura' : 'Presupuesto'} ${a.nombre}: ${estado}`, autor_email: YO.email, autor_nombre: YO.nombre });
-  await cargar(); refrescarArchivos(tipo); renderResumen();
+  // v48 (JP): al aprobar un presupuesto de mano de obra, el proveedor queda asignado como grupo de la tarea
+  if (estado === 'aprobado' && tipo === 'presupuesto' && a && a.tarea_id && a.proveedor){
+    const t = tareaDe(a.tarea_id), prov = a.proveedor.trim(), G = t ? gruposDe(t) : [];
+    if (t && !G.some(g => g.toLowerCase() === prov.toLowerCase())){
+      const et = a.etapa_id ? ETAPAS.find(x => x.id === a.etapa_id) : null;
+      const auto = et && /mano de obra|grupo|equipo|colocaci|instalaci|ejecuci|contratista/i.test(et.titulo || '');
+      if (auto || await preguntar(`¿${prov} queda como grupo que hace "${t.titulo}"?`, 'Asignar')){
+        const { error: e2 } = await sb.from('obra_tareas').update({ grupo: [...G, prov].join(', ') }).eq('id', t.id);
+        if (e2) toast(e2.message, 'error'); else { await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: t.id, tipo: 'estado', texto: `Grupo asignado: ${prov} (presupuesto aprobado)`, autor_email: YO.email, autor_nombre: YO.nombre }); toast(`${prov} asignado como grupo`, 'success'); }
+      }
+    }
+  }
+  await cargar(); refrescarArchivos(tipo); renderResumen(); renderTablero();
 }
 async function borrarArchivo(id, tipo){
   const a = ARCHIVOS.find(x => x.id === id); if (!a || !await preguntar('¿Borrar ' + a.nombre + '?', 'Borrar')) return;
