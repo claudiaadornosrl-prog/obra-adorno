@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Pago de obra</title>
+<link rel="icon" href="icon-192-v2.png">
+<style>
+@font-face { font-family: 'URW Gothic'; src: url('fonts/URWGothic-Book.ttf') format('truetype'); font-weight: 300 700; font-display: swap; }
+:root { --primary: #b45309; --dark: #92400e; --bg: #fef3c7; --text: #1e293b; --muted: #64748b; --border: #f3e8c8; --green: #15803d; --red: #b91c1c; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fffbeb; color: var(--text); font-family: 'URW Gothic', 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
+.cab { background: var(--primary); color: #fff; padding: 26px 18px 54px; }
+.cab .obra { font-size: 13px; opacity: .85; text-transform: uppercase; letter-spacing: .06em; }
+.cab h1 { margin: 4px 0 2px; font-size: 22px; line-height: 1.15; font-weight: 700; }
+.cab .sub { font-size: 14px; opacity: .9; }
+main { max-width: 560px; margin: -36px auto 0; padding: 0 12px 40px; }
+.card { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 12px; }
+.monto { font-size: 38px; font-weight: 700; color: var(--primary); line-height: 1; } .monto small { font-size: 16px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+.lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin: 12px 0 4px; } .lbl:first-child { margin-top: 0; }
+.dest { font-size: 17px; font-weight: 700; }
+.dato { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 12px; padding: 10px 12px; margin-top: 6px; }
+.dato b { flex: 1; font-size: 17px; letter-spacing: .02em; overflow-wrap: anywhere; } .dato small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+.btn { border: 0; border-radius: 12px; padding: 12px 16px; font: inherit; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; }
+.btn.sec { background: #fff; color: var(--dark); border: 1.5px solid #fcd34d; } .btn.chico { padding: 8px 12px; font-size: 13px; }
+.btn.mp { background: #009ee3; width: 100%; font-size: 16px; margin-top: 8px; display: block; text-align: center; text-decoration: none; }
+.btn.full { width: 100%; font-size: 16px; margin-top: 10px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+input, textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 12px; font: inherit; font-size: 16px; background: #fff; margin-top: 4px; }
+.fila { display: flex; gap: 8px; } .fila > div { flex: 1; }
+.adj { display: flex; align-items: center; gap: 10px; border: 1.5px dashed #d6b36a; border-radius: 12px; padding: 12px; margin-top: 4px; cursor: pointer; background: #fffdf5; } .adj.ok { border-style: solid; border-color: #86efac; background: #f0fdf4; } .adj span { flex: 1; font-size: 14px; } .adj input { display: none; }
+.ok-box { text-align: center; padding: 24px 12px; } .ok-box .ico { font-size: 44px; } .ok-box h2 { margin: 8px 0 4px; font-size: 20px; } .ok-box p { color: var(--muted); margin: 0; }
+.aviso { background: #fee2e2; color: var(--red); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin-bottom: 10px; }
+.pie { text-align: center; color: var(--muted); font-size: 12px; margin-top: 26px; }
+.err { background: #fff; border-radius: 14px; padding: 24px; text-align: center; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; } .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="cab"><div class="obra" id="h-obra">Obra</div><h1 id="h-tit">Pago de obra</h1><div class="sub" id="h-sub"></div></div>
+<main id="main"><div class="err">Cargando…</div></main>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const plata = n => '$ ' + Math.round(Number(n || 0)).toLocaleString('es-AR');
+const fmtF = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '';
+const hoy = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+let T = null, P = null, sb = null;
+function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200); }
+async function copiar(v){ try { await navigator.clipboard.writeText(v); toast('Copiado'); } catch (e) { toast('No se pudo copiar'); } }
+const TIPO = { alias: 'Alias', cbu: 'CBU / CVU', mp: 'Mercado Pago' };
+function render(){
+  const main = document.getElementById('main'), c = P.cobro || {};
+  document.getElementById('h-obra').textContent = P.obra.nombre || 'Obra'; document.getElementById('h-tit').textContent = P.concepto; document.title = 'Pago · ' + (P.obra.nombre || 'Obra');
+  document.getElementById('h-sub').textContent = (P.tarea ? P.tarea + ' · ' : '') + (P.obra.direccion || '');
+  let datos = '';
+  if (c.tipo === 'mp' && c.valor) datos = `<a class="btn mp" href="${esc(c.valor)}" target="_blank" rel="noopener">Pagar con Mercado Pago</a>${c.titular ? `<div class="dato"><b>${esc(c.titular)}<small>Titular</small></b></div>` : ''}`;
+  else if (c.valor) datos = `<div class="dato"><b>${esc(c.valor)}<small>${TIPO[c.tipo] || 'Datos'}${c.banco ? ' · ' + esc(c.banco) : ''}</small></b><button class="btn sec chico" onclick="copiar('${esc(c.valor)}')">Copiar</button></div>${c.titular ? `<div class="dato"><b>${esc(c.titular)}<small>Titular</small></b></div>` : ''}`;
+  const cabecera = `<div class="card"><div class="lbl">Importe a pagar</div><div class="monto">${plata(P.importe)}</div>
+    <div class="lbl">A quién se le paga</div><div class="dest">${esc(P.destinatario)}</div>${datos}${P.nota ? `<div class="lbl">Nota</div><div>${esc(P.nota)}</div>` : ''}</div>`;
+  let cuerpo = '';
+  if (P.estado === 'confirmado') cuerpo = `<div class="card ok-box"><div class="ico">✅</div><h2>Pago confirmado</h2><p>Recibimos ${plata(P.comp_importe || P.importe)} el ${fmtF(P.comp_fecha)}. ¡Gracias!</p></div>`;
+  else if (P.estado === 'comprobante') cuerpo = `<div class="card ok-box"><div class="ico">🧾</div><h2>Comprobante recibido</h2><p>Enviaste ${plata(P.comp_importe || P.importe)} el ${fmtF(P.comp_fecha)}. En cuanto lo confirmemos te avisamos.</p></div>`;
+  else cuerpo = `<div class="card">${P.estado === 'rechazado' ? `<div class="aviso">El comprobante anterior no se pudo validar${P.nota_rechazo ? ': ' + esc(P.nota_rechazo) : ''}. Subí uno nuevo, por favor.</div>` : ''}
+    <div class="lbl">¿Ya pagaste? Subí el comprobante</div>
+    <label class="adj" id="adj"><span id="adj-t">Foto o PDF del comprobante</span><input type="file" id="file" accept="image/*,application/pdf" onchange="elegir()"><b>Elegir</b></label>
+    <div class="fila"><div><div class="lbl">Importe pagado</div><input type="number" inputmode="decimal" id="imp" value="${Math.round(Number(P.importe))}"></div><div><div class="lbl">Fecha</div><input type="date" id="fecha" value="${hoy()}"></div></div>
+    <div class="lbl">Comentario (opcional)</div><input id="nota" placeholder="Ej.: transferí desde la cuenta de Marcela">
+    <button class="btn full" id="env" onclick="enviar()">Enviar comprobante</button></div>`;
+  main.innerHTML = cabecera + cuerpo + '<div class="pie">Seguimiento de obra · Claudia Adorno</div>';
+}
+function elegir(){ const f = document.getElementById('file').files[0]; const a = document.getElementById('adj'); if (f){ a.classList.add('ok'); document.getElementById('adj-t').textContent = f.name; } }
+async function enviar(){
+  const f = document.getElementById('file').files[0], imp = Number(document.getElementById('imp').value), fecha = document.getElementById('fecha').value, nota = document.getElementById('nota').value;
+  if (!f) return toast('Elegí la foto o el PDF del comprobante');
+  if (!imp || imp <= 0) return toast('Poné el importe pagado');
+  const b = document.getElementById('env'); b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    const path = `comprobantes/${T}/${Date.now()}_${f.name.replace(/[^\w.\-]+/g, '_').slice(-80)}`;
+    const up = await sb.storage.from('obra').upload(path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) throw up.error;
+    const { error } = await sb.rpc('obra_pago_comprobante', { p_token: T, p_path: path, p_mime: f.type || null, p_importe: imp, p_fecha: fecha || null, p_nota: nota || null }); if (error) throw error;
+    P.estado = 'comprobante'; P.comp_importe = imp; P.comp_fecha = fecha; render(); window.scrollTo(0, 0);
+  } catch (e) { toast('No se pudo enviar: ' + (e.message || e)); b.disabled = false; b.textContent = 'Enviar comprobante'; }
+}
+(async () => {
+  T = new URLSearchParams(location.search).get('t') || '';
+  sb = window.supabase.createClient('https://jfwtiagteuwmyvblgwms.supabase.co', 'sb_publishable_udSPma98Sw9eskeeLCgdCw_S2vIX0Fk', { auth: { persistSession: false } });
+  const { data, error } = await sb.rpc('obra_pago_publico', { p_token: T });
+  if (error || !data){ document.getElementById('main').innerHTML = '<div class="err">Este link de pago no existe o ya no está disponible.</div>'; return; }
+  P = data; render();
+})();
+</script>
+</body>
+</html>
