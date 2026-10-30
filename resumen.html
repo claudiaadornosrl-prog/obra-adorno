@@ -60,7 +60,7 @@ main { max-width: 720px; margin: -36px auto 0; padding: 0 12px 40px; }
 const R_ESC = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const R_F = d => d ? d.slice(8,10) + '/' + d.slice(5,7) : '';
 const R_FA = d => d ? d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4) : '';
-const R_PLATA = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const R_PLATA = n => { if (n == null || isNaN(n)) return '—'; const v = Number(n), c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + '$ ' + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
 const R_PER = { semanal: 'Resumen semanal', quincenal: 'Resumen quincenal', mensual: 'Resumen mensual' };
 function resumenHTML(R, ed){
   const C = R.contenido || {}, oc = new Set(R.ocultos || []), A = C.avance || {}, T = C.totales || {};

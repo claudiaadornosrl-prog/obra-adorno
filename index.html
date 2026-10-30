@@ -855,7 +855,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <div class="form">
           <label>Archivo <input type="file" id="p-file" accept=".pdf,image/*,.xls,.xlsx,.doc,.docx"></label>
           <label>Proveedor <input id="p-prov" placeholder="Nombre del proveedor"></label>
-          <label>Importe <input id="p-imp" type="number" step="0.01" placeholder="0"></label>
+          <label>Importe <input id="p-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
           <label>Fecha <input id="p-fecha" type="date"></label>
           <label>Tarea <select id="p-tarea"><option value="">(sin tarea)</option></select></label>
           <label style="grid-column:1/-1">Notas <input id="p-notas" placeholder="Qué incluye, forma de pago, validez…"></label>
@@ -872,7 +872,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <div class="form">
           <label>Archivo <input type="file" id="f-file" accept=".pdf,image/*"></label>
           <label>Proveedor <input id="f-prov" placeholder="Nombre del proveedor"></label>
-          <label>Importe <input id="f-imp" type="number" step="0.01" placeholder="0"></label>
+          <label>Importe <input id="f-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
           <label>Fecha <input id="f-fecha" type="date"></label>
           <label>Tarea <select id="f-tarea"><option value="">(sin tarea)</option></select></label>
           <label style="grid-column:1/-1">Notas <input id="f-notas" placeholder="Nº de factura, qué se compró…"></label>
@@ -887,7 +887,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <h3>Registrar un pago</h3>
         <div class="mini" style="margin-bottom:8px">Lo que Adorno le paga al arquitecto o a un proveedor de la obra. Al arquitecto le llega un mail con el detalle. Si elegís la factura que cancela, queda marcada como pagada.</div>
         <div class="form">
-          <label>Importe <input id="pg-imp" type="number" step="0.01" placeholder="0"></label>
+          <label>Importe <input id="pg-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00"></label>
           <label>Fecha <input id="pg-fecha" type="date"></label>
           <label>A quién <input id="pg-prov" placeholder="Arquitecto, proveedor…"></label>
           <label>Medio <select id="pg-medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Mercado Pago</option><option>Otro</option></select></label>
@@ -972,7 +972,19 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { p
 const MODO_PRUEBA = false;
 let session = null;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const plata = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
+const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+function mascaraMonto(el, ev){
+  let v = el.value; const fin = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd);
+  // al escribir o pegar: un punto al final seguido de 0 a 2 dígitos es la coma decimal (los puntos de miles siempre van con 3 dígitos)
+  if ((!ev || /^insert/.test(ev.inputType || 'insert')) && !v.includes(',')){ const m = v.match(/\.(\d{0,2})$/); if (m) v = v.slice(0, m.index) + ',' + m[1]; }
+  const i = v.indexOf(','); let ent = (i < 0 ? v : v.slice(0, i)).replace(/\D/g, '').replace(/^0+(?=\d)/, ''), dec = i < 0 ? null : v.slice(i + 1).replace(/\D/g, '').slice(0, 2);
+  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (dec == null ? '' : (ent ? '' : '0') + ',' + dec);
+  if (out !== el.value){ el.value = out; const pos = Math.max(0, out.length - fin); try { el.setSelectionRange(pos, pos); } catch (e) {} }
+}
+document.addEventListener('input', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto')) mascaraMonto(t, e); });
+document.addEventListener('focusout', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto') && t.value.trim()) t.value = fmtMonto(leerMonto(t.value)); });
+const plata = n => (n == null || isNaN(n)) ? '—' : '$ ' + fmtMonto(n);
 const plata2 = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 function hoyAR() { const p = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Argentina/Buenos_Aires', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date()); return p; }
@@ -1139,7 +1151,7 @@ function quien(email){ const p = partDe(email); if (p) return p.nombre; if (!ema
 const R_ESC = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const R_F = d => d ? d.slice(8,10) + '/' + d.slice(5,7) : '';
 const R_FA = d => d ? d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4) : '';
-const R_PLATA = n => (n == null || isNaN(n)) ? '—' : '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const R_PLATA = n => { if (n == null || isNaN(n)) return '—'; const v = Number(n), c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + '$ ' + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
 const R_PER = { semanal: 'Resumen semanal', quincenal: 'Resumen quincenal', mensual: 'Resumen mensual' };
 function resumenHTML(R, ed){
   const C = R.contenido || {}, oc = new Set(R.ocultos || []), A = C.avance || {}, T = C.totales || {};
@@ -1512,7 +1524,7 @@ function fichaTarea(id, tab){
       <div class="nov-in" style="margin-top:8px;gap:10px"><button class="btn primary ico" onclick="presupuestoRapido(${id},'factura')" title="Cargar una factura" aria-label="Cargar factura">${_i('file')}</button><span class="mini">Factura</span><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir foto o plano" aria-label="Subir">${_i('clip')}</button><span class="mini">Foto / plano</span></div>
     </section>
     <input type="file" id="m-file" multiple accept="application/pdf,image/*" style="display:none" onchange="mostrarAdj(${id})">
-    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="display:none"></span><label class="pil adj-tipo adj-etapa" id="m-fetapa-l" style="display:none" title="¿De qué etapa es este presupuesto?"><span id="m-fetapa-t">Etapa</span><select id="m-fetapa" class="over" onchange="document.getElementById('m-fetapa-t').textContent = this.options[this.selectedIndex].text"></select></label><label class="pil adj-tipo"><span id="m-ftipo-l">Presupuesto</span><select id="m-ftipo" class="over" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select></label><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="number" inputmode="decimal" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
+    <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="display:none"></span><label class="pil adj-tipo adj-etapa" id="m-fetapa-l" style="display:none" title="¿De qué etapa es este presupuesto?"><span id="m-fetapa-t">Etapa</span><select id="m-fetapa" class="over" onchange="document.getElementById('m-fetapa-t').textContent = this.options[this.selectedIndex].text"></select></label><label class="pil adj-tipo"><span id="m-ftipo-l">Presupuesto</span><select id="m-ftipo" class="over" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select></label><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
   </div></div>`);
   setTimeout(() => initDragEtapas(id), 0);
 }
@@ -1722,7 +1734,7 @@ async function subirArchivo(tipo, pre){
   if (!files.length) return toast('Elegí el archivo', 'error');
   const g = id => { const e = document.getElementById(pre + '-' + id); return e ? e.value : ''; };
   const extra = { tarea_id: g('tarea') ? Number(g('tarea')) : null, notas: g('notas') || null };
-  if (pre !== 'o'){ extra.proveedor = g('prov') || null; extra.importe = g('imp') ? Number(g('imp')) : null; extra.fecha = g('fecha') || hoyAR(); }
+  if (pre !== 'o'){ extra.proveedor = g('prov') || null; extra.importe = leerMonto(g('imp')); extra.fecha = g('fecha') || hoyAR(); }
   const t = tipo || g('tipo');
   try { for (const f of files) await subirUno(f, t, extra); } catch (e) { return toast('No se pudo subir: ' + e.message, 'error'); }
   toast(files.length > 1 ? 'Archivos subidos' : 'Archivo subido', 'success');
@@ -1732,7 +1744,7 @@ async function subirArchivo(tipo, pre){
 async function subirDesdeTarea(id){
   const files = [...(document.getElementById('m-file').files || [])], t = document.getElementById('m-ftipo').value;
   const esPlata = t === 'presupuesto' || t === 'factura';
-  const prov = document.getElementById('m-fprov').value.trim() || null, imp = document.getElementById('m-fimp').value ? Number(document.getElementById('m-fimp').value) : null;
+  const prov = document.getElementById('m-fprov').value.trim() || null, imp = leerMonto(document.getElementById('m-fimp').value);
   const selE = document.getElementById('m-fetapa'); if (t === 'presupuesto') _adjEtapa = (selE && selE.value) ? Number(selE.value) : null;
   const extra = { tarea_id: id, fecha: hoyAR(), ...(esPlata ? { proveedor: prov, importe: imp } : {}), ...(t === 'presupuesto' && _adjEtapa ? { etapa_id: _adjEtapa } : {}) };
   if (esPlata && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
@@ -1895,7 +1907,7 @@ function pedirPago(presId){
     <div class="cab"><button class="btn ico cierra" onclick="cerrarSub()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button><div class="tit-fija">Pedir pago al cliente</div>
       <div class="mini" style="color:#fde68a">${esc(a.proveedor || a.nombre)} · ${plata(a.importe)}${pag ? ' · pagado ' + plata(pag) : ''}${t ? ' · ' + esc(t.titulo_corto || t.titulo) : ''}</div></div>
     <div class="cuerpo">
-      <h4>Importe a pedir</h4><input id="pd-imp" type="number" inputmode="decimal" value="${Math.round(saldo)}" style="font-size:22px;font-weight:700">
+      <h4>Importe a pedir</h4><input id="pd-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" value="${fmtMonto(saldo)}" style="font-size:22px;font-weight:700">
       <div class="mini">Puede ser parcial: por ejemplo el 20 % de la mano de obra por avance.</div>
       <h4>Concepto</h4><input id="pd-con" value="${esc((t ? (t.titulo_corto || t.titulo) + ' · ' : '') + (a.proveedor ? 'presupuesto ' + a.proveedor : a.nombre))}">
       <h4>A quién le paga el cliente</h4>
@@ -1920,7 +1932,7 @@ function pdDest(el, nombre){
 function pdTipo(k){ document.querySelectorAll('#pd-tipos span').forEach(x => x.classList.toggle('on', x.dataset.k === k)); document.getElementById('pd-val').placeholder = k === 'mp' ? 'Link de pago de Mercado Pago' : k === 'cbu' ? 'CBU o CVU (22 dígitos)' : 'Alias'; document.getElementById('pd-banco').style.display = k === 'mp' ? 'none' : ''; }
 async function guardarPedido(){
   const a = _pedPres; if (!a) return; const g = id => document.getElementById(id).value.trim();
-  const imp = Number(g('pd-imp')), con = g('pd-con'), dest = g('pd-dest'), tipo = (document.querySelector('#pd-tipos span.on') || {}).dataset ? document.querySelector('#pd-tipos span.on').dataset.k : 'alias', val = g('pd-val'), tit = g('pd-tit'), banco = g('pd-banco'), nota = g('pd-nota');
+  const imp = leerMonto(g('pd-imp')), con = g('pd-con'), dest = g('pd-dest'), tipo = (document.querySelector('#pd-tipos span.on') || {}).dataset ? document.querySelector('#pd-tipos span.on').dataset.k : 'alias', val = g('pd-val'), tit = g('pd-tit'), banco = g('pd-banco'), nota = g('pd-nota');
   if (!imp || imp <= 0) return toast('Poné el importe', 'error'); if (!con) return toast('Poné el concepto', 'error'); if (!dest) return toast('¿A quién le paga el cliente?', 'error'); if (!val) return toast('Poné el alias, CBU o link de pago', 'error');
   const cobro = { tipo, valor: val, titular: tit || null, banco: banco || null };
   const { error: e1 } = await sb.from('obra_cobros').upsert({ nombre: dest, ...cobro, actualizado_por: YO.email, actualizado_at: new Date().toISOString() }, { onConflict: 'nombre' }); if (e1) toast(e1.message, 'error');
@@ -1955,7 +1967,7 @@ function pagoManual(presId){
       <div class="mini" style="color:#fde68a">${esc(a.proveedor || a.nombre)} · ${plata(a.importe)}${pag ? ' · pagado ' + plata(pag) : ''}${t ? ' · ' + esc(t.titulo_corto || t.titulo) : ''}</div></div>
     <div class="cuerpo">
       <h4>Comprobante</h4><button class="btn adjuntar" id="pm-adj" onclick="document.getElementById('pm-file').click()">${_i('clip')}<span id="pm-adj-t">Foto o PDF del comprobante</span></button><input type="file" id="pm-file" accept="image/*,application/pdf" style="display:none" onchange="const f=this.files[0]; if(f){ document.getElementById('pm-adj').classList.add('ok'); document.getElementById('pm-adj-t').textContent=f.name; }">
-      <div class="fila2"><div style="flex:1"><h4>Importe</h4><input id="pm-imp" type="number" inputmode="decimal" value="${Math.round(saldo)}"></div><div style="flex:1"><h4>Fecha</h4><input id="pm-fecha" type="date" value="${hoyAR()}"></div></div>
+      <div class="fila2"><div style="flex:1"><h4>Importe</h4><input id="pm-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" value="${fmtMonto(saldo)}"></div><div style="flex:1"><h4>Fecha</h4><input id="pm-fecha" type="date" value="${hoyAR()}"></div></div>
       <h4>Cómo se pagó</h4><div class="seg" id="pm-medio">${['Transferencia', 'Mercado Pago', 'Efectivo', 'Cheque'].map((m, i) => `<span class="${i ? '' : 'on'}" onclick="document.querySelectorAll('#pm-medio span').forEach(x => x.classList.toggle('on', x === this))">${m}</span>`).join('')}</div>
       <h4>Nota (opcional)</h4><input id="pm-nota" placeholder="Ej.: 2º avance, lo mandó el cliente por WhatsApp">
       <div class="guardar"><button class="btn big" onclick="guardarPagoManual()" title="Registrar el pago" aria-label="Registrar el pago">${_i('save')}</button><span class="mini">Registrar el pago</span></div>
@@ -1963,7 +1975,7 @@ function pagoManual(presId){
 }
 async function guardarPagoManual(){
   const a = _pmPres; if (!a) return;
-  const f = document.getElementById('pm-file').files[0], imp = Number(document.getElementById('pm-imp').value), fecha = document.getElementById('pm-fecha').value || hoyAR();
+  const f = document.getElementById('pm-file').files[0], imp = leerMonto(document.getElementById('pm-imp').value), fecha = document.getElementById('pm-fecha').value || hoyAR();
   const medio = ((document.querySelector('#pm-medio span.on') || {}).textContent || 'Transferencia') + ' (cliente)', nota = document.getElementById('pm-nota').value.trim();
   if (!imp || imp <= 0) return toast('Poné el importe', 'error');
   if (!f && !await preguntar('¿Registrar el pago sin comprobante? Lo podés adjuntar después.', 'Sí, sin comprobante')) return;
@@ -2018,7 +2030,7 @@ function subirGeneral(tipoIni, refId){
       <select id="g-tipo" style="display:none">${tipos.map(([k]) => `<option value="${k}" ${(tipoIni || 'presupuesto') === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
       <div class="form" style="margin-top:10px">
         <label class="g-plata">Proveedor / a quién <input id="g-prov" list="dl-prov" value="${ref ? esc(ref.proveedor || '') : ''}"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist></label>
-        <label class="g-plata">Importe <input id="g-imp" type="number" inputmode="decimal" step="0.01" value="${ref ? (ref.importe || '') : ''}"></label>
+        <label class="g-plata">Importe <input id="g-imp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="0,00" value="${ref && ref.importe ? fmtMonto(ref.importe) : ''}"></label>
         <label>Fecha <input id="g-fecha" type="date" value="${hoyAR()}"></label>
         <label>Tarea <select id="g-tarea" onchange="gEtapas()"><option value="">(sin tarea)</option>${TAREAS.filter(t => t.estado !== 'cancelada').map(t => `<option value="${t.id}" ${ref && ref.tarea_id === t.id ? 'selected' : ''}>${esc(t.titulo_corto || t.titulo)}</option>`).join('')}</select></label>
         <label class="g-presup" id="g-etapa-l">Etapa de cotización <select id="g-etapa"></select></label>
@@ -2041,7 +2053,7 @@ function gTipo(k){
 }
 async function guardarGeneral(){
   const g = id => document.getElementById('g-' + id).value, tipo = g('tipo'), files = [...document.getElementById('g-file').files];
-  const prov = g('prov').trim() || null, imp = g('imp') ? Number(g('imp')) : null, fecha = g('fecha') || hoyAR(), tarea_id = g('tarea') ? Number(g('tarea')) : null, notas = g('notas').trim() || null;
+  const prov = g('prov').trim() || null, imp = leerMonto(g('imp')), fecha = g('fecha') || hoyAR(), tarea_id = g('tarea') ? Number(g('tarea')) : null, notas = g('notas').trim() || null;
   const plata_ = tipo === 'presupuesto' || tipo === 'factura' || tipo === 'pago';
   const gEtSel = document.getElementById('g-etapa'), gEt = (tipo === 'presupuesto' && tarea_id && gEtSel && gEtSel.value) ? Number(gEtSel.value) : null;
   if (plata_ && (!prov || !imp)) return toast('Poné proveedor e importe', 'error');
@@ -2073,7 +2085,7 @@ async function guardarGeneral(){
 // ── Pagos ──
 async function registrarPago(){
   const g = id => document.getElementById('pg-' + id).value;
-  const importe = Number(g('imp')); if (!importe) return toast('Falta el importe', 'error');
+  const importe = leerMonto(g('imp')); if (!importe) return toast('Falta el importe', 'error');
   const file = document.getElementById('pg-file').files[0] || null;
   const d = { obra_id: OBRA.id, tipo: 'pago', nombre: file ? file.name : 'Pago ' + fmtF(g('fecha') || hoyAR()), importe, fecha: g('fecha') || hoyAR(), proveedor: g('prov') || null, medio: g('medio'),
     ref_id: g('ref') ? Number(g('ref')) : null, tarea_id: g('tarea') ? Number(g('tarea')) : null, notas: g('notas') || null, subido_por: YO.email, estado: 'pagado', path: null, mime: null };

@@ -44,7 +44,19 @@ input, textarea { width: 100%; border: 1.5px solid var(--border); border-radius:
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const plata = n => '$ ' + Math.round(Number(n || 0)).toLocaleString('es-AR');
+const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const c = Math.round(Math.abs(v) * 100); return (v < 0 ? '-' : '') + String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + String(c % 100).padStart(2, '0'); };
+const leerMonto = v => { const t = String(v == null ? '' : v).trim(); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+function mascaraMonto(el, ev){
+  let v = el.value; const fin = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd);
+  // al escribir o pegar: un punto al final seguido de 0 a 2 dígitos es la coma decimal (los puntos de miles siempre van con 3 dígitos)
+  if ((!ev || /^insert/.test(ev.inputType || 'insert')) && !v.includes(',')){ const m = v.match(/\.(\d{0,2})$/); if (m) v = v.slice(0, m.index) + ',' + m[1]; }
+  const i = v.indexOf(','); let ent = (i < 0 ? v : v.slice(0, i)).replace(/\D/g, '').replace(/^0+(?=\d)/, ''), dec = i < 0 ? null : v.slice(i + 1).replace(/\D/g, '').slice(0, 2);
+  const out = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (dec == null ? '' : (ent ? '' : '0') + ',' + dec);
+  if (out !== el.value){ el.value = out; const pos = Math.max(0, out.length - fin); try { el.setSelectionRange(pos, pos); } catch (e) {} }
+}
+document.addEventListener('input', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto')) mascaraMonto(t, e); });
+document.addEventListener('focusout', e => { const t = e.target; if (t && t.classList && t.classList.contains('in-monto') && t.value.trim()) t.value = fmtMonto(leerMonto(t.value)); });
+const plata = n => '$ ' + fmtMonto(n || 0);
 const fmtF = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '';
 const hoy = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 let T = null, P = null, sb = null;
@@ -66,14 +78,14 @@ function render(){
   else cuerpo = `<div class="card">${P.estado === 'rechazado' ? `<div class="aviso">El comprobante anterior no se pudo validar${P.nota_rechazo ? ': ' + esc(P.nota_rechazo) : ''}. Subí uno nuevo, por favor.</div>` : ''}
     <div class="lbl">¿Ya pagaste? Subí el comprobante</div>
     <label class="adj" id="adj"><span id="adj-t">Foto o PDF del comprobante</span><input type="file" id="file" accept="image/*,application/pdf" onchange="elegir()"><b>Elegir</b></label>
-    <div class="fila"><div><div class="lbl">Importe pagado</div><input type="number" inputmode="decimal" id="imp" value="${Math.round(Number(P.importe))}"></div><div><div class="lbl">Fecha</div><input type="date" id="fecha" value="${hoy()}"></div></div>
+    <div class="fila"><div><div class="lbl">Importe pagado</div><input type="text" inputmode="decimal" autocomplete="off" class="in-monto" id="imp" value="${fmtMonto(P.importe)}"></div><div><div class="lbl">Fecha</div><input type="date" id="fecha" value="${hoy()}"></div></div>
     <div class="lbl">Comentario (opcional)</div><input id="nota" placeholder="Ej.: transferí desde la cuenta de Marcela">
     <button class="btn full" id="env" onclick="enviar()">Enviar comprobante</button></div>`;
   main.innerHTML = cabecera + cuerpo + '<div class="pie">Seguimiento de obra · Claudia Adorno</div>';
 }
 function elegir(){ const f = document.getElementById('file').files[0]; const a = document.getElementById('adj'); if (f){ a.classList.add('ok'); document.getElementById('adj-t').textContent = f.name; } }
 async function enviar(){
-  const f = document.getElementById('file').files[0], imp = Number(document.getElementById('imp').value), fecha = document.getElementById('fecha').value, nota = document.getElementById('nota').value;
+  const f = document.getElementById('file').files[0], imp = leerMonto(document.getElementById('imp').value), fecha = document.getElementById('fecha').value, nota = document.getElementById('nota').value;
   if (!f) return toast('Elegí la foto o el PDF del comprobante');
   if (!imp || imp <= 0) return toast('Poné el importe pagado');
   const b = document.getElementById('env'); b.disabled = true; b.textContent = 'Enviando…';
