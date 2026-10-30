@@ -463,38 +463,29 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .rowt a { color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .plata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; } .plata .l { font-size: 12px; color: var(--muted); font-weight: 600; } .plata .v { font-size: 16px; font-weight: 700; }
 .chip.grupo { background: #fef3c7; color: #92400e; }
-/* v12: obrero 3D de cubos (CSS 3D) · opción B elegida por JP */
-.v3 { width: 90px; height: 60px; perspective: 420px; position: relative; flex: none; margin-top: -6px; }
-.v3 .sc { position: absolute; left: 50%; bottom: 2px; transform-style: preserve-3d; transform: translateX(-50%) scale(.66) rotateX(-16deg) rotateY(-28deg); }
-.v3 .cube { position: absolute; transform-style: preserve-3d; bottom: 0; left: 0; }
-.v3 .cube i { position: absolute; left: 0; top: 0; width: var(--w); height: var(--h); background: var(--c); }
-.v3 .cube i:nth-child(1) { transform: translateZ(calc(var(--d) / 2)); }
-.v3 .cube i:nth-child(2) { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); filter: brightness(.6); }
-.v3 .cube i:nth-child(3) { width: var(--d); transform: rotateY(90deg) translateZ(calc(var(--w) - var(--d) / 2)); filter: brightness(.78); }
-.v3 .cube i:nth-child(4) { width: var(--d); transform: rotateY(-90deg) translateZ(calc(var(--d) / 2)); filter: brightness(.68); }
-.v3 .cube i:nth-child(5) { height: var(--d); transform: rotateX(90deg) translateZ(calc(var(--d) / 2)); filter: brightness(1.15); }
-.v3 .cube i:nth-child(6) { height: var(--d); transform: rotateX(-90deg) translateZ(calc(var(--h) - var(--d) / 2)); filter: brightness(.5); }
-.v3 .grp { position: absolute; transform-style: preserve-3d; bottom: 0; left: 0; width: 0; height: 0; }
-.v3.e-pendiente .obrero { animation: b-mira 2.6s ease-in-out infinite; transform-origin: 14px 0; }
-.v3.e-pendiente .cabeza { animation: b-cabeza 2.6s ease-in-out infinite; transform-origin: 8px 0; }
-.v3.e-en_curso .obrero { animation: b-bob .6s ease-in-out infinite; }
-.v3.e-en_curso .brazo.der { transform-origin: 4px 0; animation: b-martilla .6s ease-in-out infinite; }
-.v3.e-en_curso .lad { animation: b-apila 4s linear infinite; opacity: 0; }
-.v3.e-terminada .obrero { animation: b-salta 1.1s ease-in-out infinite; }
-.v3.e-terminada .brazo.izq { transform-origin: 4px 0; animation: b-saluda 1.1s ease-in-out infinite; }
-.v3.e-terminada .brazo.der { transform-origin: 4px 0; animation: b-saluda 1.1s ease-in-out infinite reverse; }
-.v3.e-terminada .bandera { transform-origin: 0 0; animation: b-flamea 1.2s ease-in-out infinite; }
-.v3.e-terminada .cf { animation: b-conf 1.5s ease-out infinite; }
-@keyframes b-mira { 0%,100% { transform: rotateY(0); } 45% { transform: rotateY(35deg); } 75% { transform: rotateY(-20deg); } }
-@keyframes b-cabeza { 0%,100% { transform: rotateX(0); } 50% { transform: rotateX(14deg); } }
-@keyframes b-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
-@keyframes b-martilla { 0%,100% { transform: rotateX(-110deg); } 50% { transform: rotateX(-20deg); } }
-@keyframes b-apila { 0% { opacity: 0; transform: translateY(-20px); } 6%,100% { opacity: 1; transform: none; } }
-@keyframes b-salta { 0%,100% { transform: translateY(0); } 35% { transform: translateY(-14px); } }
-@keyframes b-saluda { 0%,100% { transform: rotateZ(-14deg); } 50% { transform: rotateZ(14deg); } }
-@keyframes b-flamea { 0%,100% { transform: rotateY(0); } 50% { transform: rotateY(35deg); } }
-@keyframes b-conf { 0% { transform: translate3d(0,0,0) rotateZ(0); opacity: 1; } 100% { transform: translate3d(var(--dx), -55px, var(--dz)) rotateZ(360deg); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .v3 * { animation: none !important; } }
+/* v45 (JP): muñeco pixel por estado en la tarjeta circular */
+.pxm { position: relative; flex: none; margin-top: -2px; image-rendering: pixelated; }
+.pxm .pxf { position: absolute; left: 0; top: 0; } .pxm .pxf i { position: absolute; left: 0; top: 0; display: block; }
+.pxm.e-pendiente .pxf { animation: pxm-mira 2.6s steps(2) infinite; } @keyframes pxm-mira { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.pxm.e-en_curso .f1 { animation: pxm-f1 .6s steps(1) infinite; } .pxm.e-en_curso .f2 { animation: pxm-f2 .6s steps(1) infinite; }
+@keyframes pxm-f1 { 0%,100% { opacity: 1; } 50% { opacity: 0; } } @keyframes pxm-f2 { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+.pxm.e-terminada .pxf { animation: pxm-salta 1.1s ease-in-out infinite; } @keyframes pxm-salta { 0%,100% { transform: translateY(0); } 35% { transform: translateY(-12px); } }
+@media (prefers-reduced-motion: reduce) { .pxm * { animation: none !important; } }
+/* v45 (JP eligió la opción A): la ficha de tarea con cabecera "cielo del nivel" */
+.pxficha .cab { background: linear-gradient(#60a5fa, #bfdbfe 62%, #86efac 62%, #4ade80) !important; overflow: hidden; padding-bottom: 104px !important; }
+.pxficha .cab::before { content: ''; position: absolute; left: 0; right: 0; bottom: 30px; height: 14px; background: repeating-linear-gradient(90deg, #b45309 0 18px, #78350f 18px 20px), #b45309; box-shadow: inset 0 4px 0 #92400e; }
+.pxficha .cab .nube { position: absolute; width: 12px; height: 6px; background: #fff; left: 232px; top: 66px; box-shadow: 6px -6px 0 #fff, 12px 0 0 #fff, 18px -6px 0 #fff, 24px 0 0 #fff, -170px 50px 0 #fff, -164px 44px 0 #fff, -158px 50px 0 #fff, -152px 44px 0 #fff; opacity: .95; pointer-events: none; }
+.pxficha .cab .loma { position: absolute; bottom: 44px; left: -20px; width: 90px; height: 34px; border-radius: 50% 50% 0 0; background: #22c55e; box-shadow: inset 0 -6px 0 #16a34a; pointer-events: none; } .pxficha .cab .loma.b { left: 120px; width: 60px; height: 22px; background: #16a34a; }
+.pxficha .cab .m-head { position: relative; z-index: 2; } .pxficha .cab h3 { text-shadow: 1px 1px 0 #1e3a8a; } .pxficha .cab .btn.ico { color: #1e3a8a !important; } .pxficha .cab .btn.ico:hover { background: rgba(255,255,255,.35) !important; }
+.pxficha .cab .nivel-tag { position: relative; z-index: 2; font: 8px 'Pixel8', monospace; color: #1e3a8a; margin-top: 2px; letter-spacing: .5px; }
+.pxficha .cab #f-spr { position: absolute; right: 12px; bottom: 44px; z-index: 2; pointer-events: none; } .pxficha .cab #f-spr .pxm { margin: 0; }
+.pxficha .cab #f-spr.salta { animation: pxf-salto .6s cubic-bezier(.3,.9,.5,1) 1; } @keyframes pxf-salto { 0%,100% { transform: translateY(0); } 45%,60% { transform: translateY(-46px); } }
+.pxficha .cab #f-spr.salta .pxm { animation: pxf-giro .6s steps(6) 1; } @keyframes pxf-giro { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(-1); } }
+.pxficha .cab .px-coin { position: absolute; right: 30px; bottom: 92px; width: 14px; height: 18px; border-radius: 6px; background: #facc15; box-shadow: inset -3px 0 0 #ca8a04, inset 3px 0 0 #fde68a; color: #92400e; font: 10px/18px 'Pixel8', monospace; text-align: center; opacity: 0; z-index: 2; pointer-events: none; }
+.pxficha .cab .px-coin.va { animation: pxf-coin .7s ease-out 1; } @keyframes pxf-coin { 0% { opacity: 1; transform: translateY(0) scaleX(1); } 50% { transform: translateY(-46px) scaleX(.2); } 100% { opacity: 0; transform: translateY(-64px) scaleX(1); } }
+.pxficha .cab.golpe { animation: pxf-golpe .35s ease-out 1; } @keyframes pxf-golpe { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+.pxficha .datos4 .dato.est-en_curso { background: #fef3c7; } .pxficha .datos4 .dato.est-terminada { background: #dcfce7; }
+@media (prefers-reduced-motion: reduce) { .pxficha .cab * { animation: none !important; } }
 #ov .box .nov-in > input[type=date] { flex: 0 0 118px !important; font-size: 12px; padding: 7px 4px; }
 .grupos-ed { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin: 4px 0 8px; } .grupos-ed .chips { display: flex; flex-wrap: wrap; gap: 4px; } .grupos-ed .chip .btn { width: 18px; height: 18px; vertical-align: middle; }
 @media (max-width: 800px) { #ov .box input:not([type=checkbox]):not([type=file]), #ov .box select, #ov .box textarea { font-size: 16px !important; } }
@@ -719,7 +710,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tcirc .anillo.amber { --c: #f59e0b; } .tcirc .anillo.green { --c: #16a34a; } .tcirc .anillo.canc { --c: #cbd5e1; }
 .tcirc .interior { --pr-bg: #fef3c7; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #fff 0, var(--pr-bg) 70%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.06); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 8px 10px 10px; box-sizing: border-box; }
 .tcirc .cnts { height: 14px; display: flex; gap: 8px; font-size: 10.5px; color: var(--muted); font-weight: 700; }
-.tcirc .v3 { margin-top: -2px; }
+.tcirc .pxm { margin-top: -2px; }
 .tcirc.p-alta .interior { --pr-bg: #fecaca; } .tcirc.p-normal .interior { --pr-bg: #fde68a; } .tcirc.p-baja .interior { --pr-bg: #bbf7d0; }
 .tcirc .tt { font-weight: 800; -webkit-text-stroke: .55px #1e293b; paint-order: stroke fill; letter-spacing: .01em; font-size: 13.5px; line-height: 1.15; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; margin-top: 8px; }
 .tcirc .pct { font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 1px; }
@@ -1354,25 +1345,20 @@ function renderTablero(){
   document.getElementById('t-stat').textContent = `${L.length} tarea(s)`;
 }
 
-// Obrero 3D de cubos (opción B, JP 29-oct): pendiente = mira el plano · en curso = martilla y apila ladrillos · terminada = salta con la bandera
-function _cube(x,y,z,w,h,d,c){ return `<div class="cube" style="--w:${w}px;--h:${h}px;--d:${d}px;--c:${c};width:${w}px;height:${h}px;transform:translate3d(${x}px,${-y}px,${z}px)"><i></i><i></i><i></i><i></i><i></i><i></i></div>`; }
-function _pos(x,y,z,inner,cls,extra){ return `<div class="grp" style="transform:translate3d(${x}px,${-y}px,${z}px)"><div class="grp ${cls || ''}"${extra || ''}>${inner}</div></div>`; }
-function muneco(estado){
-  if (estado === 'cancelada') return '';
-  const piel = '#f1c27d', naranja = '#f97316', azul = '#1e3a8a', casco = '#facc15', gris = '#64748b';
-  let o = _cube(2,0,2,10,14,10,azul) + _cube(16,0,2,10,14,10,azul) + _cube(0,14,0,28,22,14,naranja);
-  o += _pos(6,36,2, _cube(0,0,0,16,16,14,piel) + _cube(-2,16,-2,20,6,18,casco) + _cube(-4,14,8,24,3,12,casco), 'cabeza');
-  if (estado === 'terminada'){
-    o += _pos(28,36,0, _cube(0,0,2,8,16,10,piel), 'brazo der');
-    o += _pos(-8,36,0, _cube(0,0,2,8,16,10,piel) + _cube(2,16,4,3,30,3,gris) + _pos(5,34,5, _cube(0,0,0,16,10,1,'#16a34a'), 'bandera'), 'brazo izq');
-  } else {
-    o += _pos(28,36,0, _cube(0,-16,2,8,16,10,piel) + (estado === 'en_curso' ? _cube(2,-20,-12,4,18,4,gris) + _cube(-4,-24,-16,16,6,10,'#374151') : ''), 'brazo der');
-    o += _pos(-8,36,0, _cube(0,-16,2,8,16,10,piel) + (estado === 'pendiente' ? _cube(-2,-14,10,14,18,2,'#e5e7eb') : ''), 'brazo izq');
-  }
-  let h = _pos(-14,0,0, o, 'obrero');
-  if (estado === 'en_curso'){ for (let f = 0; f < 4; f++) for (let i = 0; i < 2; i++) h += `<div class="grp lad" style="animation-delay:${(f*2+i)*.45}s">${_cube(24+i*16+(f%2?8:0), f*7, -8, 15, 6, 10, '#c2410c')}</div>`; }
-  if (estado === 'terminada'){ const cols = ['#f59e0b','#10b981','#ef4444','#3b82f6','#a855f7']; for (let i = 0; i < 6; i++) h += _pos(i*5-10, 60, 0, _cube(0,0,0,5,5,5,cols[i%5]), 'cf', ` style="--dx:${(i-3)*12}px;--dz:${(i%2?1:-1)*20}px;animation-delay:${i*.25}s"`); }
-  return `<div class="v3 e-${estado}" aria-hidden="true"><div class="sc">${h}</div></div>`;
+// v45 (JP): muñeco pixel por estado · pendiente = mira el plano · en curso = martilla y apila ladrillos · terminada = salta con la bandera
+const PX_PAL = { R: '#dc2626', B: '#1d4ed8', S: '#f5c89a', K: '#3f2a1a', Y: '#facc15', N: '#78350f', W: '#f8fafc', L: '#3b82f6', G: '#9ca3af', V: '#16a34a', P: '#e5e7eb', C: '#c2410c', M: '#7c2d12' };
+const PX_POSES = {
+  pendiente: ['.....RRRRRRR........','....RRRRRRRRRR......','....KKKSSSKS........','...KSKSSSSKSSS......','...KSKKSSSSKSSS.....','...KKSSSSSKKKK......','.....SSSSSSSS.......','....RRRBRRBRR...WWWW','...RRRRBRRBRRRR.WLLW','..RRRRBBBBBBRRRRWWWW','..SSRRBYBBYBRRSSWLLW','..SSSBBBBBBBBSSSWWWW','..SS.BBBBBBBB.SS....','.....BBB..BBB.......','....NNNN..NNNN......','...NNNNN..NNNNN.....'],
+  en_curso1: ['.....RRRRRRR....GGG.','....RRRRRRRRRR..GGG.','....KKKSSSKS.....N..','...KSKSSSSKSSS...N..','...KSKKSSSSKSSS..N..','...KKSSSSSKKKK...S..','.....SSSSSSSS...SS..','....RRRBRRBRRRR.....','...RRRRBRRBRRRR.....','..RRRRBBBBBBRRR.....','..SSRRBYBBYBRR......','..SSSBBBBBBBBS......','..SS.BBBBBBBB.......','.....BBB..BBB...CCCC','....NNNN..NNNN..CMCC','...NNNNN..NNNNN.CCCC'],
+  en_curso2: ['.....RRRRRRR........','....RRRRRRRRRR......','....KKKSSSKS........','...KSKSSSSKSSS......','...KSKKSSSSKSSS.....','...KKSSSSSKKKK......','.....SSSSSSSS.......','....RRRBRRBRR.......','...RRRRBRRBRRRR.....','..RRRRBBBBBBRRRR....','..SSRRBYBBYBRRSSNNGG','..SSSBBBBBBBBSSS..GG','..SS.BBBBBBBB.SS....','.....BBB..BBB...CCCC','....NNNN..NNNN..CMCC','...NNNNN..NNNNN.CCCC'],
+  terminada: ['.....RRRRRRR....PVVV','....RRRRRRRRRR..PVVV','....KKKSSSKS....PVVV','...KSKSSSSKSSS..P...','...KSKKSSSSKSSS.P...','...KKSSSSSKKKK..P...','.....SSSSSSSS...S...','....RRRBRRBRR..RS...','...RRRRBRRBRRRRR....','..RRRRBBBBBBRRRR....','..SSRRBYBBYBRR......','..SSSBBBBBBBBS......','..SS.BBBBBBBB.......','.....BBB..BBB.......','....NNNN..NNNN......','...NNNNN..NNNNN.....'],
+};
+function pxFrame(rows, px, cls){ const sh = []; rows.forEach((r, y) => [...r].forEach((c, x) => { if (PX_PAL[c]) sh.push(`${x*px}px ${y*px}px 0 0 ${PX_PAL[c]}`); }));
+  return `<div class="pxf ${cls || ''}" style="width:${rows[0].length*px}px;height:${rows.length*px}px"><i style="width:${px}px;height:${px}px;box-shadow:${sh.join(',')}"></i></div>`; }
+function muneco(estado, px){
+  if (estado === 'cancelada') return ''; px = px || 3;
+  const f = estado === 'en_curso' ? pxFrame(PX_POSES.en_curso1, px, 'f1') + pxFrame(PX_POSES.en_curso2, px, 'f2') : pxFrame(PX_POSES[estado] || PX_POSES.pendiente, px);
+  return `<div class="pxm e-${estado}" aria-hidden="true" style="width:${20*px}px;height:${16*px}px">${f}</div>`;
 }
 function card(t){
   const d = diasA(t.fecha_limite), abierta = t.estado === 'pendiente' || t.estado === 'en_curso';
@@ -1461,11 +1447,13 @@ function fichaTarea(id, tab){
     if (n.tipo === 'estado' || n.tipo === 'archivo') return `<div class="fl sis">${fmtTs(n.creado_at)} · ${esc(n.autor_nombre || quien(n.autor_email))}: ${esc(n.texto)}${del}</div>`;
     return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}</b>${esc(n.texto)}${del}</div>`;
   }).join('');
-  ovBox(`<div class="ficha nueva3">
+  const pct = t.estado === 'terminada' ? 100 : E.length ? Math.round(eh * 100 / E.length) : 0;
+  ovBox(`<div class="ficha nueva3 pxficha">
     <div class="cab"><div class="m-head" id="f-head"><h3 style="margin:0;flex:1">${esc(t.titulo)}</h3>
       <button class="btn ico" onclick="renombrarTarea(${id})" title="Cambiar el título" aria-label="Cambiar el título">${_i('edit')}</button>
       ${esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
-      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>
+      <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
+      <div class="nivel-tag">${E.length ? `ETAPA ${eh}/${E.length}` : 'TAREA ' + id} · ${pct}%</div><div class="loma a"></div><div class="loma b"></div><div class="nube"></div><div class="px-coin" id="f-coin">A</div><div id="f-spr">${muneco(t.estado, 3)}</div></div>
     <div class="datos datos4">
       <label class="dato" title="Rubro">${_i('brick')}<b>${esc(t.rubro || 'Rubro')}</b><select class="over" onchange="guardarCampo(${id},'rubro',this.value)"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
       <button class="dato" title="Grupos que lo trabajan" onclick="editarGrupo(${id})">${_i('users')}<b>${(() => { const G = gruposDe(t); return G.length > 1 ? G.length + ' grupos' : esc(G[0] || 'Grupo'); })()}</b></button>
@@ -1516,7 +1504,10 @@ async function guardarCampo(id, campo, valor){
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(id); renderTablero();
 }
-async function cambiarEstadoFicha(id, estado){ const t = tareaDe(id); if (t.estado === estado) return; await cambiarEstado(id, estado); fichaTarea(id); }
+async function cambiarEstadoFicha(id, estado){ const t = tareaDe(id); if (t.estado === estado) return; if (estado === 'terminada') await festejoFicha(); await cambiarEstado(id, estado); fichaTarea(id); }
+function festejoFicha(){ return new Promise(res => { const sp = document.getElementById('f-spr'), co = document.getElementById('f-coin'), cab = document.querySelector('#ov .pxficha .cab');
+  if (!sp || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return res();
+  sp.classList.add('salta'); setTimeout(() => { if (co){ co.classList.add('va'); } if (cab) cab.classList.add('golpe'); lpJingle(); lpVoz(); }, 240); setTimeout(res, 950); }); }
 function renombrarTarea(id){
   const t = tareaDe(id), h = document.getElementById('f-head');
   h.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0">
