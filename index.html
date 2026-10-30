@@ -474,6 +474,15 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .cobro .ped .pacc { flex: 1 1 100%; display: flex; justify-content: flex-end; }
 .cobro .btn.pedir { width: 100%; margin-top: 8px; border: 0; border-radius: 12px; padding: 10px; background: var(--primary); color: #fff; font: inherit; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; } .cobro .btn.pedir .ico { width: 18px; height: 18px; }
 .cobro .mini.ok { color: var(--green); font-weight: 700; margin-top: 6px; }
+/* v50: pagos por presupuesto */
+.arow > .cobro { grid-column: 1 / -1; margin-top: 2px; padding: 8px 10px; background: #fffbeb; }
+.cobro .ppago { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px dashed #f3e8c8; font-size: 13px; }
+.cobro .ppago .pn { flex: 1; min-width: 0; font-weight: 600; } .cobro .ppago .pn small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cobro .ppago > b { white-space: nowrap; color: var(--green); } .cobro .ppago .sincomp { color: #d97706; }
+.cobro .pbts { display: flex; gap: 6px; margin-top: 8px; } .cobro .pbts .btn.pedir { margin-top: 0; width: auto; flex: 1; font-size: 13px; padding: 9px 6px; gap: 6px; } .cobro .pbts .btn.pedir .ico { width: 16px; height: 16px; }
+.cobro .btn.pedir.sec { background: #fff; color: var(--primary-dark); border: 1.5px solid #fcd34d; }
+.pedir3 .btn.adjuntar { width: 100%; height: 44px; padding: 0 12px; gap: 8px; border: 1.5px dashed #d6d3d1; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; color: var(--primary-dark); background: #fff; display: inline-flex; align-items: center; cursor: pointer; }
+.pedir3 .btn.adjuntar.ok { border-style: solid; border-color: #86efac; background: #f0fdf4; color: #166534; } .pedir3 .btn.adjuntar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pedir3 .cab { padding: 14px 16px 14px !important; } .pedir3 .tit-fija { color: #fff; font-size: 17px; font-weight: 700; }
 .pedir3 .cuerpo { padding: 12px 14px 16px; } .pedir3 .cuerpo input { width: 100%; box-sizing: border-box; background: #fff; border: 1px solid #f3e8c8; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 16px; }
 .pedir3 .seg { display: flex; flex-wrap: wrap; gap: 5px; } .pedir3 .seg span { border: 1.5px solid #f3e8c8; background: #fff; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; } .pedir3 .seg span.on { background: var(--primary-bg); border-color: #fcd34d; color: var(--primary-dark); }
@@ -1823,20 +1832,19 @@ function renderArchivosTodo(){
         : `<button class="btn primary ico chico" onclick="estadoArchivo(${a.id},'aprobado','presupuesto')" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','presupuesto')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`;
       else h += `<button class="btn ico chico" onclick="estadoArchivo(${a.id},'pendiente','${a.tipo}')" title="Volver a pendiente" aria-label="Volver a pendiente">${_i('undo')}</button>`;
     }
-    if (a.tipo === 'presupuesto' && a.estado === 'aprobado') h = `<button class="btn primary ico chico" onclick="pedirPago(${a.id})" title="Pedir el pago al cliente" aria-label="Pedir pago">${_i('money')}</button>` + h;
     if (esAdmin() || (mio && a.tipo !== 'pago')) h += `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'${a.tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`;
     return h;
   };
   const ICO_T = { presupuesto: 'dollar', factura: 'file', pago: 'money', foto: 'clip', plano: 'clip', otro: 'clip' };
-  document.getElementById('a-lista').innerHTML = (!tipo || tipo === 'pago' ? cobrosPendientesHtml() : '') + (L.length ? L.map(a => { const t = a.tarea_id ? tareaDe(a.tarea_id) : null; const ref = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
-    const det = [TIPO_LBL[a.tipo] || a.tipo, fmtF(a.fecha), a.medio, ref ? 'cancela ' + ref.nombre : null, 'subió ' + quien(a.subido_por)].filter(Boolean).map(esc).join(' · ');
+  document.getElementById('a-lista').innerHTML = (tipo === 'pago' ? cobrosPendientesHtml() : !tipo ? cobrosPendientesHtml(true) : '') + (L.length ? L.map(a => { const t = a.tarea_id ? tareaDe(a.tarea_id) : null; const ref = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
+    const det = [TIPO_LBL[a.tipo] || a.tipo, fmtF(a.fecha), a.medio, ref ? (ref.tipo === 'presupuesto' ? 'a cuenta de ' : 'cancela ') + ref.nombre : null, 'subió ' + quien(a.subido_por)].filter(Boolean).map(esc).join(' · ');
     const quienProv = a.proveedor ? `<span class="aprov">${_i('users')} ${esc(a.proveedor)}</span>` : '';
     const tareaTxt = t ? `<span class="atarea">${esc(t.titulo_corto || t.titulo)}</span>` : '';
     return `<div class="arow t-${a.tipo}">
       <div class="aico">${_i(ICO_T[a.tipo] || 'file')}</div>
       <div class="amain"><div class="an">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${esc(a.nombre)}</a>` : esc(a.nombre)}${a.path ? '' : ' <span class="mini">(sin archivo)</span>'}</div>${quienProv || tareaTxt ? `<div class="aquien">${quienProv}${tareaTxt}</div>` : ''}<div class="mini">${det}</div>${a.notas ? `<div class="mini anota">${esc(a.notas)}</div>` : ''}</div>
       <div class="aimp">${a.importe ? `<b>${plata(a.importe)}</b>` : ''}${chipEstado(a)}</div>
-      <div class="aacc">${acc(a)}</div></div>`; }).join('') : '<div class="empty">Nada por acá todavía.</div>');
+      <div class="aacc">${acc(a)}</div>${a.tipo === 'presupuesto' && a.estado === 'aprobado' ? pagosPresHtml(a, 'arch', false) : ''}</div>`; }).join('') : '<div class="empty">Nada por acá todavía.</div>');
 }
 // ── v49 (JP): cobros al cliente · pedido de pago con link público + comprobante + confirmación · pagos parciales libres ──
 const COBRO_TIPO = { alias: 'Alias', cbu: 'CBU / CVU', mp: 'Mercado Pago' };
@@ -1854,26 +1862,37 @@ function filaPedido(p, ctx){
   const det = [fmtF(p.creado_at), 'a ' + p.destinatario, c.tipo ? COBRO_TIPO[c.tipo] : null, p.estado === 'comprobante' || p.estado === 'confirmado' ? `pagó ${plata(p.comp_importe || p.importe)} el ${fmtF(p.comp_fecha)}` : null, p.comp_nota].filter(Boolean).map(esc).join(' · ');
   return `<div class="ped"><div class="pmain"><div class="pn">${esc(p.concepto)}</div><div class="mini">${det}</div></div><div class="pimp"><b>${plata(p.importe)}</b><span class="chip ${cls}">${txt}</span></div><div class="pacc">${acc.join('')}</div></div>`;
 }
+function pagosPresHtml(a, ctx, conNombre){
+  const pag = pagadoDe(a.id), tot = Number(a.importe || 0), pct = tot ? Math.min(100, Math.round(pag * 100 / tot)) : 0;
+  const P = ARCHIVOS.filter(x => x.tipo === 'pago' && x.ref_id === a.id).sort((x, y) => String(x.fecha || '').localeCompare(String(y.fecha || '')) || x.id - y.id);
+  const L = pedidosDe(a.id).filter(q => q.estado !== 'confirmado');
+  const filaPago = (x, i) => `<div class="ppago"><span class="pn">${i + 1}º pago · ${fmtF(x.fecha)}<small>${esc([x.medio, x.notas].filter(Boolean).join(' · ') || 'Pago registrado')}</small></span><b>${plata(x.importe)}</b>${x.path
+      ? `<button class="btn ico chico" onclick="abrirArchivo('${esc(x.path)}')" title="Ver el comprobante" aria-label="Ver comprobante">${_i('eye')}</button>`
+      : `<button class="btn ico chico sincomp" onclick="adjuntarComprobante(${x.id})" title="Sin comprobante: adjuntarlo" aria-label="Adjuntar comprobante">${_i('clip')}</button>`}</div>`;
+  const pie = pag < tot
+    ? `<div class="pbts"><button class="btn pedir" onclick="pedirPago(${a.id})">${_i('send')} Pedir pago${pag ? ' · faltan ' + plata(tot - pag) : ''}</button><button class="btn pedir sec" onclick="pagoManual(${a.id})">${_i('clip')} Cargar comprobante</button></div>`
+    : '<div class="mini ok">✓ Pagado por completo</div>';
+  return `<div class="cobro en-${ctx}"><div class="ch"><span>${conNombre ? `<b>${esc(a.proveedor || a.nombre)}</b> · ` : ''}Pagado ${plata(pag)} de ${plata(tot)}</span><b class="pct">${pct} %</b></div><div class="cbar"><i style="width:${pct}%"></i></div>
+    ${P.map(filaPago).join('')}${L.map(q => filaPedido(q, ctx)).join('')}${!P.length && !L.length ? '<div class="mini">Todavía no hay pagos.</div>' : ''}${pie}</div>`;
+}
 function cobrosHtml(tid){
   const pres = ARCHIVOS.filter(a => a.tarea_id === tid && a.tipo === 'presupuesto' && a.estado === 'aprobado'); if (!pres.length) return '';
-  return pres.map(a => { const pag = pagadoDe(a.id), tot = Number(a.importe || 0), pct = tot ? Math.min(100, Math.round(pag * 100 / tot)) : 0, L = pedidosDe(a.id);
-    return `<div class="cobro"><div class="ch"><span><b>${esc(a.proveedor || a.nombre)}</b> · pagado ${plata(pag)} de ${plata(tot)}</span><b class="pct">${pct} %</b></div><div class="cbar"><i style="width:${pct}%"></i></div>
-      ${L.map(p => filaPedido(p, 'ficha')).join('')}
-      ${pag < tot ? `<button class="btn pedir" onclick="pedirPago(${a.id})">${_i('money')} Pedir pago al cliente${pag ? ` · faltan ${plata(tot - pag)}` : ''}</button>` : '<div class="mini ok">✓ Presupuesto pagado por completo</div>'}</div>`; }).join('');
+  return pres.map(a => pagosPresHtml(a, 'ficha', true)).join('');
 }
-function cobrosPendientesHtml(){
-  const L = PEDIDOS.filter(p => p.estado !== 'confirmado'); if (!L.length) return '';
+function cobrosPendientesHtml(soloComp){
+  const L = PEDIDOS.filter(p => soloComp ? p.estado === 'comprobante' : p.estado !== 'confirmado'); if (!L.length) return '';
   return `<div class="cobro lista"><div class="ch"><span><b>Cobros al cliente</b> · ${L.filter(p => p.estado === 'comprobante').length ? L.filter(p => p.estado === 'comprobante').length + ' por confirmar' : L.length + ' pendiente(s)'}</span></div>${L.map(p => filaPedido(p, 'archivos')).join('')}</div>`;
 }
 function cobroDe(nombre){ return COBROS.find(c => c.nombre.toLowerCase() === String(nombre || '').trim().toLowerCase()); }
-let _pedPres = null;
+let _pedPres = null, _volverA = null;
+function cerrarSub(){ cerrarOv(); if (_volverA){ const t = _volverA; _volverA = null; fichaTarea(t, 'presupuestos'); } }
 function pedirPago(presId){
-  const a = ARCHIVOS.find(x => x.id === presId); if (!a) return; _pedPres = a;
+  const a = ARCHIVOS.find(x => x.id === presId); if (!a) return; _pedPres = a; _volverA = document.querySelector('#ov .pxficha') && a.tarea_id ? a.tarea_id : null;
   const t = a.tarea_id ? tareaDe(a.tarea_id) : null, pag = pagadoDe(a.id), saldo = Math.max(0, Number(a.importe || 0) - pag);
   const arqs = PARTS.filter(p => p.activo && p.rol === 'arquitecto').map(p => p.nombre).filter(Boolean);
   const dests = [...new Set([a.proveedor, ...arqs].filter(Boolean))];
   ovBox(`<div class="nueva3 pedir3">
-    <div class="cab"><button class="btn ico cierra" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button><div class="tit-fija">Pedir pago al cliente</div>
+    <div class="cab"><button class="btn ico cierra" onclick="cerrarSub()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button><div class="tit-fija">Pedir pago al cliente</div>
       <div class="mini" style="color:#fde68a">${esc(a.proveedor || a.nombre)} · ${plata(a.importe)}${pag ? ' · pagado ' + plata(pag) : ''}${t ? ' · ' + esc(t.titulo_corto || t.titulo) : ''}</div></div>
     <div class="cuerpo">
       <h4>Importe a pedir</h4><input id="pd-imp" type="number" inputmode="decimal" value="${Math.round(saldo)}" style="font-size:22px;font-weight:700">
@@ -1921,7 +1940,50 @@ async function compartirPedido(id){
   if (!ok){ try { await navigator.clipboard.writeText(texto); } catch (e) {} window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener'); }
   if (!p.enviado_at){ await sb.from('obra_pedidos_pago').update({ enviado_at: new Date().toISOString() }).eq('id', id); p.enviado_at = new Date().toISOString(); }
 }
-function refrescarCobros(tid){ if (document.getElementById('ov') && tid && document.querySelector('#ov .pxficha')) fichaTarea(tid, 'presupuestos'); refrescarArchivos('pago'); renderResumen(); }
+function refrescarCobros(tid){
+  if (_volverA){ const t = _volverA; _volverA = null; fichaTarea(t, 'presupuestos'); }
+  else if (document.getElementById('ov') && tid && document.querySelector('#ov .pxficha')) fichaTarea(tid, 'presupuestos');
+  refrescarArchivos('pago'); renderResumen();
+}
+// v50: pago cargado a mano contra un presupuesto (el cliente mandó el comprobante por WhatsApp, efectivo, etc.)
+let _pmPres = null;
+function pagoManual(presId){
+  const a = ARCHIVOS.find(x => x.id === presId); if (!a) return; _pmPres = a; _volverA = document.querySelector('#ov .pxficha') && a.tarea_id ? a.tarea_id : null;
+  const t = a.tarea_id ? tareaDe(a.tarea_id) : null, pag = pagadoDe(a.id), saldo = Math.max(0, Number(a.importe || 0) - pag);
+  ovBox(`<div class="nueva3 pedir3">
+    <div class="cab"><button class="btn ico cierra" onclick="cerrarSub()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button><div class="tit-fija">Cargar pago con comprobante</div>
+      <div class="mini" style="color:#fde68a">${esc(a.proveedor || a.nombre)} · ${plata(a.importe)}${pag ? ' · pagado ' + plata(pag) : ''}${t ? ' · ' + esc(t.titulo_corto || t.titulo) : ''}</div></div>
+    <div class="cuerpo">
+      <h4>Comprobante</h4><button class="btn adjuntar" id="pm-adj" onclick="document.getElementById('pm-file').click()">${_i('clip')}<span id="pm-adj-t">Foto o PDF del comprobante</span></button><input type="file" id="pm-file" accept="image/*,application/pdf" style="display:none" onchange="const f=this.files[0]; if(f){ document.getElementById('pm-adj').classList.add('ok'); document.getElementById('pm-adj-t').textContent=f.name; }">
+      <div class="fila2"><div style="flex:1"><h4>Importe</h4><input id="pm-imp" type="number" inputmode="decimal" value="${Math.round(saldo)}"></div><div style="flex:1"><h4>Fecha</h4><input id="pm-fecha" type="date" value="${hoyAR()}"></div></div>
+      <h4>Cómo se pagó</h4><div class="seg" id="pm-medio">${['Transferencia', 'Mercado Pago', 'Efectivo', 'Cheque'].map((m, i) => `<span class="${i ? '' : 'on'}" onclick="document.querySelectorAll('#pm-medio span').forEach(x => x.classList.toggle('on', x === this))">${m}</span>`).join('')}</div>
+      <h4>Nota (opcional)</h4><input id="pm-nota" placeholder="Ej.: 2º avance, lo mandó el cliente por WhatsApp">
+      <div class="guardar"><button class="btn big" onclick="guardarPagoManual()" title="Registrar el pago" aria-label="Registrar el pago">${_i('save')}</button><span class="mini">Registrar el pago</span></div>
+    </div></div>`);
+}
+async function guardarPagoManual(){
+  const a = _pmPres; if (!a) return;
+  const f = document.getElementById('pm-file').files[0], imp = Number(document.getElementById('pm-imp').value), fecha = document.getElementById('pm-fecha').value || hoyAR();
+  const medio = ((document.querySelector('#pm-medio span.on') || {}).textContent || 'Transferencia') + ' (cliente)', nota = document.getElementById('pm-nota').value.trim();
+  if (!imp || imp <= 0) return toast('Poné el importe', 'error');
+  if (!f && !await preguntar('¿Registrar el pago sin comprobante? Lo podés adjuntar después.', 'Sí, sin comprobante')) return;
+  const d = { obra_id: OBRA.id, tipo: 'pago', nombre: 'Pago a ' + (a.proveedor || 'proveedor') + ' ' + fmtF(fecha), importe: imp, fecha, proveedor: a.proveedor || null, medio, ref_id: a.id, tarea_id: a.tarea_id, notas: nota || null, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
+  try {
+    if (f){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`; d.mime = f.type || null; const up = await sb.storage.from('obra').upload(d.path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) throw up.error; }
+    const { error } = await sb.from('obra_archivos').insert(d); if (error) throw error;
+    if (a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${a.proveedor || 'proveedor'}${f ? ' (con comprobante)' : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  } catch (e) { return toast('No se pudo guardar: ' + e.message, 'error'); }
+  toast('Pago registrado', 'success'); cerrarOv(); await cargar(); refrescarCobros(a.tarea_id);
+}
+function adjuntarComprobante(id){
+  const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*,application/pdf';
+  i.onchange = async () => { const f = i.files[0], x = ARCHIVOS.find(y => y.id === id); if (!f || !x) return;
+    const path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`;
+    const up = await sb.storage.from('obra').upload(path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) return toast(up.error.message, 'error');
+    const { error } = await sb.from('obra_archivos').update({ path, mime: f.type || null }).eq('id', id); if (error) return toast(error.message, 'error');
+    toast('Comprobante adjuntado', 'success'); await cargar(); refrescarCobros(x.tarea_id); };
+  i.click();
+}
 async function confirmarPedido(id, ctx){
   const p = PEDIDOS.find(x => x.id === id); if (!p) return; const c = p.cobro || {};
   const imp = Number(p.comp_importe || p.importe);
