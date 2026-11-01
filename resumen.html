@@ -26,6 +26,7 @@ main { max-width: 720px; margin: -36px auto 0; padding: 0 12px 40px; }
 .r-bar { height: 8px; background: #fde68a; border-radius: 4px; overflow: hidden; margin-top: 6px; } .r-bar i { display: block; height: 100%; background: var(--primary, #b45309); border-radius: 4px; }
 .r-kp { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 13px; color: var(--muted); } .r-kp b { color: var(--text, #1e293b); font-size: 15px; margin-right: 2px; } .r-kp .rojo b { color: var(--red, #b91c1c); }
 .r-nota p { margin: 0; font-size: 15px; white-space: normal; }
+.r-nt { font-size: 13.5px; line-height: 1.35; background: #fffbeb; border-left: 3px solid #fcd34d; border-radius: 6px; padding: 6px 8px; margin-top: 6px; } .r-nt small { color: var(--muted); white-space: nowrap; }
 .r-it { position: relative; } .r-it.oculto { opacity: .4; } .r-it.oculto > *:not(.r-ojo) { text-decoration: line-through; }
 .r-tarea { padding: 9px 0; border-bottom: 1px solid var(--border, #f3e8c8); } .r-tarea:last-of-type { border-bottom: 0; }
 .r-tt { display: flex; align-items: center; gap: 8px; } .r-tt b { flex: 1; font-size: 15px; }
@@ -68,6 +69,8 @@ function resumenHTML(R, ed){
   const ojo = k => ed ? `<button class="r-ojo ${oc.has(k) ? 'off' : ''}" onclick="toggleOculto('${k}')" title="${oc.has(k) ? 'Mostrar al cliente' : 'Ocultar al cliente'}" aria-label="Mostrar u ocultar"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>${oc.has(k) ? '<line x1="3" y1="3" x2="21" y2="21"/>' : ''}</svg></button>` : '';
   const it = (k, html, cls) => vis(k) ? `<div class="r-it ${cls || ''} ${oc.has(k) ? 'oculto' : ''}" data-k="${k}">${html}${ojo(k)}</div>` : '';
   const sec = (k, titulo, inner, extra) => { if (!inner || (!ed && oc.has(k))) return ''; return `<section class="r-sec ${oc.has(k) ? 'oculto' : ''}" data-k="${k}"><h2>${titulo}${ojo(k)}</h2>${extra || ''}${inner}</section>`; };
+  // v54 (JP): notas del detalle de cada tarea escritas en el período · arrancan ocultas, el arquitecto elige cuáles ve el cliente
+  const notas = t => (t.notas || []).map(n => it('n:' + n.id, `<div class="r-nt">${R_ESC(n.texto).replace(/\n/g, '<br>')}<small> · ${R_F(n.fecha)}</small></div>`, 'r-nit')).join('');
   const delta = (A.pct || 0) - (A.pct_antes || 0);
   let h = `<section class="r-sec r-avance"><div class="r-big"><div class="r-pct">${A.pct || 0}<small>%</small></div><div class="r-txt"><b>Avance general de la obra</b><span>${delta > 0 ? '+' + delta + ' % en este período' : delta < 0 ? delta + ' % (se recalculó el plan)' : 'Sin cambios en el porcentaje'}</span><div class="r-bar"><i style="width:${A.pct || 0}%"></i></div></div></div>
     <div class="r-kp"><span><b>${A.terminadas || 0}</b> terminada${A.terminadas === 1 ? '' : 's'}</span><span><b>${A.en_curso || 0}</b> en curso</span><span><b>${A.pendientes || 0}</b> por empezar</span>${A.atrasadas ? `<span class="rojo"><b>${A.atrasadas}</b> atrasada${A.atrasadas === 1 ? '' : 's'}</span>` : ''}</div></section>`;
@@ -76,7 +79,7 @@ function resumenHTML(R, ed){
   const mov = (C.con_movimiento || []).map(t => { const d = (t.pct || 0) - (t.pct_antes || 0);
     const chip = t.terminada ? '<span class="r-chip ok">✓ Terminada</span>' : `<span class="r-chip">${t.pct || 0} %${d > 0 ? ' <i>+' + d + '</i>' : ''}</span>`;
     const et = (t.etapas_hechas || []).map(e => `<li>✓ ${R_ESC(e.titulo)}<small> · ${R_F(e.fecha)}</small></li>`).join('');
-    return it('t:' + t.id, `<div class="r-tt"><b>${R_ESC(t.titulo)}</b>${chip}</div>${t.grupo ? `<div class="r-mini">A cargo de ${R_ESC(t.grupo)}</div>` : ''}${et ? `<ul>${et}</ul>` : ''}${!t.terminada && t.siguiente ? `<div class="r-mini">Próximo paso: ${R_ESC(t.siguiente)}</div>` : ''}${t.n_fotos ? `<div class="r-mini">📷 ${t.n_fotos} foto${t.n_fotos > 1 ? 's' : ''}</div>` : ''}`, 'r-tarea'); }).join('');
+    return it('t:' + t.id, `<div class="r-tt"><b>${R_ESC(t.titulo)}</b>${chip}</div>${t.grupo ? `<div class="r-mini">A cargo de ${R_ESC(t.grupo)}</div>` : ''}${et ? `<ul>${et}</ul>` : ''}${notas(t)}${!t.terminada && t.siguiente ? `<div class="r-mini">Próximo paso: ${R_ESC(t.siguiente)}</div>` : ''}${t.n_fotos ? `<div class="r-mini">📷 ${t.n_fotos} foto${t.n_fotos > 1 ? 's' : ''}</div>` : ''}`, 'r-tarea'); }).join('');
   h += sec('sec:mov', 'Qué se hizo en este período', mov || (ed ? '<div class="r-vacio">No hubo etapas terminadas ni tareas cerradas en el período.</div>' : ''));
   if (!mov && !ed) h += `<section class="r-sec"><h2>Qué se hizo en este período</h2><div class="r-vacio">No hubo avances para informar en este período.</div></section>`;
   // Fotos
@@ -98,7 +101,7 @@ function resumenHTML(R, ed){
   h += sec('sec:prox', 'Lo que viene', prox || (ed ? '<div class="r-vacio">No hay fechas comprometidas para el próximo período.</div>' : ''));
   const atr = (C.atrasadas || []).map(t => it('at:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b><small>vencía el ${R_FA(t.fecha_limite)}</small></span><em class="rojo">${t.dias} d</em></div>`)).join('');
   h += sec('sec:atr', 'Atrasos', atr);
-  const sin = (C.sin_movimiento || []).map(t => it('s:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b>${t.siguiente ? `<small>Próximo paso: ${R_ESC(t.siguiente)}</small>` : ''}</span><em>${t.pct || 0} %</em></div>`)).join('');
+  const sin = (C.sin_movimiento || []).map(t => it('s:' + t.id, `<div class="r-row"><span><b>${R_ESC(t.titulo)}</b>${t.siguiente ? `<small>Próximo paso: ${R_ESC(t.siguiente)}</small>` : ''}</span><em>${t.pct || 0} %</em></div>${notas(t)}`)).join('');
   h += sec('sec:sin', 'Sin novedades en el período', sin);
   return h;
 }
