@@ -1055,7 +1055,7 @@ function festejoLogin(){ return new Promise(res => {
   if (!sp || !caja || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return res();
   const cabeza = sp.getBoundingClientRect().top - LP_SPRITE.length * Number(sp.dataset.px || 13); const alto = cabeza - caja.getBoundingClientRect().bottom; sp.style.setProperty('--alto', (-Math.max(40, alto - 4)) + 'px');
   sp.classList.add('festejo');
-  setTimeout(() => { caja.classList.add('golpe'); m.classList.add('salta'); lpJingle(); lpVoz(); }, 620);
+  setTimeout(() => { caja.classList.add('golpe'); m.classList.add('salta'); lpJingle(); }, 620);  // v53 (JP): sin la voz en el login
   setTimeout(res, 1550);
 }); }
 let OBRA = null, ROL = null, YO = { email: '', nombre: '' }, TAREAS = [], ARCHIVOS = [], PARTS = [], NOVS = [], ETAPAS = [], PEDIDOS = [], COBROS = [];
