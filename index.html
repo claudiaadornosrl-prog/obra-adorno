@@ -554,11 +554,15 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 /* v56: ¿se terminó alguna etapa? */
 #ov2 .box2.etq { max-width: 380px; } #ov2 .etq .q b { display: block; } #ov2 .etq .q small { display: block; color: var(--muted); font-style: italic; margin-top: 4px; font-size: 13px; }
 .etq-l { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow: auto; margin-bottom: 14px; }
-.etq-l label { display: flex; align-items: flex-start; gap: 10px; border: 1.5px solid #f3e8c8; border-radius: 12px; padding: 10px; cursor: pointer; font-size: 14px; line-height: 1.3; }
-.etq-l label:has(input:checked) { border-color: #fcd34d; background: var(--primary-bg); }
-.etq-l input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--primary); flex: none; }
-.etq-l span { flex: 1; min-width: 0; } .etq-l i { font-style: normal; font-size: 11px; font-weight: 700; color: var(--primary-dark); background: var(--primary-bg); border: 1px solid #fcd34d; border-radius: 999px; padding: 0 8px; margin-left: 6px; white-space: nowrap; }
-.etq-l small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; } .etq-l label.bloq { opacity: .55; cursor: default; }
+.etq-r { border: 1.5px solid #f3e8c8; border-radius: 12px; padding: 9px 10px; font-size: 14px; line-height: 1.3; }
+.etq-r.de { border-color: #93c5fd; background: #eff6ff; } .etq-r.fin { border-color: #fcd34d; background: var(--primary-bg); }
+.etq-t i { font-style: normal; font-size: 11px; font-weight: 700; color: var(--primary-dark); background: var(--primary-bg); border: 1px solid #fcd34d; border-radius: 999px; padding: 0 8px; margin-left: 6px; white-space: nowrap; }
+.etq-t small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.etq-b { display: flex; gap: 6px; margin-top: 7px; }
+.etq-b button { flex: 1; font: inherit; font-size: 12.5px; font-weight: 600; padding: 6px 4px; border-radius: 9px; border: 1.5px solid #e5e7eb; background: #fff; color: #475569; cursor: pointer; }
+.etq-b button[data-v=de][aria-pressed=true] { border-color: #3b82f6; background: #3b82f6; color: #fff; }
+.etq-b button[data-v=fin][aria-pressed=true] { border-color: #f59e0b; background: #f59e0b; color: #fff; }
+.etq-b button[disabled] { opacity: .45; cursor: default; }
 #ov2 .b-si[disabled] { opacity: .45; cursor: default; }
 #ov2 .bts { display: flex; gap: 8px; justify-content: flex-end; }
 #ov2 .bts button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
@@ -722,6 +726,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .ficha .detlog .fl { padding: 6px 0 2px; border-top: 1px dashed #e2e8f0; margin-top: 6px; font-size: 13.5px; white-space: pre-wrap; position: relative; }
 .ficha .detlog .fl b { display: block; color: var(--primary-dark); font-weight: 700; font-size: 11px; margin-bottom: 1px; }
 .ficha .detlog .fl.sis { font-size: 12px; color: var(--muted); }
+.ficha .detlog .fl-et { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--primary-bg); border: 1px solid #fcd34d; color: var(--primary-dark); font-weight: 600; font-size: 10.5px; line-height: 16px; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 .ficha .detlog .fl-del { opacity: .5; vertical-align: middle; } .ficha .detlog .fl-del:hover { opacity: 1; }
 .ficha .rowt { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 .ficha .nov-in.adj { background: var(--primary-bg); border-radius: 10px; padding: 6px 8px; flex-wrap: wrap; } .ficha .rowt { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .ficha .rowt .acc { margin-left: auto; display: inline-flex; }
@@ -1205,7 +1210,7 @@ function resumenHTML(R, ed){
   const it = (k, html, cls) => vis(k) ? `<div class="r-it ${cls || ''} ${oc.has(k) ? 'oculto' : ''}" data-k="${k}">${html}${ojo(k)}</div>` : '';
   const sec = (k, titulo, inner, extra) => { if (!inner || (!ed && oc.has(k))) return ''; return `<section class="r-sec ${oc.has(k) ? 'oculto' : ''}" data-k="${k}"><h2>${titulo}${ojo(k)}</h2>${extra || ''}${inner}</section>`; };
   // v54 (JP): notas del detalle de cada tarea escritas en el período · arrancan ocultas, el arquitecto elige cuáles ve el cliente
-  const notas = t => (t.notas || []).map(n => it('n:' + n.id, `<div class="r-nt">${R_ESC(n.texto).replace(/\n/g, '<br>')}<small> · ${R_F(n.fecha)}</small></div>`, 'r-nit')).join('');
+  const notas = t => (t.notas || []).map(n => it('n:' + n.id, `<div class="r-nt">${R_ESC(n.texto).replace(/\n/g, '<br>')}<small> · ${n.etapa ? R_ESC(n.etapa) + ' · ' : ''}${R_F(n.fecha)}</small></div>`, 'r-nit')).join('');
   const delta = (A.pct || 0) - (A.pct_antes || 0);
   let h = `<section class="r-sec r-avance"><div class="r-big"><div class="r-pct">${A.pct || 0}<small>%</small></div><div class="r-txt"><b>Avance general de la obra</b><span>${delta > 0 ? '+' + delta + ' % en este período' : delta < 0 ? delta + ' % (se recalculó el plan)' : 'Sin cambios en el porcentaje'}</span><div class="r-bar"><i style="width:${A.pct || 0}%"></i></div></div></div>
     <div class="r-kp"><span><b>${A.terminadas || 0}</b> terminada${A.terminadas === 1 ? '' : 's'}</span><span><b>${A.en_curso || 0}</b> en curso</span><span><b>${A.pendientes || 0}</b> por empezar</span>${A.atrasadas ? `<span class="rojo"><b>${A.atrasadas}</b> atrasada${A.atrasadas === 1 ? '' : 's'}</span>` : ''}</div></section>`;
@@ -1530,7 +1535,8 @@ function fichaTarea(id, tab){
     const mio = esAdmin() || (n.autor_email || '').toLowerCase() === YO.email;
     const del = mio ? ` <button class="btn ico chico fl-del" onclick="borrarNovedad(${n.id},${id})" title="Borrar" aria-label="Borrar">${_i('x')}</button>` : '';
     if (n.tipo === 'estado' || n.tipo === 'archivo') return `<div class="fl sis">${fmtTs(n.creado_at)} · ${esc(n.autor_nombre || quien(n.autor_email))}: ${esc(n.texto)}${del}</div>`;
-    return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}</b>${esc(n.texto)}${del}</div>`;
+    const et = n.tipo === 'comentario' && n.etapa_id && E.find(e => e.id === n.etapa_id);
+    return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}${et ? `<span class="fl-et">${esc(et.titulo)}</span>` : ''}</b>${esc(n.texto)}${del}</div>`;
   }).join('');
   const pct = t.estado === 'terminada' ? 100 : E.length ? Math.round(eh * 100 / E.length) : 0;
   ovBox(`<div class="ficha nueva3 pxficha">
@@ -1653,16 +1659,19 @@ async function agregarNovedad(id){
   if (error) return toast(error.message, 'error');
   await cargar(); abrirTarea(id); renderTablero();
   // v56 (JP): ¿con esto se terminó alguna etapa? (puede ser cualquiera, no necesariamente la siguiente)
-  const ids = await preguntarEtapa(id, txt); if (!ids.length) return;
+  // v57 (JP): o solo "es de esta etapa" (avance sin terminarla)
+  const { de, fin: ids } = await preguntarEtapa(id, txt); if (!ids.length && !de) return;
   for (const eid of ids){
     const e = ETAPAS.find(x => x.id === eid); if (!e) continue;
     const { error: e1 } = await sb.from('obra_etapas').update({ hecha: true }).eq('id', eid); if (e1){ toast(e1.message, 'error'); continue; }
     await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, etapa_id: eid, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
   }
-  if (ids.length === 1 && nov) await sb.from('obra_novedades').update({ etapa_id: ids[0] }).eq('id', nov.id);
-  const sel = ids.map(x => ETAPAS.find(e => e.id === x)).filter(Boolean);
+  const etN = de || (ids.length === 1 ? ids[0] : null);
+  if (etN && nov) await sb.from('obra_novedades').update({ etapa_id: etN }).eq('id', nov.id);
+  const sel = ids.map(x => ETAPAS.find(e => e.id === x)).filter(Boolean), eDe = de && ETAPAS.find(e => e.id === de);
   await cargar(); renderTablero(); fichaTarea(id, 'detalle');
-  toast(ids.length === 1 ? '✓ Etapa tildada: ' + sel[0].titulo : `✓ ${ids.length} etapas tildadas`, 'success');
+  if (!sel.length) return toast('Nota guardada en: ' + (eDe ? eDe.titulo : 'la etapa'), 'success');
+  toast(sel.length === 1 ? '✓ Etapa tildada: ' + sel[0].titulo : `✓ ${sel.length} etapas tildadas`, 'success');
   if (sel.some(e => /selecci|elegir|equipo|grupo|mano de obra/i.test(e.titulo) && !/presupuest|cotiza/i.test(e.titulo))){ editarGrupo(id); toast('¿Qué grupo lo va a hacer?', 'info'); }
 }
 const _normE = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -1670,22 +1679,33 @@ const _VACIAS = new Set('para esto esta este estos estas como pero porque todo t
 const _pals = t => _normE(t).split(/[^a-z0-9ñ]+/).filter(w => w.length > 3 && !_VACIAS.has(w)).map(w => w.slice(0, 5));
 function etapaSugerida(txt, E){ const R = new Set(_pals(txt)); let mejor = null, max = 0; for (const e of E){ const n = new Set(_pals(e.titulo).filter(w => R.has(w))).size; if (n > max){ max = n; mejor = e; } } return mejor; }
 function preguntarEtapa(tid, txt){ return new Promise(res => {
-  const E = ETAPAS.filter(e => e.tarea_id === tid && !e.hecha).sort((a, b) => (a.orden - b.orden) || (a.id - b.id)); if (!E.length) return res([]);
+  const E = ETAPAS.filter(e => e.tarea_id === tid && !e.hecha).sort((a, b) => (a.orden - b.orden) || (a.id - b.id)); if (!E.length) return res({ de: null, fin: [] });
   const sug = etapaSugerida(txt, E), L = sug ? [sug, ...E.filter(e => e !== sug)] : E;
   const bloq = e => esEtapaPresup(e) && presupDeEtapa(e).length < (e.cant_presupuestos || 3);
   const o = document.createElement('div'); o.id = 'ov2';
-  o.innerHTML = `<div class="box2 etq"><div class="q"><b>¿Con esto se terminó alguna etapa?</b><small>“${esc(txt.length > 90 ? txt.slice(0, 90) + '…' : txt)}”</small></div>
-    <div class="etq-l">${L.map(e => `<label class="${bloq(e) ? 'bloq' : ''}"><input type="checkbox" value="${e.id}" ${bloq(e) ? 'disabled' : ''}><span>${esc(e.titulo)}${e === sug ? '<i>parece esta</i>' : ''}${bloq(e) ? `<small>Faltan presupuestos (${presupDeEtapa(e).length} de ${e.cant_presupuestos || 3})</small>` : ''}</span></label>`).join('')}</div>
-    <div class="bts"><button class="b-no" id="ov2-no">No, ninguna</button><button class="b-si" id="ov2-si">Tildar</button></div></div>`;
+  o.innerHTML = `<div class="box2 etq"><div class="q"><b>¿Esto es de alguna etapa?</b><small>“${esc(txt.length > 90 ? txt.slice(0, 90) + '…' : txt)}”</small></div>
+    <div class="etq-l">${L.map(e => `<div class="etq-r" data-id="${e.id}"><div class="etq-t">${esc(e.titulo)}${e === sug ? '<i>parece esta</i>' : ''}${bloq(e) ? `<small>Faltan presupuestos (${presupDeEtapa(e).length} de ${e.cant_presupuestos || 3})</small>` : ''}</div>
+      <div class="etq-b"><button type="button" data-v="de">Es de esta</button><button type="button" data-v="fin" ${bloq(e) ? 'disabled' : ''}>✓ Se terminó</button></div></div>`).join('')}</div>
+    <div class="bts"><button class="b-no" id="ov2-no">No, es general</button><button class="b-si" id="ov2-si">Listo</button></div></div>`;
   document.body.appendChild(o);
-  const si = o.querySelector('#ov2-si'), upd = () => { const n = o.querySelectorAll('.etq-l input:checked').length; si.disabled = !n; si.textContent = n > 1 ? `Tildar ${n}` : 'Tildar'; };
-  o.querySelectorAll('.etq-l input').forEach(i => i.onchange = upd); upd();
-  o.querySelector('#ov2-no').onclick = () => { o.remove(); res([]); };
-  si.onclick = () => { const ids = [...o.querySelectorAll('.etq-l input:checked')].map(i => Number(i.value)); o.remove(); res(ids); };
+  const est = new Map(), si = o.querySelector('#ov2-si');
+  const pintar = () => {
+    o.querySelectorAll('.etq-r').forEach(r => { const v = est.get(Number(r.dataset.id)); r.classList.toggle('de', v === 'de'); r.classList.toggle('fin', v === 'fin'); r.querySelectorAll('.etq-b button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); });
+    const n = [...est.values()].filter(v => v === 'fin').length; si.disabled = !est.size; si.textContent = n > 1 ? `Tildar ${n}` : n ? 'Tildar' : 'Listo';
+  };
+  o.querySelectorAll('.etq-b button').forEach(b => b.onclick = () => {
+    const id = Number(b.closest('.etq-r').dataset.id), v = b.dataset.v;
+    if (est.get(id) === v) est.delete(id);
+    else { if (v === 'de') for (const [k, x] of est) if (x === 'de') est.delete(k); est.set(id, v); } // la nota va a una sola etapa; terminadas pueden ser varias
+    pintar();
+  });
+  pintar();
+  o.querySelector('#ov2-no').onclick = () => { o.remove(); res({ de: null, fin: [] }); };
+  si.onclick = () => { const de = [...est].find(([, v]) => v === 'de'); o.remove(); res({ de: de ? de[0] : null, fin: [...est].filter(([, v]) => v === 'fin').map(([k]) => k) }); };
 }); }
 async function borrarNovedad(nid, tid){
   const n = NOVS.find(x => x.id === nid);
-  if (n && n.etapa_id){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await sb.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
+  if (n && n.etapa_id && n.tipo === 'avance'){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await sb.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
   await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); fichaTarea(tid, 'detalle'); renderTablero();
 }
 

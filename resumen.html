@@ -70,7 +70,7 @@ function resumenHTML(R, ed){
   const it = (k, html, cls) => vis(k) ? `<div class="r-it ${cls || ''} ${oc.has(k) ? 'oculto' : ''}" data-k="${k}">${html}${ojo(k)}</div>` : '';
   const sec = (k, titulo, inner, extra) => { if (!inner || (!ed && oc.has(k))) return ''; return `<section class="r-sec ${oc.has(k) ? 'oculto' : ''}" data-k="${k}"><h2>${titulo}${ojo(k)}</h2>${extra || ''}${inner}</section>`; };
   // v54 (JP): notas del detalle de cada tarea escritas en el período · arrancan ocultas, el arquitecto elige cuáles ve el cliente
-  const notas = t => (t.notas || []).map(n => it('n:' + n.id, `<div class="r-nt">${R_ESC(n.texto).replace(/\n/g, '<br>')}<small> · ${R_F(n.fecha)}</small></div>`, 'r-nit')).join('');
+  const notas = t => (t.notas || []).map(n => it('n:' + n.id, `<div class="r-nt">${R_ESC(n.texto).replace(/\n/g, '<br>')}<small> · ${n.etapa ? R_ESC(n.etapa) + ' · ' : ''}${R_F(n.fecha)}</small></div>`, 'r-nit')).join('');
   const delta = (A.pct || 0) - (A.pct_antes || 0);
   let h = `<section class="r-sec r-avance"><div class="r-big"><div class="r-pct">${A.pct || 0}<small>%</small></div><div class="r-txt"><b>Avance general de la obra</b><span>${delta > 0 ? '+' + delta + ' % en este período' : delta < 0 ? delta + ' % (se recalculó el plan)' : 'Sin cambios en el porcentaje'}</span><div class="r-bar"><i style="width:${A.pct || 0}%"></i></div></div></div>
     <div class="r-kp"><span><b>${A.terminadas || 0}</b> terminada${A.terminadas === 1 ? '' : 's'}</span><span><b>${A.en_curso || 0}</b> en curso</span><span><b>${A.pendientes || 0}</b> por empezar</span>${A.atrasadas ? `<span class="rojo"><b>${A.atrasadas}</b> atrasada${A.atrasadas === 1 ? '' : 's'}</span>` : ''}</div></section>`;
