@@ -551,6 +551,15 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov2 { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 700; display: flex; align-items: center; justify-content: center; padding: 20px; }
 #ov2 .box2 { background: #fff; border-radius: 14px; padding: 18px 18px 14px; max-width: 340px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
 #ov2 .q { font-size: 15px; line-height: 1.35; margin-bottom: 14px; overflow-wrap: anywhere; }
+/* v56: ¿se terminó alguna etapa? */
+#ov2 .box2.etq { max-width: 380px; } #ov2 .etq .q b { display: block; } #ov2 .etq .q small { display: block; color: var(--muted); font-style: italic; margin-top: 4px; font-size: 13px; }
+.etq-l { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow: auto; margin-bottom: 14px; }
+.etq-l label { display: flex; align-items: flex-start; gap: 10px; border: 1.5px solid #f3e8c8; border-radius: 12px; padding: 10px; cursor: pointer; font-size: 14px; line-height: 1.3; }
+.etq-l label:has(input:checked) { border-color: #fcd34d; background: var(--primary-bg); }
+.etq-l input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--primary); flex: none; }
+.etq-l span { flex: 1; min-width: 0; } .etq-l i { font-style: normal; font-size: 11px; font-weight: 700; color: var(--primary-dark); background: var(--primary-bg); border: 1px solid #fcd34d; border-radius: 999px; padding: 0 8px; margin-left: 6px; white-space: nowrap; }
+.etq-l small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; } .etq-l label.bloq { opacity: .55; cursor: default; }
+#ov2 .b-si[disabled] { opacity: .45; cursor: default; }
 #ov2 .bts { display: flex; gap: 8px; justify-content: flex-end; }
 #ov2 .bts button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
 #ov2 .bts .b-si { background: var(--red); border-color: var(--red); color: #fff; }
@@ -1640,10 +1649,40 @@ async function borrarTarea(id){
 }
 async function agregarNovedad(id){
   const txt = document.getElementById('m-nov').value.trim(); if (!txt) return;
-  const { error } = await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'comentario', texto: txt, autor_email: YO.email, autor_nombre: YO.nombre });
+  const { data: nov, error } = await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'comentario', texto: txt, autor_email: YO.email, autor_nombre: YO.nombre }).select().single();
   if (error) return toast(error.message, 'error');
   await cargar(); abrirTarea(id); renderTablero();
+  // v56 (JP): ¿con esto se terminó alguna etapa? (puede ser cualquiera, no necesariamente la siguiente)
+  const ids = await preguntarEtapa(id, txt); if (!ids.length) return;
+  for (const eid of ids){
+    const e = ETAPAS.find(x => x.id === eid); if (!e) continue;
+    const { error: e1 } = await sb.from('obra_etapas').update({ hecha: true }).eq('id', eid); if (e1){ toast(e1.message, 'error'); continue; }
+    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, etapa_id: eid, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+  }
+  if (ids.length === 1 && nov) await sb.from('obra_novedades').update({ etapa_id: ids[0] }).eq('id', nov.id);
+  const sel = ids.map(x => ETAPAS.find(e => e.id === x)).filter(Boolean);
+  await cargar(); renderTablero(); fichaTarea(id, 'detalle');
+  toast(ids.length === 1 ? '✓ Etapa tildada: ' + sel[0].titulo : `✓ ${ids.length} etapas tildadas`, 'success');
+  if (sel.some(e => /selecci|elegir|equipo|grupo|mano de obra/i.test(e.titulo) && !/presupuest|cotiza/i.test(e.titulo))){ editarGrupo(id); toast('¿Qué grupo lo va a hacer?', 'info'); }
 }
+const _normE = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const _VACIAS = new Set('para esto esta este estos estas como pero porque todo toda todos todas desde hasta sobre entre cuando donde ahora hecho hecha ya hoy'.split(' '));
+const _pals = t => _normE(t).split(/[^a-z0-9ñ]+/).filter(w => w.length > 3 && !_VACIAS.has(w)).map(w => w.slice(0, 5));
+function etapaSugerida(txt, E){ const R = new Set(_pals(txt)); let mejor = null, max = 0; for (const e of E){ const n = new Set(_pals(e.titulo).filter(w => R.has(w))).size; if (n > max){ max = n; mejor = e; } } return mejor; }
+function preguntarEtapa(tid, txt){ return new Promise(res => {
+  const E = ETAPAS.filter(e => e.tarea_id === tid && !e.hecha).sort((a, b) => (a.orden - b.orden) || (a.id - b.id)); if (!E.length) return res([]);
+  const sug = etapaSugerida(txt, E), L = sug ? [sug, ...E.filter(e => e !== sug)] : E;
+  const bloq = e => esEtapaPresup(e) && presupDeEtapa(e).length < (e.cant_presupuestos || 3);
+  const o = document.createElement('div'); o.id = 'ov2';
+  o.innerHTML = `<div class="box2 etq"><div class="q"><b>¿Con esto se terminó alguna etapa?</b><small>“${esc(txt.length > 90 ? txt.slice(0, 90) + '…' : txt)}”</small></div>
+    <div class="etq-l">${L.map(e => `<label class="${bloq(e) ? 'bloq' : ''}"><input type="checkbox" value="${e.id}" ${bloq(e) ? 'disabled' : ''}><span>${esc(e.titulo)}${e === sug ? '<i>parece esta</i>' : ''}${bloq(e) ? `<small>Faltan presupuestos (${presupDeEtapa(e).length} de ${e.cant_presupuestos || 3})</small>` : ''}</span></label>`).join('')}</div>
+    <div class="bts"><button class="b-no" id="ov2-no">No, ninguna</button><button class="b-si" id="ov2-si">Tildar</button></div></div>`;
+  document.body.appendChild(o);
+  const si = o.querySelector('#ov2-si'), upd = () => { const n = o.querySelectorAll('.etq-l input:checked').length; si.disabled = !n; si.textContent = n > 1 ? `Tildar ${n}` : 'Tildar'; };
+  o.querySelectorAll('.etq-l input').forEach(i => i.onchange = upd); upd();
+  o.querySelector('#ov2-no').onclick = () => { o.remove(); res([]); };
+  si.onclick = () => { const ids = [...o.querySelectorAll('.etq-l input:checked')].map(i => Number(i.value)); o.remove(); res(ids); };
+}); }
 async function borrarNovedad(nid, tid){
   const n = NOVS.find(x => x.id === nid);
   if (n && n.etapa_id){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await sb.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
