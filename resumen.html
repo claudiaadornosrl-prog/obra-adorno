@@ -83,7 +83,7 @@ function resumenHTML(R, ed){
   h += sec('sec:mov', 'Qué se hizo en este período', mov || (ed ? '<div class="r-vacio">No hubo etapas terminadas ni tareas cerradas en el período.</div>' : ''));
   if (!mov && !ed) h += `<section class="r-sec"><h2>Qué se hizo en este período</h2><div class="r-vacio">No hubo avances para informar en este período.</div></section>`;
   // Fotos
-  const fotos = (C.fotos || []).map(f => it('f:' + f.id, `<a class="r-foto" href="${R_ESC(f.url || '#')}" target="_blank" rel="noopener"><img src="${R_ESC(f.url || '')}" alt="${R_ESC(f.tarea || f.nombre || '')}" loading="lazy"><span>${R_ESC(f.tarea || '')}${f.notas ? ' · ' + R_ESC(f.notas) : ''}<small>${R_F(f.fecha)}</small></span></a>`, 'r-fi')).join('');
+  const fotos = (C.fotos || []).map(f => it('f:' + f.id, `<a class="r-foto" href="${R_ESC(f.url || '#')}" target="_blank" rel="noopener"><img src="${R_ESC(f.url || '')}" alt="${R_ESC(f.tarea || f.nombre || '')}" loading="lazy"><span>${R_ESC(f.tarea || '')}${f.etapa ? ' · ' + R_ESC(f.etapa) : ''}${f.notas ? ' · ' + R_ESC(f.notas) : ''}<small>${R_F(f.fecha)}</small></span></a>`, 'r-fi')).join('');
   h += sec('sec:fotos', 'Fotos', fotos ? `<div class="r-grid">${fotos}</div>` : '');
   // Decisiones y presupuestos
   const apr = (C.presupuestos_aprobados || []).map(a => it('pa:' + a.id, `<div class="r-row"><span><b>${R_ESC(a.tarea || a.nombre)}</b><small>${R_ESC(a.proveedor || '')}</small></span><em>${R_PLATA(a.importe)}</em></div>`)).join('');
