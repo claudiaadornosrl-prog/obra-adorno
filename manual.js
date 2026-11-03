@@ -11,7 +11,7 @@ function _mEsc(s) {
 function _manualSecciones() {
   return [
     { icon: '🔐', titulo: 'Entrar', desc: 'Entrás con tu email y clave. Si sos el arquitecto y dice que no tenés acceso, pedile a JP que te agregue al equipo.',
-      pasos: ['La sesión queda guardada en el navegador: la próxima vez entrás directo.', 'En el celular podés instalarlo como app: en Safari "Compartir → Agregar a pantalla de inicio"; en Chrome "Instalar".'] },
+      pasos: ['La sesión queda guardada en el navegador: la próxima vez entrás directo.', 'Código del celular (doble factor): si sos admin o directora y lo activaste en el Hub (panel de sesión, "Código del celular al entrar"), después de la clave te pide el código de 6 números de la app de autenticación del celular (Google o Microsoft Authenticator); cambia cada 30 segundos. Si cambiás o perdés el celular, avisale a JP para darlo de baja.', 'En el celular podés instalarlo como app: en Safari "Compartir → Agregar a pantalla de inicio"; en Chrome "Instalar".'] },
     { icon: '🏠', titulo: 'Hoy', desc: 'La foto de la obra: cuántas tareas hay pendientes, en curso y terminadas, qué venció o vence esta semana, las últimas novedades y la plata (presupuestos y facturas).',
       pasos: ['Tocando una tarea de la lista se abre su ficha.', 'El porcentaje de avance es terminadas sobre el total (sin contar canceladas).'] },
     { icon: '🗂', titulo: 'Tareas', desc: 'Tres columnas: Pendientes → En curso → Terminadas. Cada tarjeta es una tarea con su fecha límite, responsable y rubro.',
