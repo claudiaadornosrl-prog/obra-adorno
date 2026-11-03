@@ -42,7 +42,7 @@ select, input { width: 100%; border: 1.5px solid var(--border); border-radius: 1
 <div class="toast" id="toast"></div>
 <input type="file" id="f-cam" accept="image/*" capture="environment" style="display:none" onchange="agregar(this)">
 <input type="file" id="f-gal" accept="image/*" multiple style="display:none" onchange="agregar(this)">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
 <script>
 // v55: achica las fotos en el celular antes de subirlas (lado mayor 1600 px, JPEG) · si algo falla sube la original
 async function achicarFoto(file, max = 1600, q = 0.82){

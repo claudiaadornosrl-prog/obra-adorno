@@ -41,7 +41,7 @@ input, textarea { width: 100%; border: 1.5px solid var(--border); border-radius:
 <div class="cab"><div class="obra" id="h-obra">Obra</div><h1 id="h-tit">Pago de obra</h1><div class="sub" id="h-sub"></div></div>
 <main id="main"><div class="err">Cargando…</div></main>
 <div class="toast" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
 <script>
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const fmtMonto = n => { const v = Number(n); if (n == null || n === '' || isNaN(v)) return ''; const e = Math.round(Math.abs(v)); return (v < 0 && e ? '-' : '') + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
