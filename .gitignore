@@ -12,4 +12,7 @@
 *.xls
 backups/
 _*/
+# tickets de acceso de ARCA e instaladores locales (nunca al repo público)
+ta_*.json
+instalar_*.ps1
 _*.html

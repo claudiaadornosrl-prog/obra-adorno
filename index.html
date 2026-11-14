@@ -568,6 +568,14 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 #ov2 .bts { display: flex; gap: 8px; justify-content: flex-end; }
 #ov2 .bts button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); }
 #ov2 .bts .b-si { background: var(--red); border-color: var(--red); color: #fff; }
+/* (13-nov) permisos del Hub: 'o' esconde; ventana de usuario superior */
+body.p-no-tareas [data-p~="tareas"], body.p-no-novedades [data-p~="novedades"], body.p-no-archivos [data-p~="archivos"], body.p-no-pagos [data-p~="pagos"] { display: none !important; }
+body.p-no-archivos.p-no-pagos #content-archivos > .fab { display: none !important; }
+body.p-no-tareas [data-p-ro~="tareas"] { pointer-events: none; }
+#ov2.ov-sup { z-index: 760; } #ov2 .box2.sup { max-width: 360px; } #ov2 .sup .q b { display: block; } #ov2 .sup .q small { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.35; }
+#ov2 .sup-in { display: block; width: 100%; box-sizing: border-box; border: 1.5px solid #e5e7eb; border-radius: 999px; padding: 10px 16px; font: inherit; font-size: 16px; margin-bottom: 8px; }
+#ov2 .sup-in:focus { outline: none; border-color: #fcd34d; } #ov2 .sup-err { color: var(--red); font-size: 13px; min-height: 18px; margin: 2px 4px 8px; }
+#ov2.ov-sup .bts button { border-radius: 999px; } #ov2.ov-sup .bts .b-si { background: var(--primary); border-color: var(--primary); } #ov2.ov-sup .bts button[disabled] { opacity: .5; cursor: default; }
 .arow .aquien { display: flex; flex-wrap: wrap; gap: 3px 8px; align-items: center; font-size: 12.5px; margin: 1px 0; } .arow .aprov { font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .arow .aprov .ico { width: 13px; height: 13px; color: var(--primary); } .arow .atarea { background: var(--primary-bg); color: var(--primary-dark); border-radius: 8px; padding: 0 7px; font-size: 11px; font-weight: 600; flex: none; }
 /* v40: píldoras de tipo tocables en Archivos */
 .pils.tipos { overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; } .pils.tipos::-webkit-scrollbar { display: none; }
@@ -852,7 +860,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
         <label class="pil on" id="pil-est" title="Estado"><svg class="ico" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg><span id="pl-est">Abiertas</span><select id="t-est" class="over" onchange="renderTablero()"><option value="">Abiertas</option><option value="pendiente">Pendientes</option><option value="en_curso">En curso</option><option value="terminada">Terminadas</option><option value="cancelada">Canceladas</option><option value="todas">Todas</option></select></label>
       </div>
       <div class="stat pils-stat" id="t-stat"></div>
-      <button class="fab" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <button class="fab" data-p="tareas" onclick="abrirTarea()" title="Nueva tarea" aria-label="Nueva tarea"><svg class="ico" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <div class="lista-tareas" id="t-kanban"></div>
     </section>
     <section id="content-archivos" class="tab-content">
@@ -970,6 +978,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
 <script src="/hub/seguridad.js?v=1"></script>
+<script src="/hub/caras.js?v=4" defer></script><!-- (14-nov-2026) «📷 Registra quién» del Hub -->
 <script>
 const SUPABASE_URL  = 'https://jfwtiagteuwmyvblgwms.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_udSPma98Sw9eskeeLCgdCw_S2vIX0Fk';
@@ -1064,8 +1073,8 @@ async function doLogin() {
   finally { document.getElementById('btn-login').disabled = false; }
 }
 async function entrar(user) {
-  const { data: ok } = await sb.rpc('obra_es_usuario');
-  if (!ok) { /* sin signOut: sesión compartida (SSO) */ document.getElementById('login-error').textContent = 'Tu usuario no tiene acceso a este módulo. Si sos el arquitecto, pedile a JP que te agregue al equipo.'; return; }
+  const { data: ok, error: errOk } = await sb.rpc('obra_es_usuario');
+  if (!ok) { /* sin signOut: sesión compartida (SSO). Si la base pide el código del celular (MFA0x), se muestra ese motivo y no el de acceso */ document.getElementById('login-error').textContent = errOk && /^MFA/.test(errOk.code || '') ? errOk.message + ' · ' + (errOk.hint || '') : 'Tu usuario no tiene acceso a este módulo. Si sos el arquitecto, pedile a JP que te agregue al equipo.'; return; }
   session = { email: user.email, user };
   document.getElementById('user-info').textContent = user.email;
   if (window._festejar){ window._festejar = false; try { await festejoLogin(); } catch (e) {} }
@@ -1108,6 +1117,127 @@ function festejoLogin(){ return new Promise(res => {
 }); }
 let OBRA = null, ROL = null, YO = { email: '', nombre: '' }, TAREAS = [], ARCHIVOS = [], PARTS = [], NOVS = [], ETAPAS = [], PEDIDOS = [], COBROS = [], FOTOS_LINKS = [];
 const esAdmin = () => ROL === 'admin';
+// ── (13-nov-2026, JP) Permisos por función desde el Hub (Hub → 👤 → Permisos) ──
+// hub_puedo con la sesión: 'h' habilitada · 'a' se ve, pero al usarla pide el usuario de quien la tenga habilitada · 'o' oculta.
+// La base controla lo mismo (obra_puedo en las políticas): con 'a' la operación sale con el cliente del superior (DB).
+const FUNCIONES = { tareas: 'obra.tareas', tareas_borrar: 'obra.tareas_borrar', novedades: 'obra.novedades', archivos: 'obra.archivos', resumen: 'obra.resumen', aprobar: 'obra.aprobar', pagos: 'obra.pagos', equipo: 'obra.equipo', nueva: 'obra.nueva' };
+const FUNC_NOMBRE = { tareas: 'Cargar y mover tareas', tareas_borrar: 'Borrar tareas', novedades: 'Escribir novedades del día', archivos: 'Subir fotos, presupuestos y facturas', resumen: 'Generar y mandar el resumen', aprobar: 'Aprobar presupuestos y marcar facturas pagadas', pagos: 'Registrar pagos y pedidos de pago', equipo: 'Agregar o sacar participantes', nueva: 'Crear una obra nueva' };
+let PERM = {}, DB = sb;   // DB: con quién se graba (sb, o el cliente del superior mientras dura una acción autorizada)
+// ── (14-nov-2026, JP desde el Hub) «📷 Registra quién»: si JP marcó la función en el Hub, antes de grabar se anota quién la hizo
+// (hub_registros; JP lo ve en Hub → Permisos → Registro). Usuario personal con legajo: se anota directo, sin preguntar.
+// Participante de afuera (arquitecto, contratista) con usuario personal y sin legajo: el Hub (hub_yo_externo, 14-nov) lo devuelve
+// en data.yo (externo) y se anota directo con el nombre de obra_participantes. Si igual no viniera yo y no es admin, se intenta y
+// se sigue (ya se sabe quién es por su usuario). Cuenta de Adorno sin legajo: /hub/caras.js pregunta quién.
+// Con «Pide permiso» se anota a quien usa el módulo (no a quien autorizó), después de la autorización.
+const ACCION = { cambiarEstado: 'Cambió el estado de una tarea', guardarCampo: 'Editó un dato de una tarea', guardarTitulo: 'Cambió el título de una tarea',
+  _setGrupos: 'Cambió los grupos de una tarea', guardarTarea: 'Cargó o editó una tarea', guardarEtapaTitulo: 'Cambió el nombre de una etapa', fechaEtapa: 'Cambió la fecha de una etapa',
+  cantPresup: 'Cambió cuántos presupuestos pide una etapa', agregarEtapa: 'Agregó una etapa', prioEtapa: 'Cambió la prioridad de una etapa', tildarEtapa: 'Marcó o desmarcó una etapa',
+  borrarEtapa: 'Sacó una etapa', borrarTarea: 'Borró una tarea', agregarNovedad: 'Escribió en el detalle de una tarea', borrarNovedad: 'Borró una novedad',
+  subirArchivo: 'Subió un archivo', subirDesdeTarea: 'Subió un archivo a una tarea', faSubir: 'Subió fotos', crearLinkFotos: 'Creó un link para subir fotos', borrarLinkFotos: 'Desactivó un link de fotos',
+  estadoArchivo: 'Cambió el estado de un presupuesto o factura', guardarGeneral: 'Subió un archivo', borrarArchivo: 'Borró un archivo',
+  guardarPedido: 'Armó un pedido de pago', compartirPedido: 'Compartió un pedido de pago', guardarPagoManual: 'Cargó un pago con su comprobante', _adjComp: 'Adjuntó un comprobante de pago',
+  confirmarPedido: 'Confirmó un pedido de pago', rechazarPedido: 'Rechazó un comprobante de pago', borrarPedido: 'Borró un pedido de pago', registrarPago: 'Registró un pago',
+  generarResumen: 'Generó el resumen', guardarResumen: 'Editó el resumen', compartirResumen: 'Compartió el resumen', marcarEnviado: 'Marcó si el resumen se mandó', borrarResumen: 'Borró un resumen',
+  guardarProg: 'Cambió la programación del resumen', guardarParticipante: 'Agregó a alguien al equipo', togglePart: 'Cambió a alguien del equipo', crearObra: 'Creó una obra' };
+const REG_REF = { tarea: ['cambiarEstado', 'guardarCampo', 'guardarTitulo', '_setGrupos', 'guardarTarea', 'agregarEtapa', 'borrarTarea', 'agregarNovedad', 'subirDesdeTarea', 'crearLinkFotos'],
+  etapa: ['guardarEtapaTitulo', 'fechaEtapa', 'cantPresup', 'prioEtapa', 'tildarEtapa', 'borrarEtapa'], archivo: ['estadoArchivo', 'borrarArchivo', '_adjComp'],
+  pedido: ['compartirPedido', 'confirmarPedido', 'rechazarPedido', 'borrarPedido'] };
+// las que preguntan «¿Seguro?» antes de grabar: se anota recién cuando dicen que sí (preguntar)
+const REG_CONFIRMA = new Set(['borrarTarea', 'borrarEtapa', 'borrarArchivo', 'confirmarPedido', 'rechazarPedido', 'borrarPedido', 'borrarLinkFotos', 'borrarResumen']);
+let REG_HUB = {}, REG_HECHO = {}, REG_PEND = null;
+function detalleDe(n, a){
+  const d = { obra: OBRA ? OBRA.nombre : null, accion: ACCION[n] || n }, id = a[0];
+  const de = (L, k, campos) => { const x = (L || []).find(y => y.id === id); if (x) campos.forEach(c => { if (x[c] != null && x[c] !== '') d[c === 'titulo' || c === 'nombre' ? k : c] = x[c]; }); };
+  if (REG_REF.tarea.includes(n)) de(TAREAS, 'tarea', ['titulo']);
+  else if (REG_REF.etapa.includes(n)) de(ETAPAS, 'etapa', ['titulo']);
+  else if (REG_REF.archivo.includes(n)) de(ARCHIVOS, 'archivo', ['nombre', 'tipo', 'importe']);
+  else if (REG_REF.pedido.includes(n)) de(PEDIDOS, 'pedido', ['destinatario', 'importe']);
+  if (['string', 'boolean'].includes(typeof a[1])) d.dato = a[1];
+  else if (typeof a[0] === 'string' || typeof a[0] === 'boolean') d.dato = a[0];
+  return d;
+}
+async function registrarQuien(key, n, a){
+  const f = FUNCIONES[key]; let c = REG_HUB[f];
+  if (!c || Date.now() - c.t > 60000) {   // lo que dice el Hub se repregunta cada minuto
+    const r = await sb.rpc('hub_registra_quien', { p_funcion: f });
+    if (r.error) { toast('No pude ver en el Hub si hay que anotar quién lo hace: ' + r.error.message, 'error'); return { ok: false }; }
+    c = REG_HUB[f] = { t: Date.now(), v: r.data || {} };
+  }
+  const v = c.v; if (!v.registra) return { ok: true, omitido: true };
+  const prim = x => ['string', 'number', 'boolean'].includes(typeof x) ? x : '';
+  const clave = [f, n, prim(a[0]), prim(a[1])].join('|'), det = detalleDe(n, a);
+  if (REG_HECHO[clave] && Date.now() - REG_HECHO[clave] < 10 * 60000) return { ok: true, repetido: true };   // misma persona, lo mismo, hace menos de 10 min (ej.: guardado automático)
+  const params = { p_funcion: f, p_local: null, p_empleado_id: null, p_detalle: det };
+  if (v.yo) {
+    const r = await sb.rpc('hub_registrar', params);
+    if (r.error) { toast('No se pudo anotar quién lo hizo: ' + r.error.message, 'error'); return { ok: false }; }
+    REG_HECHO[clave] = Date.now(); return { ok: true };
+  }
+  if (ROL !== 'admin') {
+    const r = await sb.rpc('hub_registrar', { ...params, p_detalle: { ...det, quien: YO.nombre } });
+    if (!r.error) REG_HECHO[clave] = Date.now(); else console.warn('[registro] sin legajo, no se anotó:', r.error.message);
+    return { ok: true };
+  }
+  if (!window.ADORNO_CARAS || !ADORNO_CARAS.registrar) { toast('Falta cargar el registro de quién (/hub/caras.js): recargá la página.', 'error'); return { ok: false }; }
+  const r = await ADORNO_CARAS.registrar({ cli: sb, funcion: f, local: null, detalle: det });
+  if (!r.ok && r.motivo === 'error') toast(r.error || 'No se pudo anotar quién lo hizo', 'error');
+  return r;
+}
+async function cargarPermisos(){
+  const K = Object.keys(FUNCIONES), r = await Promise.all(K.map(k => sb.rpc('hub_puedo', { p_funcion: FUNCIONES[k] })));
+  K.forEach((k, i) => { const v = r[i].error ? 'o' : r[i].data; PERM[k] = ['h', 'a', 'o'].includes(v) ? v : 'o'; document.body.classList.toggle('p-no-' + k, PERM[k] === 'o'); });
+}
+const ve = k => (PERM[k] || 'o') !== 'o';                 // se muestra (habilitada o pide permiso)
+const habilitada = k => PERM[k] === 'h' || DB !== sb;    // se puede hacer ya, sin pedir a nadie
+function conPermiso(k, fn, n){ return async function(...a){
+  const key = typeof k === 'function' ? k(...a) : k, pm = PERM[key] || 'o';
+  const correr = async () => {   // (14-nov) «📷 Registra quién»: se anota justo antes de grabar; si no se pudo anotar, no se graba
+    if (!REG_CONFIRMA.has(n)) { if (!(await registrarQuien(key, n, a)).ok) return; return fn.apply(this, a); }
+    REG_PEND = () => registrarQuien(key, n, a);
+    try { return await fn.apply(this, a); } finally { REG_PEND = null; }
+  };
+  if (DB !== sb || pm === 'h') return correr();
+  if (pm === 'o') return toast('No tenés permiso para esto: ' + FUNC_NOMBRE[key], 'error');
+  const sup = await pedirSuperior(key); if (!sup) return;
+  DB = sup.cli;
+  try { return await correr(); }
+  finally { DB = sb; try { await sup.cli.auth.signOut({ scope: 'local' }); } catch (e) {} }
+}; }
+// Ventana de usuario superior (como el Reporte de Ventas): cliente aparte sin guardar sesión. Valida hub_autoriza con SU sesión
+// (Hub, 13-nov: admin, o usuario personal con legajo y la función en 'h'; las cuentas genéricas nunca autorizan).
+function pedirSuperior(k){ return new Promise(listo => {
+  const o = document.createElement('div'); o.id = 'ov2'; o.className = 'ov-sup'; o.setAttribute('data-adorno-superior', '1');
+  o.innerHTML = `<div class="box2 sup" role="dialog" aria-modal="true"><div class="q"><b>Pedir permiso</b><small>«${esc(FUNC_NOMBRE[k])}» lo autoriza alguien que la tenga habilitada, con su usuario personal. Su sesión se cierra sola al terminar.</small></div>
+    <input type="email" id="sup-email" class="sup-in" placeholder="Mail de quien autoriza" autocomplete="username">
+    <input type="password" id="sup-pass" class="sup-in" placeholder="Su contraseña" autocomplete="current-password">
+    <div class="sup-err" id="sup-err"></div>
+    <div class="bts"><button class="b-no" id="sup-no">Cancelar</button><button class="b-si" id="sup-si">Autorizar</button></div></div>`;
+  document.body.appendChild(o);
+  const $ = q => o.querySelector(q), si = $('#sup-si'), err = $('#sup-err');
+  const cerrar = r => { o.remove(); listo(r); };
+  $('#sup-no').onclick = () => cerrar(null);
+  o.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(null); });
+  $('#sup-pass').addEventListener('keydown', e => { if (e.key === 'Enter') si.click(); });
+  si.onclick = async () => {
+    const email = $('#sup-email').value.trim().toLowerCase(), pass = $('#sup-pass').value; err.textContent = '';
+    if (!email || !pass) return err.textContent = 'Completá el mail y la contraseña.';
+    if (email === YO.email) return err.textContent = 'Tiene que autorizar otra persona, no vos.';
+    si.disabled = true; $('#sup-no').disabled = true; si.textContent = 'Autorizando…';
+    const cli = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'adorno-obra-superior' } });
+    try {
+      const { error } = await cli.auth.signInWithPassword({ email, password: pass }); if (error) throw new Error('Mail o contraseña incorrectos.');
+      if (window.ADORNO_MFA && ADORNO_MFA.pedirCodigo && !(await ADORNO_MFA.pedirCodigo(cli))) throw new Error('Sin el código del celular no se puede autorizar.');
+      const [rp, ru, rn] = await Promise.all([cli.rpc('hub_autoriza', { p_funcion: FUNCIONES[k] }), cli.rpc('obra_es_usuario'), cli.rpc('obra_mi_nombre')]);
+      const nom = rn.data || email;
+      if (rp.data !== true || !ru.data) throw new Error(`${nom} no puede autorizar «${FUNC_NOMBRE[k]}» (tiene que tenerla habilitada y entrar con su usuario personal).`);
+      toast('Autorizó ' + nom, 'success'); cerrar({ cli, nombre: nom });
+    } catch (e) {
+      try { await cli.auth.signOut({ scope: 'local' }); } catch (_) {}
+      err.textContent = e.message || 'No se pudo autorizar.'; si.disabled = false; $('#sup-no').disabled = false; si.textContent = 'Autorizar';
+    }
+  };
+  setTimeout(() => $('#sup-email').focus(), 50);
+}); }
 const RUBROS = ['Albañilería','Electricidad','Plomería','Pintura','Vidriería','Carpintería','Herrería','Mobiliario','Iluminación','Aire acondicionado','Cartelería','Trámites / habilitación','Limpieza','Otro'];
 const EST = { pendiente: 'Pendiente', en_curso: 'En curso', terminada: 'Terminada', cancelada: 'Cancelada' };
 const RESP = { arquitecto: 'Arquitecto', adorno: 'Adorno', contratista: 'Contratista' };
@@ -1143,9 +1273,11 @@ async function init(){
   const [{ data: obras }, { data: rol }, { data: nombre }] = await Promise.all([
     sb.from('obra_obras').select('*').eq('activa', true).order('id'), sb.rpc('obra_mi_rol'), sb.rpc('obra_mi_nombre')]);
   OBRAS = obras || []; const guardada = Number(localStorage.getItem('obra_id') || 0); OBRA = OBRAS.find(o => o.id === guardada) || OBRAS[0]; ROL = rol; YO = { email: (session.email || '').toLowerCase(), nombre: nombre || session.email };
+  await cargarPermisos();   // (13-nov) permisos del Hub
   if (!OBRA){ toast('No hay ninguna obra activa', 'error'); return; }
   pintarObra();
-  document.getElementById('tab-equipo').style.display = esAdmin() ? '' : 'none';
+  document.getElementById('tab-equipo').style.display = ve('equipo') ? '' : 'none';
+  document.getElementById('tab-informe').style.display = ve('resumen') ? '' : 'none';
   document.getElementById('t-rubro').innerHTML += RUBROS.map(r => `<option>${esc(r)}</option>`).join('');
   let tq = null; document.getElementById('t-q').addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(renderTablero, 600); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarOv(); });
@@ -1159,7 +1291,7 @@ function pintarObra(){ document.querySelector('header h1 .lb-obra').textContent 
 function elegirObra(){
   ovBox(`<div class="m-head"><h3 style="margin:0;flex:1">Obras</h3><button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
     <div class="lista-obras">${OBRAS.map(o => `<button class="obra-it ${o.id === OBRA.id ? 'on' : ''}" onclick="cambiarObra(${o.id})">${_i('brick')}<span><b>${esc(o.nombre)}</b>${o.direccion ? `<br><span class="mini">${esc(o.direccion)}</span>` : ''}</span>${o.id === OBRA.id ? _i('check') : ''}</button>`).join('')}</div>
-    ${esAdmin() ? `<hr style="border:none;border-top:1px solid var(--border);margin:12px 0"><div class="mini" style="margin-bottom:6px">Nueva obra (los participantes de la obra actual pasan también a la nueva)</div>
+    ${ve('nueva') ? `<hr style="border:none;border-top:1px solid var(--border);margin:12px 0"><div class="mini" style="margin-bottom:6px">Nueva obra (los participantes de la obra actual pasan también a la nueva)</div>
     <div class="nov-in"><input id="no-nombre" placeholder="Nombre (ej.: Local Unicenter)"><input id="no-dir" placeholder="Dirección (opcional)" style="flex:0 1 45%"><button class="btn primary ico" onclick="crearObra()" title="Crear" aria-label="Crear">${_i('plus')}</button></div>` : ''}`);
 }
 async function cambiarObra(id){
@@ -1171,10 +1303,10 @@ async function cambiarObra(id){
 async function crearObra(){
   const nombre = document.getElementById('no-nombre').value.trim(), direccion = document.getElementById('no-dir').value.trim() || null;
   if (!nombre) return toast('Poné el nombre de la obra', 'error');
-  const { data, error } = await sb.from('obra_obras').insert({ nombre, direccion, activa: true }).select().single();
+  const { data, error } = await DB.from('obra_obras').insert({ nombre, direccion, activa: true }).select().single();
   if (error) return toast(error.message, 'error');
   const parts = PARTS.filter(p => p.activo).map(p => ({ obra_id: data.id, email: p.email, nombre: p.nombre, rol: p.rol, recibe_mails: p.recibe_mails, activo: true }));
-  if (parts.length) await sb.from('obra_participantes').insert(parts);
+  if (parts.length) await DB.from('obra_participantes').insert(parts);
   OBRAS.push(data); await cambiarObra(data.id);
 }
 async function cargar(){
@@ -1295,7 +1427,7 @@ function renderInforme(){
 async function guardarProg(patch){
   const base = PROG || { obra_id: OBRA.id, activo: false, periodo: 'semanal', dia_semana: 5, dia_mes: 1, hora: 18, destinatario: null };
   const row = { ...base, ...patch, obra_id: OBRA.id, actualizado_por: YO.email, actualizado_at: new Date().toISOString() };
-  const { data, error } = await sb.from('obra_resumen_prog').upsert(row, { onConflict: 'obra_id' }).select().single();
+  const { data, error } = await DB.from('obra_resumen_prog').upsert(row, { onConflict: 'obra_id' }).select().single();
   if (error) return toast(error.message, 'error');
   PROG = data; renderInforme(); if ('activo' in patch) toast(patch.activo ? 'Resumen programado: ' + proximoEnvio(PROG) : 'Programación apagada', 'success');
 }
@@ -1308,10 +1440,10 @@ async function firmarFotos(C){
 async function generarResumen(){
   const { desde, hasta } = rangoDe(_iPer);
   toast('Armando el resumen…');
-  const { data: C, error } = await sb.rpc('obra_generar_resumen', { p_obra: OBRA.id, p_desde: desde, p_hasta: hasta });
+  const { data: C, error } = await DB.rpc('obra_generar_resumen', { p_obra: OBRA.id, p_desde: desde, p_hasta: hasta });
   if (error) return toast(error.message, 'error');
   await firmarFotos(C);
-  const { data, error: e2 } = await sb.from('obra_resumenes').insert({ obra_id: OBRA.id, periodo: _iPer, desde, hasta, titulo: R_PER[_iPer], contenido: C, creado_por: YO.email }).select().single();
+  const { data, error: e2 } = await DB.from('obra_resumenes').insert({ obra_id: OBRA.id, periodo: _iPer, desde, hasta, titulo: R_PER[_iPer], contenido: C, creado_por: YO.email }).select().single();
   if (e2) return toast(e2.message, 'error');
   RESUMENES.unshift(data); renderInforme(); abrirResumen(data.id);
 }
@@ -1324,7 +1456,7 @@ async function abrirResumen(id){
     <div class="cab">
       <div class="m-head" style="align-items:flex-start"><div style="flex:1;min-width:0"><input id="r-tit" class="tit" value="${esc(r.titulo || '')}" placeholder="Título del resumen" oninput="rCambio()"><div class="mini" style="color:rgba(255,255,255,.85);margin-top:4px">${fmtF(r.desde)} al ${fmtF(r.hasta)} · ${r.estado === 'enviado' ? 'enviado el ' + fmtTs(r.enviado_at) : 'borrador'}${r.generado_auto ? ' · generado automáticamente' : ''}</div></div>
       <button class="btn ico" onclick="cerrarResumen()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>
-    <div class="datos datos4">
+    <div class="datos datos4" data-p-ro="tareas">
       <div class="dato" title="Avance general">${_i('play')}<b>${A.pct || 0} %${delta > 0 ? ' (+' + delta + ')' : ''}</b></div>
       <div class="dato" title="Tareas con movimiento">${_i('brick')}<b>${(C.con_movimiento || []).length} con avance</b></div>
       <div class="dato" title="Fotos del período">${_i('clip')}<b>${(C.fotos || []).length} fotos</b></div>
@@ -1350,7 +1482,7 @@ function toggleOculto(k){ if (!_R) return; const i = _R.ocultos.indexOf(k); if (
 async function guardarResumen(){
   if (!_R) return; const tit = document.getElementById('r-tit'), nota = document.getElementById('r-nota'); if (!tit) return;
   _R.titulo = tit.value.trim() || null; _R.nota = nota.value.trim() || null;
-  const { error } = await sb.from('obra_resumenes').update({ titulo: _R.titulo, nota: _R.nota, ocultos: _R.ocultos }).eq('id', _R.id);
+  const { error } = await DB.from('obra_resumenes').update({ titulo: _R.titulo, nota: _R.nota, ocultos: _R.ocultos }).eq('id', _R.id);
   if (error) return toast(error.message, 'error');
   const i = RESUMENES.findIndex(x => x.id === _R.id); if (i >= 0) RESUMENES[i].titulo = _R.titulo;
   if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = resumenHTML(_R, true); renderInforme();
@@ -1362,7 +1494,7 @@ async function compartirResumen(id){
   if (_R && _R.id === id){ clearTimeout(_rSaveT); await guardarResumen(); }
   if (!r.contenido){ const { data } = await sb.from('obra_resumenes').select('*').eq('id', id).single(); if (data) r = data; }
   // las fotos llevan links firmados: se renuevan al compartir (90 días)
-  if (r.contenido && (r.contenido.fotos || []).length){ await firmarFotos(r.contenido); await sb.from('obra_resumenes').update({ contenido: r.contenido }).eq('id', id); }
+  if (r.contenido && (r.contenido.fotos || []).length){ await firmarFotos(r.contenido); await DB.from('obra_resumenes').update({ contenido: r.contenido }).eq('id', id); }
   const url = urlResumen(r), A = (r.contenido && r.contenido.avance) || {};
   const texto = `${r.titulo || R_PER[r.periodo]}\n${fmtF(r.desde)} al ${fmtF(r.hasta)} · avance ${A.pct || 0} %\n${url}`;
   let ok = false;
@@ -1373,13 +1505,13 @@ async function compartirResumen(id){
 async function marcarEnviado(si, id){
   id = id || (_R && _R.id); if (!id) return;
   const patch = si ? { estado: 'enviado', enviado_at: new Date().toISOString() } : { estado: 'borrador', enviado_at: null };
-  const { error } = await sb.from('obra_resumenes').update(patch).eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_resumenes').update(patch).eq('id', id); if (error) return toast(error.message, 'error');
   const i = RESUMENES.findIndex(x => x.id === id); if (i >= 0) Object.assign(RESUMENES[i], patch); if (_R && _R.id === id) Object.assign(_R, patch);
   renderInforme(); if (si) toast('Marcado como enviado', 'success'); else if (_R && _R.id === id) abrirResumen(id);
 }
 async function borrarResumen(){
   if (!_R) return; if (!await preguntar('¿Borrar este resumen? El link que hayas compartido deja de funcionar.', 'Borrar')) return;
-  const { error } = await sb.from('obra_resumenes').delete().eq('id', _R.id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_resumenes').delete().eq('id', _R.id); if (error) return toast(error.message, 'error');
   RESUMENES = RESUMENES.filter(x => x.id !== _R.id); _R = null; cerrarOv(); renderInforme(); toast('Resumen borrado', 'success');
 }
 
@@ -1461,9 +1593,9 @@ function card(t){
   const nn = NOVS.filter(n => n.tarea_id === t.id).length, na = ARCHIVOS.filter(a => a.tarea_id === t.id).length;
   const E = ETAPAS.filter(e => e.tarea_id === t.id), eh = E.filter(e => e.hecha).length;
   const prog = E.length ? `<div class="etp" title="${eh} de ${E.length} etapas"><i style="width:${Math.round(eh * 100 / E.length)}%"></i></div><span class="mini">${eh}/${E.length} etapas</span>` : '';
-  const acc = t.estado === 'pendiente' ? `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'en_curso')" title="Empezar: la pasa a En curso" aria-label="Empezar">${_i('play')}</button>`
-            : t.estado === 'en_curso' ? `<button class="btn primary ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'terminada')" title="Terminada" aria-label="Terminada">${_i('check')}</button>`
-            : `<button class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
+  const acc = t.estado === 'pendiente' ? `<button data-p="tareas" class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'en_curso')" title="Empezar: la pasa a En curso" aria-label="Empezar">${_i('play')}</button>`
+            : t.estado === 'en_curso' ? `<button data-p="tareas" class="btn primary ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'terminada')" title="Terminada" aria-label="Terminada">${_i('check')}</button>`
+            : `<button data-p="tareas" class="btn ico" onclick="event.stopPropagation();cambiarEstado(${t.id},'pendiente')" title="Reabrir: vuelve a Pendientes" aria-label="Reabrir">${_i('undo')}</button>`;
   // v11 (JP): tarjeta circular; el reborde es el % de etapas hechas (terminada = 100 %)
   const pct = t.estado === 'terminada' ? 100 : E.length ? Math.round(eh * 100 / E.length) : 0;
   const estCls = t.estado === 'en_curso' ? 'amber' : t.estado === 'terminada' ? 'green' : t.estado === 'cancelada' ? 'canc' : 'gray';
@@ -1479,16 +1611,16 @@ function card(t){
 </div>`;
 }
 async function cambiarEstado(id, estado){
-  const { error } = await sb.from('obra_tareas').update({ estado }).eq('id', id);
+  const { error } = await DB.from('obra_tareas').update({ estado }).eq('id', id);
   if (error) return toast(error.message, 'error');
-  await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'estado', texto: 'Pasó a ' + EST[estado], autor_email: YO.email, autor_nombre: YO.nombre });
+  await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'estado', texto: 'Pasó a ' + EST[estado], autor_email: YO.email, autor_nombre: YO.nombre });
   toast('Tarea ' + EST[estado].toLowerCase(), 'success'); await cargar(); renderTablero(); if (document.getElementById('ov')) abrirTarea(id);
 }
 
 // ── Modal tarea ──
 function preguntar(msg, okTxt){ return new Promise(res => { const o = document.createElement('div'); o.id = 'ov2';
   o.innerHTML = `<div class="box2"><div class="q">${esc(msg)}</div><div class="bts"><button class="b-no" id="ov2-no">Cancelar</button><button class="b-si" id="ov2-si">${esc(okTxt || 'Sí')}</button></div></div>`;
-  document.body.appendChild(o); o.querySelector('#ov2-no').onclick = () => { o.remove(); res(false); }; o.querySelector('#ov2-si').onclick = () => { o.remove(); res(true); };
+  document.body.appendChild(o); o.querySelector('#ov2-no').onclick = () => { o.remove(); res(false); }; o.querySelector('#ov2-si').onclick = async () => { o.remove(); const f = REG_PEND; REG_PEND = null; if (f && !(await f()).ok) return res(false); res(true); };
   const esc_ = ev => { if (ev.key === 'Escape'){ o.remove(); res(false); document.removeEventListener('keydown', esc_); } }; document.addEventListener('keydown', esc_); }); }
 document.addEventListener('click', ev => { const i = ev.target; if (i && i.matches && i.matches('input[type=date].over')) { try { i.showPicker(); } catch (_) {} } });
 function cerrarOv(){ const o = document.getElementById('ov'); if (o) o.remove(); }
@@ -1533,12 +1665,12 @@ function fichaTarea(id, tab){
   const t = tareaDe(id); if (!t) return;
   _fichaTab = tab || _fichaTab || 'detalle';
   const novs = NOVS.filter(n => n.tarea_id === id), archTodos = ARCHIVOS.filter(a => a.tarea_id === id), pres = archTodos.filter(a => a.tipo === 'presupuesto'), arch = archTodos.filter(a => a.tipo !== 'presupuesto'), E = ETAPAS.filter(e => e.tarea_id === id), eh = E.filter(e => e.hecha).length;
-  const filaArch = (a, volver) => `<div class="rowt">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a>` : `<span>${_i('file')} ${esc(a.nombre)}</span>`} <span class="mini">· ${a.tipo}${a.etapa_id && ETAPAS.find(x => x.id === a.etapa_id) ? ' · ' + esc(ETAPAS.find(x => x.id === a.etapa_id).titulo) : ''}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span>${esAdmin() && (a.tipo === 'presupuesto' || a.tipo === 'factura') && a.estado === 'pendiente' ? `<span class="acc"><button class="btn ico chico" onclick="estadoArchivo(${a.id},'aprobado','${a.tipo}').then(()=>fichaTarea(${id},'${volver}'))" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','${a.tipo}').then(()=>fichaTarea(${id},'${volver}'))" title="Rechazar" aria-label="Rechazar">${_i('x')}</button></span>` : ''}</div>`;
+  const filaArch = (a, volver) => `<div class="rowt">${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a>` : `<span>${_i('file')} ${esc(a.nombre)}</span>`} <span class="mini">· ${a.tipo}${a.etapa_id && ETAPAS.find(x => x.id === a.etapa_id) ? ' · ' + esc(ETAPAS.find(x => x.id === a.etapa_id).titulo) : ''}${a.proveedor ? ' · ' + esc(a.proveedor) : ''}${a.importe ? ' · ' + plata(a.importe) : ''} · <span class="chip ${a.estado === 'aprobado' || a.estado === 'pagado' ? 'green' : a.estado === 'rechazado' ? 'red' : 'gray'}">${a.estado}</span></span>${ve('aprobar') && (a.tipo === 'presupuesto' || a.tipo === 'factura') && a.estado === 'pendiente' ? `<span class="acc"><button class="btn ico chico" onclick="estadoArchivo(${a.id},'aprobado','${a.tipo}').then(()=>fichaTarea(${id},'${volver}'))" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','${a.tipo}').then(()=>fichaTarea(${id},'${volver}'))" title="Rechazar" aria-label="Rechazar">${_i('x')}</button></span>` : ''}</div>`;
   const d = diasA(t.fecha_limite), abierta = t.estado === 'pendiente' || t.estado === 'en_curso';
   const estIco = t.estado === 'en_curso' ? 'play' : t.estado === 'terminada' ? 'check' : t.estado === 'cancelada' ? 'x' : 'clock';
   const lineas = novs.map(n => {
     const mio = esAdmin() || (n.autor_email || '').toLowerCase() === YO.email;
-    const del = mio ? ` <button class="btn ico chico fl-del" onclick="borrarNovedad(${n.id},${id})" title="Borrar" aria-label="Borrar">${_i('x')}</button>` : '';
+    const del = mio && (n.tipo !== 'comentario' || ve('novedades')) ? ` <button class="btn ico chico fl-del" onclick="borrarNovedad(${n.id},${id})" title="Borrar" aria-label="Borrar">${_i('x')}</button>` : '';
     if (n.tipo === 'estado' || n.tipo === 'archivo') return `<div class="fl sis">${fmtTs(n.creado_at)} · ${esc(n.autor_nombre || quien(n.autor_email))}: ${esc(n.texto)}${del}</div>`;
     const et = n.tipo === 'comentario' && n.etapa_id && E.find(e => e.id === n.etapa_id);
     return `<div class="fl"><b>${esc(n.autor_nombre || quien(n.autor_email))} · ${fmtTs(n.creado_at)}${et ? `<span class="fl-et">${esc(et.titulo)}</span>` : ''}</b>${esc(n.texto)}${del}</div>`;
@@ -1546,11 +1678,11 @@ function fichaTarea(id, tab){
   const pct = t.estado === 'terminada' ? 100 : E.length ? Math.round(eh * 100 / E.length) : 0;
   ovBox(`<div class="ficha nueva3 pxficha">
     <div class="cab"><div class="m-head" id="f-head"><h3 style="margin:0;flex:1">${esc(t.titulo)}</h3>
-      <button class="btn ico" onclick="renombrarTarea(${id})" title="Cambiar el título" aria-label="Cambiar el título">${_i('edit')}</button>
-      ${esAdmin() ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea (solo Adorno)" aria-label="Borrar">${_i('trash')}</button>` : ''}
+      <button class="btn ico" data-p="tareas" onclick="renombrarTarea(${id})" title="Cambiar el título" aria-label="Cambiar el título">${_i('edit')}</button>
+      ${ve('tareas_borrar') ? `<button class="btn ico" onclick="borrarTarea(${id})" title="Borrar la tarea" aria-label="Borrar">${_i('trash')}</button>` : ''}
       <button class="btn ico" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div>
       <div class="nivel-tag">${E.length ? `ETAPA ${eh}/${E.length}` : 'TAREA ' + id} · ${pct}%</div><div class="loma a"></div><div class="loma b"></div><div class="nube"></div><div class="px-coin" id="f-coin">A</div><div id="f-spr">${muneco(t.estado, 3)}</div></div>
-    <div class="datos datos4">
+    <div class="datos datos4" data-p-ro="tareas">
       <label class="dato" title="Rubro">${_i('brick')}<b>${esc(t.rubro || 'Rubro')}</b><select class="over" onchange="guardarCampo(${id},'rubro',this.value)"><option value="">— sin rubro —</option>${RUBROS.map(r => `<option ${t.rubro === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
       <button class="dato" title="Grupos que lo trabajan" onclick="editarGrupo(${id})">${_i('users')}<b>${(() => { const G = gruposDe(t); return G.length > 1 ? G.length + ' grupos' : esc(G[0] || 'Grupo'); })()}</b></button>
       <label class="dato pr-${t.prioridad}" title="Prioridad">${_i('flag')}<b>${t.prioridad[0].toUpperCase() + t.prioridad.slice(1)}</b><select class="over" onchange="guardarCampo(${id},'prioridad',this.value)">${['alta','normal','baja'].map(p => `<option value="${p}" ${t.prioridad === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
@@ -1559,28 +1691,28 @@ function fichaTarea(id, tab){
     </div>
     <div class="cuerpo">
     <div id="f-grupo-ed"></div>
-    <div class="fav-bar"><button class="btn fav" onclick="fotoAvance(${id})">${ICO_CAM} Foto de avance</button><button class="btn fav sec" onclick="linksFotos(${id})">${_i('send')} Link para el grupo${FOTOS_LINKS.filter(l => l.tarea_id === id).length ? ` <i>${FOTOS_LINKS.filter(l => l.tarea_id === id).length}</i>` : ''}</button></div>
+    <div class="fav-bar" data-p="archivos"><button class="btn fav" onclick="fotoAvance(${id})">${ICO_CAM} Foto de avance</button><button class="btn fav sec" onclick="linksFotos(${id})">${_i('send')} Link para el grupo${FOTOS_LINKS.filter(l => l.tarea_id === id).length ? ` <i>${FOTOS_LINKS.filter(l => l.tarea_id === id).length}</i>` : ''}</button></div>
     <div class="ftabs"><span class="${_fichaTab === 'detalle' ? 'on' : ''}" onclick="fichaTab('detalle')">Detalle</span><span class="${_fichaTab === 'etapas' ? 'on' : ''}" onclick="fichaTab('etapas')">Etapas${E.length ? `<i>${eh}/${E.length}</i>` : ''}</span><span class="${_fichaTab === 'presupuestos' ? 'on' : ''}" onclick="fichaTab('presupuestos')">Presup.${pres.length ? `<i>${pres.length}</i>` : ''}</span><span class="${_fichaTab === 'archivos' ? 'on' : ''}" onclick="fichaTab('archivos')">Archivos${arch.length ? `<i>${arch.length}</i>` : ''}</span></div>
     <section id="ft-detalle" class="ft ${_fichaTab === 'detalle' ? 'on' : ''}">
       <div class="detlog">
-        <div class="desc" id="f-desc">${t.descripcion ? esc(t.descripcion) : '<span class="mini">Sin detalle todavía.</span>'}<button class="btn ico chico fl-ed" onclick="editarDesc(${id})" title="Editar el detalle" aria-label="Editar">${_i('edit')}</button></div>
+        <div class="desc" id="f-desc">${t.descripcion ? esc(t.descripcion) : '<span class="mini">Sin detalle todavía.</span>'}<button class="btn ico chico fl-ed" data-p="tareas" onclick="editarDesc(${id})" title="Editar el detalle" aria-label="Editar">${_i('edit')}</button></div>
         ${lineas}
       </div>
-      <div class="nov-in" style="margin-top:8px"><input id="m-nov" placeholder="Agregar al detalle…" onkeydown="if(event.key==='Enter') agregarNovedad(${id})"><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Adjuntar archivo" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="agregarNovedad(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button></div>
+      <div class="nov-in" style="margin-top:8px" data-p="novedades"><input id="m-nov" placeholder="Agregar al detalle…" onkeydown="if(event.key==='Enter') agregarNovedad(${id})"><button class="btn ico" data-p="archivos" onclick="document.getElementById('m-file').click()" title="Adjuntar archivo" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="agregarNovedad(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button></div>
     </section>
     <section id="ft-etapas" class="ft ${_fichaTab === 'etapas' ? 'on' : ''}">
-      <div id="m-etapas">${etapasHtml(id)}</div>
-      <div class="nov-in" style="margin-top:6px"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><label class="btn ico fecha-et" id="m-et-fecha-l" title="Fecha estimada (opcional)">${_i('cal')}<input id="m-et-fecha" type="date" class="over" onchange="document.getElementById('m-et-fecha-l').classList.toggle('con-fecha', !!this.value)"></label><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
+      <div id="m-etapas" data-p-ro="tareas">${etapasHtml(id)}</div>
+      <div class="nov-in" style="margin-top:6px" data-p="tareas"><input id="m-et-titulo" placeholder="Nueva etapa…" onkeydown="if(event.key==='Enter') agregarEtapa(${id})"><label class="btn ico fecha-et" id="m-et-fecha-l" title="Fecha estimada (opcional)">${_i('cal')}<input id="m-et-fecha" type="date" class="over" onchange="document.getElementById('m-et-fecha-l').classList.toggle('con-fecha', !!this.value)"></label><select id="m-et-resp" style="display:none"><option value=""></option></select><button class="btn primary ico" onclick="agregarEtapa(${id})" title="Agregar etapa" aria-label="Agregar etapa">${_i('plus')}</button></div>
     </section>
     <section id="ft-presupuestos" class="ft ${_fichaTab === 'presupuestos' ? 'on' : ''}">
       ${pres.length ? pres.map(a => filaArch(a, 'presupuestos')).join('') : '<div class="mini">Sin presupuestos todavía.</div>'}
       ${cobrosHtml(id)}
       ${pres.length > 1 ? `<div class="mini" style="margin-top:4px">${pres.filter(a => a.estado === 'aprobado').length ? 'Aprobado: ' + pres.filter(a => a.estado === 'aprobado').map(a => esc(a.proveedor || a.nombre) + ' ' + plata(a.importe || 0)).join(', ') : 'Ninguno aprobado todavía.'}</div>` : ''}
-      <div class="nov-in" style="margin-top:8px;gap:10px"><button class="btn primary ico" onclick="presupuestoRapido(${id},'presupuesto')" title="Cargar un presupuesto (con o sin archivo)" aria-label="Cargar presupuesto">${_i('plus')}</button><span class="mini">Presupuesto</span></div>
+      <div class="nov-in" style="margin-top:8px;gap:10px" data-p="archivos"><button class="btn primary ico" onclick="presupuestoRapido(${id},'presupuesto')" title="Cargar un presupuesto (con o sin archivo)" aria-label="Cargar presupuesto">${_i('plus')}</button><span class="mini">Presupuesto</span></div>
     </section>
     <section id="ft-archivos" class="ft ${_fichaTab === 'archivos' ? 'on' : ''}">
       ${arch.length ? arch.map(a => filaArch(a, 'archivos')).join('') : '<div class="mini">Sin archivos todavía.</div>'}
-      <div class="nov-in" style="margin-top:8px;gap:10px"><button class="btn primary ico" onclick="presupuestoRapido(${id},'factura')" title="Cargar una factura" aria-label="Cargar factura">${_i('file')}</button><span class="mini">Factura</span><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir foto o plano" aria-label="Subir">${_i('clip')}</button><span class="mini">Foto / plano</span></div>
+      <div class="nov-in" style="margin-top:8px;gap:10px" data-p="archivos"><button class="btn primary ico" onclick="presupuestoRapido(${id},'factura')" title="Cargar una factura" aria-label="Cargar factura">${_i('file')}</button><span class="mini">Factura</span><button class="btn ico" onclick="document.getElementById('m-file').click()" title="Subir foto o plano" aria-label="Subir">${_i('clip')}</button><span class="mini">Foto / plano</span></div>
     </section>
     <input type="file" id="m-file" multiple accept="application/pdf,image/*" style="display:none" onchange="mostrarAdj(${id})">
     <div class="nov-in adj" id="m-adj" style="display:none;margin-top:8px"><span class="mini" id="m-adj-n" style="display:none"></span><label class="pil adj-tipo adj-etapa" id="m-fetapa-l" style="display:none" title="¿De qué etapa es este presupuesto?"><span id="m-fetapa-t">Etapa</span><select id="m-fetapa" class="over" onchange="document.getElementById('m-fetapa-t').textContent = this.options[this.selectedIndex].text"></select></label><label class="pil adj-tipo"><span id="m-ftipo-l">Presupuesto</span><select id="m-ftipo" class="over" onchange="adjCampos()"><option value="foto">Foto</option><option value="presupuesto">Presupuesto</option><option value="factura">Factura</option><option value="plano">Plano</option><option value="otro">Otro</option></select></label><input id="m-fprov" placeholder="Proveedor" list="dl-prov" style="flex:1 1 120px"><datalist id="dl-prov">${[...new Set(ARCHIVOS.map(a => a.proveedor).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join('')}</datalist><input id="m-fimp" type="text" inputmode="decimal" autocomplete="off" class="in-monto" placeholder="Importe $" style="flex:1 1 100px"><button class="btn ico adjuntar" id="m-adj-btn" onclick="document.getElementById('m-file').click()" title="Adjuntar el PDF o la foto" aria-label="Adjuntar">${_i('clip')}</button><button class="btn primary ico" onclick="subirDesdeTarea(${id})" title="Guardar" aria-label="Guardar">${_i('save')}</button><button class="btn ico chico" onclick="document.getElementById('m-adj').style.display='none';document.getElementById('m-file').value=''" title="Cancelar" aria-label="Cancelar">${_i('x')}</button></div>
@@ -1598,7 +1730,7 @@ function adjCampos(){ const t = document.getElementById('m-ftipo').value, on = t
 let _adjEtapa = null;
 function presupuestoRapido(id, tipo, etapaId){ _adjEtapa = etapaId || null; fichaTab(tipo === 'presupuesto' ? 'presupuestos' : 'archivos'); document.getElementById('m-file').value = ''; cargarEtapaSel('m-fetapa', id, etapaId); const _et = etapaId ? ETAPAS.find(x => x.id === etapaId) : null; document.getElementById('m-adj-n').textContent = tipo === 'presupuesto' ? (_et ? `${_et.titulo}: presupuesto ${presupDeEtapa(_et).length + 1} de ${_et.cant_presupuestos || 3}` : 'Presupuesto: proveedor e importe; el archivo es opcional (clip).') : 'Factura: proveedor e importe; adjuntá el PDF o la foto con el clip.'; document.getElementById('m-ftipo').value = tipo; adjCampos(); document.getElementById('m-adj').style.display = 'flex'; document.getElementById('m-fprov').focus(); }
 async function guardarCampo(id, campo, valor){
-  const { error } = await sb.from('obra_tareas').update({ [campo]: valor }).eq('id', id);
+  const { error } = await DB.from('obra_tareas').update({ [campo]: valor }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(id); renderTablero();
 }
@@ -1617,7 +1749,7 @@ function renombrarTarea(id){
 async function guardarTitulo(id){
   const v = document.getElementById('f-tit').value.trim(), c = document.getElementById('f-tcorto').value.trim() || null;
   if (!v) return toast('El título no puede quedar vacío', 'error');
-  const { error } = await sb.from('obra_tareas').update({ titulo: v, titulo_corto: c }).eq('id', id);
+  const { error } = await DB.from('obra_tareas').update({ titulo: v, titulo_corto: c }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(id); renderTablero();
 }
@@ -1628,7 +1760,7 @@ function editarGrupo(id){
     <div class="nov-in" style="margin-top:6px"><input id="f-grupo" list="dl-grupos" placeholder="Agregar grupo (Ezequiel Gomez, Gastón…)" onkeydown="if(event.key==='Enter') sumarGrupo(${id})"><datalist id="dl-grupos">${grupos().filter(g => !G.includes(g)).map(g => `<option value="${esc(g)}">`).join('')}</datalist><button class="btn primary ico" onclick="sumarGrupo(${id})" title="Agregar" aria-label="Agregar">${_i('plus')}</button><button class="btn ico" onclick="document.getElementById('f-grupo-ed').innerHTML=''" title="Cerrar" aria-label="Cerrar">${_i('x')}</button></div></div>`;
   document.getElementById('f-grupo').focus();
 }
-async function _setGrupos(id, G){ const { error } = await sb.from('obra_tareas').update({ grupo: G.join(', ') || null }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); fichaTarea(id); editarGrupo(id); renderTablero(); }
+async function _setGrupos(id, G){ const { error } = await DB.from('obra_tareas').update({ grupo: G.join(', ') || null }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); fichaTarea(id); editarGrupo(id); renderTablero(); }
 async function sumarGrupo(id){ const v = document.getElementById('f-grupo').value.trim(); if (!v) return; const G = gruposDe(tareaDe(id)); if (G.some(g => g.toLowerCase() === v.toLowerCase())) return toast('Ese grupo ya está', 'error'); await _setGrupos(id, [...G, v]); }
 async function sacarGrupo(id, i){ const G = gruposDe(tareaDe(id)); G.splice(i, 1); await _setGrupos(id, G); }
 function editarDesc(id){
@@ -1641,13 +1773,13 @@ async function guardarTarea(id){
     responsable: document.getElementById('m-resp').value, prioridad: document.getElementById('m-prio').value, fecha_limite: document.getElementById('m-fecha').value || null, estado: document.getElementById('m-estado').value };
   if (!d.titulo) return toast('Falta el título', 'error');
   let r;
-  if (id){ const antes = tareaDe(id); r = await sb.from('obra_tareas').update(d).eq('id', id);
-    if (!r.error && antes.estado !== d.estado) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'estado', texto: 'Pasó a ' + EST[d.estado], autor_email: YO.email, autor_nombre: YO.nombre }); }
+  if (id){ const antes = tareaDe(id); r = await DB.from('obra_tareas').update(d).eq('id', id);
+    if (!r.error && antes.estado !== d.estado) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'estado', texto: 'Pasó a ' + EST[d.estado], autor_email: YO.email, autor_nombre: YO.nombre }); }
   else {
-    r = await sb.from('obra_tareas').insert({ ...d, obra_id: OBRA.id, creado_por: YO.email }).select().single();
+    r = await DB.from('obra_tareas').insert({ ...d, obra_id: OBRA.id, creado_por: YO.email }).select().single();
     if (!r.error && document.getElementById('n-etapas')){
       const et = nEtapasElegidas().map(e => ({ ...e, obra_id: OBRA.id, tarea_id: r.data.id, creado_por: YO.email }));
-      if (et.length){ const re = await sb.from('obra_etapas').insert(et); if (re.error) toast('Tarea creada, pero las etapas no: ' + re.error.message, 'error'); }
+      if (et.length){ const re = await DB.from('obra_etapas').insert(et); if (re.error) toast('Tarea creada, pero las etapas no: ' + re.error.message, 'error'); }
     }
   }
   if (r.error) return toast(r.error.message, 'error');
@@ -1655,12 +1787,12 @@ async function guardarTarea(id){
 }
 async function borrarTarea(id){
   if (!await preguntar('¿Borrar la tarea con sus comentarios? Los archivos quedan sueltos. Si solo no va más, mejor ponela en Cancelada.', 'Borrar')) return;
-  const { error } = await sb.from('obra_tareas').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_tareas').delete().eq('id', id); if (error) return toast(error.message, 'error');
   cerrarOv(); await cargar(); renderTablero(); renderResumen();
 }
 async function agregarNovedad(id){
   const txt = document.getElementById('m-nov').value.trim(); if (!txt) return;
-  const { data: nov, error } = await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'comentario', texto: txt, autor_email: YO.email, autor_nombre: YO.nombre }).select().single();
+  const { data: nov, error } = await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'comentario', texto: txt, autor_email: YO.email, autor_nombre: YO.nombre }).select().single();
   if (error) return toast(error.message, 'error');
   await cargar(); abrirTarea(id); renderTablero();
   // v56 (JP): ¿con esto se terminó alguna etapa? (puede ser cualquiera, no necesariamente la siguiente)
@@ -1668,11 +1800,11 @@ async function agregarNovedad(id){
   const { de, fin: ids } = await preguntarEtapa(id, txt); if (!ids.length && !de) return;
   for (const eid of ids){
     const e = ETAPAS.find(x => x.id === eid); if (!e) continue;
-    const { error: e1 } = await sb.from('obra_etapas').update({ hecha: true }).eq('id', eid); if (e1){ toast(e1.message, 'error'); continue; }
-    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, etapa_id: eid, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+    const { error: e1 } = await DB.from('obra_etapas').update({ hecha: true }).eq('id', eid); if (e1){ toast(e1.message, 'error'); continue; }
+    await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, etapa_id: eid, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
   }
   const etN = de || (ids.length === 1 ? ids[0] : null);
-  if (etN && nov) await sb.from('obra_novedades').update({ etapa_id: etN }).eq('id', nov.id);
+  if (etN && nov) await DB.from('obra_novedades').update({ etapa_id: etN }).eq('id', nov.id);
   const sel = ids.map(x => ETAPAS.find(e => e.id === x)).filter(Boolean), eDe = de && ETAPAS.find(e => e.id === de);
   await cargar(); renderTablero(); fichaTarea(id, 'detalle');
   if (!sel.length) return toast('Nota guardada en: ' + (eDe ? eDe.titulo : 'la etapa'), 'success');
@@ -1686,11 +1818,11 @@ function etapaSugerida(txt, E){ const R = new Set(_pals(txt)); let mejor = null,
 function preguntarEtapa(tid, txt){ return new Promise(res => {
   const E = ETAPAS.filter(e => e.tarea_id === tid && !e.hecha).sort((a, b) => (a.orden - b.orden) || (a.id - b.id)); if (!E.length) return res({ de: null, fin: [] });
   const sug = etapaSugerida(txt, E), L = sug ? [sug, ...E.filter(e => e !== sug)] : E;
-  const bloq = e => esEtapaPresup(e) && presupDeEtapa(e).length < (e.cant_presupuestos || 3);
+  const bloq = e => esEtapaPresup(e) && presupDeEtapa(e).length < (e.cant_presupuestos || 3), puedeFin = habilitada('tareas');
   const o = document.createElement('div'); o.id = 'ov2';
   o.innerHTML = `<div class="box2 etq"><div class="q"><b>¿Esto es de alguna etapa?</b><small>“${esc(txt.length > 90 ? txt.slice(0, 90) + '…' : txt)}”</small></div>
     <div class="etq-l">${L.map(e => `<div class="etq-r" data-id="${e.id}"><div class="etq-t">${esc(e.titulo)}${e === sug ? '<i>parece esta</i>' : ''}${bloq(e) ? `<small>Faltan presupuestos (${presupDeEtapa(e).length} de ${e.cant_presupuestos || 3})</small>` : ''}</div>
-      <div class="etq-b"><button type="button" data-v="de">Es de esta</button><button type="button" data-v="fin" ${bloq(e) ? 'disabled' : ''}>✓ Se terminó</button></div></div>`).join('')}</div>
+      <div class="etq-b"><button type="button" data-v="de">Es de esta</button>${puedeFin ? `<button type="button" data-v="fin" ${bloq(e) ? 'disabled' : ''}>✓ Se terminó</button>` : ''}</div></div>`).join('')}</div>
     <div class="bts"><button class="b-no" id="ov2-no">No, es general</button><button class="b-si" id="ov2-si">Listo</button></div></div>`;
   document.body.appendChild(o);
   const est = new Map(), si = o.querySelector('#ov2-si');
@@ -1710,8 +1842,8 @@ function preguntarEtapa(tid, txt){ return new Promise(res => {
 }); }
 async function borrarNovedad(nid, tid){
   const n = NOVS.find(x => x.id === nid);
-  if (n && n.etapa_id && n.tipo === 'avance'){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await sb.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
-  await sb.from('obra_novedades').delete().eq('id', nid); await cargar(); fichaTarea(tid, 'detalle'); renderTablero();
+  if (n && n.etapa_id && n.tipo === 'avance'){ const e = ETAPAS.find(x => x.id === n.etapa_id); if (e && e.hecha){ const { error } = await DB.from('obra_etapas').update({ hecha: false }).eq('id', e.id); if (error) return toast(error.message, 'error'); toast('Etapa destildada: ' + e.titulo, 'info'); } }
+  await DB.from('obra_novedades').delete().eq('id', nid); await cargar(); fichaTarea(tid, 'detalle'); renderTablero();
 }
 
 // ── Etapas ──
@@ -1743,18 +1875,18 @@ function editarEtapaTitulo(id){
 async function guardarEtapaTitulo(id){
   const e = ETAPAS.find(x => x.id === id), v = document.getElementById('et-ed-' + id).value.trim(); if (!v) return toast('El texto no puede quedar vacío', 'error');
   const d = { titulo: v }; if (esTituloCotiz(v) && !e.cant_presupuestos) d.cant_presupuestos = 3;
-  const { error } = await sb.from('obra_etapas').update(d).eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_etapas').update(d).eq('id', id); if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 async function fechaEtapa(id, valor){
   const e = ETAPAS.find(x => x.id === id);
-  const { error } = await sb.from('obra_etapas').update({ fecha_limite: valor || null }).eq('id', id);
+  const { error } = await DB.from('obra_etapas').update({ fecha_limite: valor || null }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(e.tarea_id, 'etapas');
 }
 // 2. reordenar etapas: mantener presionada (~0,5 s) y arrastrar
 function initDragEtapas(tid){
-  const cont = document.getElementById('m-etapas'); if (!cont || cont._drag) return; cont._drag = true;
+  const cont = document.getElementById('m-etapas'); if (!cont || cont._drag || PERM.tareas !== 'h') return; cont._drag = true;   // (13-nov) mover etapas: solo con la función habilitada
   let timer = null, el = null, startY = 0, moviendo = false;
   const stopTouch = ev => { if (moviendo) ev.preventDefault(); };
   cont.addEventListener('pointerdown', ev => {
@@ -1781,7 +1913,7 @@ function initDragEtapas(tid){
     const ids = [...cont.querySelectorAll('.etapa')].map(n => Number(n.dataset.id));
     const cambios = ids.map((id, i) => ({ id, orden: i + 1 })).filter(c => { const e = ETAPAS.find(x => x.id === c.id); return e && e.orden !== c.orden; });
     if (!cambios.length) return;
-    const rs = await Promise.all(cambios.map(c => sb.from('obra_etapas').update({ orden: c.orden }).eq('id', c.id)));
+    const rs = await Promise.all(cambios.map(c => DB.from('obra_etapas').update({ orden: c.orden }).eq('id', c.id)));
     const err = rs.find(r => r.error); if (err) return toast(err.error.message, 'error');
     await cargar(); fichaTarea(tid, 'etapas');
   };
@@ -1789,28 +1921,28 @@ function initDragEtapas(tid){
 }
 async function cantPresup(id, delta){
   const e = ETAPAS.find(x => x.id === id); const nueva = Math.max(1, Math.min(20, (e.cant_presupuestos || 3) + delta));
-  const { error } = await sb.from('obra_etapas').update({ cant_presupuestos: nueva }).eq('id', id);
+  const { error } = await DB.from('obra_etapas').update({ cant_presupuestos: nueva }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(e.tarea_id, 'etapas');
 }
 async function agregarEtapa(tid){
   const titulo = document.getElementById('m-et-titulo').value.trim(); if (!titulo) return;
   const orden = ETAPAS.filter(e => e.tarea_id === tid).length + 1;
-  const { error } = await sb.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: null, cant_presupuestos: esTituloCotiz(titulo) ? 3 : null, creado_por: YO.email });
+  const { error } = await DB.from('obra_etapas').insert({ obra_id: OBRA.id, tarea_id: tid, titulo, orden, fecha_limite: document.getElementById('m-et-fecha').value || null, responsable: null, cant_presupuestos: esTituloCotiz(titulo) ? 3 : null, creado_por: YO.email });
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(tid, 'etapas'); document.getElementById('m-et-titulo').focus(); renderTablero();
 }
 async function prioEtapa(id){
   const e = ETAPAS.find(x => x.id === id); const nueva = e.prioridad === 'alta' ? null : 'alta';
-  const { error } = await sb.from('obra_etapas').update({ prioridad: nueva }).eq('id', id);
+  const { error } = await DB.from('obra_etapas').update({ prioridad: nueva }).eq('id', id);
   if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 async function tildarEtapa(id, hecha){
-  const e = ETAPAS.find(x => x.id === id); const { error } = await sb.from('obra_etapas').update({ hecha }).eq('id', id);
+  const e = ETAPAS.find(x => x.id === id); const { error } = await DB.from('obra_etapas').update({ hecha }).eq('id', id);
   if (error) return toast(error.message, 'error');
-  if (hecha) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
-  else await sb.from('obra_novedades').delete().eq('etapa_id', e.id).eq('tipo', 'avance');
+  if (hecha) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+  else await DB.from('obra_novedades').delete().eq('etapa_id', e.id).eq('tipo', 'avance');
   await cargar(); renderTablero();
   const tit = (e.titulo || '').toLowerCase();
   if (hecha && /selecci|elegir|equipo|grupo|mano de obra/.test(tit) && !/presupuest|cotiza/.test(tit)) { fichaTarea(e.tarea_id, 'etapas'); editarGrupo(e.tarea_id); toast('¿Qué grupo lo va a hacer?', 'info'); return; }
@@ -1818,7 +1950,7 @@ async function tildarEtapa(id, hecha){
 }
 async function borrarEtapa(id){
   const e = ETAPAS.find(x => x.id === id); if (!await preguntar('¿Sacar la etapa "' + e.titulo + '"?', 'Sacar')) return;
-  const { error } = await sb.from('obra_etapas').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_etapas').delete().eq('id', id); if (error) return toast(error.message, 'error');
   await cargar(); fichaTarea(e.tarea_id, 'etapas'); renderTablero();
 }
 
@@ -1827,11 +1959,11 @@ const limpiarNombre = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[
 async function subirUno(file, tipo, extra){
   if (tipo === 'foto') file = await achicarFoto(file);
   const path = `${OBRA.id}/${tipo}/${Date.now()}_${limpiarNombre(file.name)}`;
-  const up = await sb.storage.from('obra').upload(path, file, { contentType: file.type || 'application/octet-stream' });
+  const up = await DB.storage.from('obra').upload(path, file, { contentType: file.type || 'application/octet-stream' });
   if (up.error) throw up.error;
-  const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre: file.name, path, mime: file.type || null, subido_por: YO.email, ...extra });
+  const { error } = await DB.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre: file.name, path, mime: file.type || null, subido_por: YO.email, ...extra });
   if (error) throw error;
-  if (extra.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: extra.tarea_id, tipo: 'archivo', texto: `Subió ${tipo}: ${file.name}${extra.importe ? ' · ' + plata(extra.importe) : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  if (extra.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: extra.tarea_id, tipo: 'archivo', texto: `Subió ${tipo}: ${file.name}${extra.importe ? ' · ' + plata(extra.importe) : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
 }
 async function subirArchivo(tipo, pre){
   const inp = document.getElementById(pre + '-file'); const files = [...(inp.files || [])];
@@ -1855,9 +1987,9 @@ async function subirDesdeTarea(id){
   if (!files.length){
     if (!esPlata) return toast('Elegí el archivo', 'error');
     const nombre = (t === 'presupuesto' ? 'Presupuesto' : 'Factura') + ' - ' + prov;
-    const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo: t, nombre, path: null, subido_por: YO.email, ...extra });
+    const { error } = await DB.from('obra_archivos').insert({ obra_id: OBRA.id, tipo: t, nombre, path: null, subido_por: YO.email, ...extra });
     if (error) return toast(error.message, 'error');
-    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'archivo', texto: `Cargó ${t}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
+    await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: id, tipo: 'archivo', texto: `Cargó ${t}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
   } else {
     try { for (const f of files) await subirUno(f, t, extra); } catch (e) { return toast('No se pudo subir: ' + e.message, 'error'); }
   }
@@ -1880,7 +2012,7 @@ function renderArchivos(tipo){
   const tot = L.reduce((s, a) => s + Number(a.importe || 0), 0);
   document.getElementById(pre + '-stat').innerHTML = `${L.length} · <strong>${plata(tot)}</strong>`;
   const chip = e => `<span class="chip ${e === 'aprobado' || e === 'pagado' ? 'green' : e === 'rechazado' ? 'red' : 'amber'}">${e === 'pendiente' ? (tipo === 'factura' ? 'por pagar' : 'por aprobar') : e}</span>`;
-  const acc = a => { if (!esAdmin()) return ''; const ok = tipo === 'factura' ? 'pagado' : 'aprobado';
+  const acc = a => { if (!ve('aprobar')) return ''; const ok = tipo === 'factura' ? 'pagado' : 'aprobado';
     return (a.estado === 'pendiente' ? `<button class="btn primary ico" onclick="estadoArchivo(${a.id},'${ok}','${tipo}')" title="${tipo === 'factura' ? 'Marcar pagada' : 'Aprobar'}" aria-label="Aprobar">${tipo === 'factura' ? _i('money') : _i('check')}</button><button class="btn ico" onclick="estadoArchivo(${a.id},'rechazado','${tipo}')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`
          : `<button class="btn ico" onclick="estadoArchivo(${a.id},'pendiente','${tipo}')" title="Volver a pendiente" aria-label="Volver a pendiente">${_i('undo')}</button>`)
          + `<button class="btn ico" onclick="borrarArchivo(${a.id},'${tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`; };
@@ -1889,9 +2021,9 @@ function renderArchivos(tipo){
     : '<div class="empty">Nada por acá todavía.</div>';
 }
 async function estadoArchivo(id, estado, tipo){
-  const { error } = await sb.from('obra_archivos').update({ estado }).eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_archivos').update({ estado }).eq('id', id); if (error) return toast(error.message, 'error');
   const a = ARCHIVOS.find(x => x.id === id);
-  if (a && a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `${tipo === 'factura' ? 'Factura' : 'Presupuesto'} ${a.nombre}: ${estado}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  if (a && a.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `${tipo === 'factura' ? 'Factura' : 'Presupuesto'} ${a.nombre}: ${estado}`, autor_email: YO.email, autor_nombre: YO.nombre });
   // v48 (JP): al aprobar un presupuesto de mano de obra, el proveedor queda asignado como grupo de la tarea
   if (estado === 'aprobado' && tipo === 'presupuesto' && a && a.tarea_id && a.proveedor){
     const t = tareaDe(a.tarea_id), prov = a.proveedor.trim(), G = t ? gruposDe(t) : [];
@@ -1899,8 +2031,8 @@ async function estadoArchivo(id, estado, tipo){
       const et = a.etapa_id ? ETAPAS.find(x => x.id === a.etapa_id) : null;
       const auto = et && /mano de obra|grupo|equipo|colocaci|instalaci|ejecuci|contratista/i.test(et.titulo || '');
       if (auto || await preguntar(`¿${prov} queda como grupo que hace "${t.titulo}"?`, 'Asignar')){
-        const { error: e2 } = await sb.from('obra_tareas').update({ grupo: [...G, prov].join(', ') }).eq('id', t.id);
-        if (e2) toast(e2.message, 'error'); else { await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: t.id, tipo: 'estado', texto: `Grupo asignado: ${prov} (presupuesto aprobado)`, autor_email: YO.email, autor_nombre: YO.nombre }); toast(`${prov} asignado como grupo`, 'success'); }
+        const { error: e2 } = await DB.from('obra_tareas').update({ grupo: [...G, prov].join(', ') }).eq('id', t.id);
+        if (e2) toast(e2.message, 'error'); else { await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: t.id, tipo: 'estado', texto: `Grupo asignado: ${prov} (presupuesto aprobado)`, autor_email: YO.email, autor_nombre: YO.nombre }); toast(`${prov} asignado como grupo`, 'success'); }
       }
     }
   }
@@ -1908,8 +2040,8 @@ async function estadoArchivo(id, estado, tipo){
 }
 async function borrarArchivo(id, tipo){
   const a = ARCHIVOS.find(x => x.id === id); if (!a || !await preguntar('¿Borrar ' + a.nombre + '?', 'Borrar')) return;
-  if (a.path) await sb.storage.from('obra').remove([a.path]);
-  const { error } = await sb.from('obra_archivos').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  if (a.path) await DB.storage.from('obra').remove([a.path]);
+  const { error } = await DB.from('obra_archivos').delete().eq('id', id); if (error) return toast(error.message, 'error');
   await cargar(); refrescarArchivos(tipo); renderResumen();
 }
 async function renderGaleria(){
@@ -1918,7 +2050,7 @@ async function renderGaleria(){
   if (!L.length){ el.innerHTML = '<div class="empty">Todavía no hay fotos ni planos.</div>'; return; }
   el.innerHTML = L.map(a => `<div class="gal" id="gal-${a.id}"><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false"><div class="thumb">${(a.mime || '').startsWith('image/') ? '' : _i('file')}</div></a>
     <div class="mini"><b>${esc(a.nombre)}</b><br>${a.tipo} · ${fmtF(a.fecha)} · ${esc(quien(a.subido_por))}${a.tarea_id && tareaDe(a.tarea_id) ? '<br>' + esc(tareaDe(a.tarea_id).titulo) : ''}${a.notas ? '<br>' + esc(a.notas) : ''}</div>
-    ${(esAdmin() || (a.subido_por || '').toLowerCase() === YO.email) ? `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'foto')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</div>`).join('');
+    ${(esAdmin() || (a.subido_por || '').toLowerCase() === YO.email) && ve('archivos') ? `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'foto')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</div>`).join('');
   for (const a of L){ if ((a.mime || '').startsWith('image/')){ const u = await urlFirmada(a.path); const th = document.querySelector(`#gal-${a.id} .thumb`); if (th && u) th.style.backgroundImage = `url("${u}")`; } }
 }
 
@@ -1942,13 +2074,13 @@ function renderArchivosTodo(){
   const L = ARCHIVOS.filter(okTipo);
   const acc = a => {
     const mio = (a.subido_por || '').toLowerCase() === YO.email; let h = '';
-    if (esAdmin() && (a.tipo === 'presupuesto' || a.tipo === 'factura')){
+    if (ve('aprobar') && (a.tipo === 'presupuesto' || a.tipo === 'factura')){
       if (a.estado === 'pendiente') h += a.tipo === 'factura'
         ? `<button class="btn primary ico chico" onclick="subirGeneral('pago', ${a.id})" title="Registrar el pago de esta factura" aria-label="Pagar">${_i('money')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','factura')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`
         : `<button class="btn primary ico chico" onclick="estadoArchivo(${a.id},'aprobado','presupuesto')" title="Aprobar" aria-label="Aprobar">${_i('check')}</button><button class="btn ico chico" onclick="estadoArchivo(${a.id},'rechazado','presupuesto')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`;
       else h += `<button class="btn ico chico" onclick="estadoArchivo(${a.id},'pendiente','${a.tipo}')" title="Volver a pendiente" aria-label="Volver a pendiente">${_i('undo')}</button>`;
     }
-    if (esAdmin() || (mio && a.tipo !== 'pago')) h += `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'${a.tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`;
+    if ((esAdmin() || (mio && a.tipo !== 'pago')) && ve(a.tipo === 'pago' ? 'pagos' : 'archivos')) h += `<button class="btn ico chico" onclick="borrarArchivo(${a.id},'${a.tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`;
     return h;
   };
   const ICO_T = { presupuesto: 'dollar', factura: 'file', pago: 'money', foto: 'clip', plano: 'clip', otro: 'clip' };
@@ -1971,10 +2103,10 @@ function pedidosDe(presId){ return PEDIDOS.filter(x => x.presupuesto_id === pres
 function filaPedido(p, ctx){
   const [cls, txt] = PED_EST[p.estado] || ['gray', p.estado]; const c = p.cobro || {};
   const acc = [];
-  if (p.estado === 'pedido' || p.estado === 'rechazado') acc.push(`<button class="btn ico chico" onclick="compartirPedido(${p.id})" title="Mandar el link al cliente" aria-label="Compartir">${_i('send')}</button>`);
+  if (ve('pagos') && (p.estado === 'pedido' || p.estado === 'rechazado')) acc.push(`<button class="btn ico chico" onclick="compartirPedido(${p.id})" title="Mandar el link al cliente" aria-label="Compartir">${_i('send')}</button>`);
   if (p.comp_path) acc.push(`<button class="btn ico chico" onclick="abrirArchivo('${esc(p.comp_path)}')" title="Ver el comprobante" aria-label="Ver comprobante">${_i('eye')}</button>`);
-  if (p.estado === 'comprobante') acc.push(`<button class="btn primary ico chico" onclick="confirmarPedido(${p.id},'${ctx}')" title="Confirmar el pago" aria-label="Confirmar">${_i('check')}</button><button class="btn ico chico" onclick="rechazarPedido(${p.id},'${ctx}')" title="Rechazar el comprobante" aria-label="Rechazar">${_i('ban')}</button>`);
-  if (p.estado !== 'confirmado') acc.push(`<button class="btn ico chico" onclick="borrarPedido(${p.id},'${ctx}')" title="Borrar el pedido" aria-label="Borrar">${_i('trash')}</button>`);
+  if (ve('pagos') && p.estado === 'comprobante') acc.push(`<button class="btn primary ico chico" onclick="confirmarPedido(${p.id},'${ctx}')" title="Confirmar el pago" aria-label="Confirmar">${_i('check')}</button><button class="btn ico chico" onclick="rechazarPedido(${p.id},'${ctx}')" title="Rechazar el comprobante" aria-label="Rechazar">${_i('ban')}</button>`);
+  if (ve('pagos') && p.estado !== 'confirmado') acc.push(`<button class="btn ico chico" onclick="borrarPedido(${p.id},'${ctx}')" title="Borrar el pedido" aria-label="Borrar">${_i('trash')}</button>`);
   const det = [fmtF(p.creado_at), 'a ' + p.destinatario, c.tipo ? COBRO_TIPO[c.tipo] : null, p.estado === 'comprobante' || p.estado === 'confirmado' ? `pagó ${plata(p.comp_importe || p.importe)} el ${fmtF(p.comp_fecha)}` : null, p.comp_nota].filter(Boolean).map(esc).join(' · ');
   return `<div class="ped"><div class="pmain"><div class="pn">${esc(p.concepto)}</div><div class="mini">${det}</div></div><div class="pimp"><b>${plata(p.importe)}</b><span class="chip ${cls}">${txt}</span></div><div class="pacc">${acc.join('')}</div></div>`;
 }
@@ -1984,8 +2116,8 @@ function pagosPresHtml(a, ctx, conNombre){
   const L = pedidosDe(a.id).filter(q => q.estado !== 'confirmado');
   const filaPago = (x, i) => `<div class="ppago"><span class="pn">${i + 1}º pago · ${fmtF(x.fecha)}<small>${esc([x.medio, x.notas].filter(Boolean).join(' · ') || 'Pago registrado')}</small></span><b>${plata(x.importe)}</b>${x.path
       ? `<button class="btn ico chico" onclick="abrirArchivo('${esc(x.path)}')" title="Ver el comprobante" aria-label="Ver comprobante">${_i('eye')}</button>`
-      : `<button class="btn ico chico sincomp" onclick="adjuntarComprobante(${x.id})" title="Sin comprobante: adjuntarlo" aria-label="Adjuntar comprobante">${_i('clip')}</button>`}</div>`;
-  const pie = pag < tot
+      : !ve('pagos') ? '' : `<button class="btn ico chico sincomp" onclick="adjuntarComprobante(${x.id})" title="Sin comprobante: adjuntarlo" aria-label="Adjuntar comprobante">${_i('clip')}</button>`}</div>`;
+  const pie = !ve('pagos') ? (pag >= tot ? '<div class="mini ok">✓ Pagado por completo</div>' : '') : pag < tot
     ? `<div class="pbts"><button class="btn pedir" onclick="pedirPago(${a.id})">${_i('send')} Pedir pago${pag ? ' · faltan ' + plata(tot - pag) : ''}</button><button class="btn pedir sec" onclick="pagoManual(${a.id})">${_i('clip')} Cargar comprobante</button></div>`
     : '<div class="mini ok">✓ Pagado por completo</div>';
   return `<div class="cobro en-${ctx}"><div class="ch"><span>${conNombre ? `<b>${esc(a.proveedor || a.nombre)}</b> · ` : ''}Pagado ${plata(pag)} de ${plata(tot)}</span><b class="pct">${pct} %</b></div><div class="cbar"><i style="width:${pct}%"></i></div>
@@ -2039,10 +2171,10 @@ async function guardarPedido(){
   const imp = leerMonto(g('pd-imp')), con = g('pd-con'), dest = g('pd-dest'), tipo = (document.querySelector('#pd-tipos span.on') || {}).dataset ? document.querySelector('#pd-tipos span.on').dataset.k : 'alias', val = g('pd-val'), tit = g('pd-tit'), banco = g('pd-banco'), nota = g('pd-nota');
   if (!imp || imp <= 0) return toast('Poné el importe', 'error'); if (!con) return toast('Poné el concepto', 'error'); if (!dest) return toast('¿A quién le paga el cliente?', 'error'); if (!val) return toast('Poné el alias, CBU o link de pago', 'error');
   const cobro = { tipo, valor: val, titular: tit || null, banco: banco || null };
-  const { error: e1 } = await sb.from('obra_cobros').upsert({ nombre: dest, ...cobro, actualizado_por: YO.email, actualizado_at: new Date().toISOString() }, { onConflict: 'nombre' }); if (e1) toast(e1.message, 'error');
-  const { data, error } = await sb.from('obra_pedidos_pago').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, presupuesto_id: a.id, concepto: con, importe: imp, destinatario: dest, cobro, nota: nota || null, creado_por: YO.email }).select().single();
+  const { error: e1 } = await DB.from('obra_cobros').upsert({ nombre: dest, ...cobro, actualizado_por: YO.email, actualizado_at: new Date().toISOString() }, { onConflict: 'nombre' }); if (e1) toast(e1.message, 'error');
+  const { data, error } = await DB.from('obra_pedidos_pago').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, presupuesto_id: a.id, concepto: con, importe: imp, destinatario: dest, cobro, nota: nota || null, creado_por: YO.email }).select().single();
   if (error) return toast(error.message, 'error');
-  if (a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `Pedido de pago al cliente: ${plata(imp)} a ${dest}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  if (a.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'estado', texto: `Pedido de pago al cliente: ${plata(imp)} a ${dest}`, autor_email: YO.email, autor_nombre: YO.nombre });
   await cargar(); cerrarOv(); refrescarCobros(a.tarea_id); await compartirPedido(data.id);
 }
 function textoPedido(p){
@@ -2054,7 +2186,7 @@ async function compartirPedido(id){
   const p = PEDIDOS.find(x => x.id === id); if (!p) return; const texto = textoPedido(p), url = urlPedido(p); let ok = false;
   if (navigator.share){ try { await navigator.share({ title: 'Pedido de pago', text: texto }); ok = true; } catch (e) { if (e && e.name === 'AbortError') return; } }
   if (!ok){ try { await navigator.clipboard.writeText(texto); } catch (e) {} window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank', 'noopener'); }
-  if (!p.enviado_at){ await sb.from('obra_pedidos_pago').update({ enviado_at: new Date().toISOString() }).eq('id', id); p.enviado_at = new Date().toISOString(); }
+  if (!p.enviado_at){ await DB.from('obra_pedidos_pago').update({ enviado_at: new Date().toISOString() }).eq('id', id); p.enviado_at = new Date().toISOString(); }
 }
 function refrescarCobros(tid){
   if (_volverA){ const t = _volverA; _volverA = null; fichaTarea(t, 'presupuestos'); }
@@ -2085,41 +2217,43 @@ async function guardarPagoManual(){
   if (!f && !await preguntar('¿Registrar el pago sin comprobante? Lo podés adjuntar después.', 'Sí, sin comprobante')) return;
   const d = { obra_id: OBRA.id, tipo: 'pago', nombre: 'Pago a ' + (a.proveedor || 'proveedor') + ' ' + fmtF(fecha), importe: imp, fecha, proveedor: a.proveedor || null, medio, ref_id: a.id, tarea_id: a.tarea_id, notas: nota || null, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
   try {
-    if (f){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`; d.mime = f.type || null; const up = await sb.storage.from('obra').upload(d.path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) throw up.error; }
-    const { error } = await sb.from('obra_archivos').insert(d); if (error) throw error;
-    if (a.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${a.proveedor || 'proveedor'}${f ? ' (con comprobante)' : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+    if (f){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`; d.mime = f.type || null; const up = await DB.storage.from('obra').upload(d.path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) throw up.error; }
+    const { error } = await DB.from('obra_archivos').insert(d); if (error) throw error;
+    if (a.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: a.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${a.proveedor || 'proveedor'}${f ? ' (con comprobante)' : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
   } catch (e) { return toast('No se pudo guardar: ' + e.message, 'error'); }
   toast('Pago registrado', 'success'); cerrarOv(); await cargar(); refrescarCobros(a.tarea_id);
 }
 function adjuntarComprobante(id){
   const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*,application/pdf';
-  i.onchange = async () => { const f = i.files[0], x = ARCHIVOS.find(y => y.id === id); if (!f || !x) return;
-    const path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`;
-    const up = await sb.storage.from('obra').upload(path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) return toast(up.error.message, 'error');
-    const { error } = await sb.from('obra_archivos').update({ path, mime: f.type || null }).eq('id', id); if (error) return toast(error.message, 'error');
-    toast('Comprobante adjuntado', 'success'); await cargar(); refrescarCobros(x.tarea_id); };
+  i.onchange = () => _adjComp(id, i.files[0]);
   i.click();
+}
+async function _adjComp(id, f){ const x = ARCHIVOS.find(y => y.id === id); if (!f || !x) return;
+    const path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(f.name)}`;
+    const up = await DB.storage.from('obra').upload(path, f, { contentType: f.type || 'application/octet-stream' }); if (up.error) return toast(up.error.message, 'error');
+    const { error } = await DB.from('obra_archivos').update({ path, mime: f.type || null }).eq('id', id); if (error) return toast(error.message, 'error');
+    toast('Comprobante adjuntado', 'success'); await cargar(); refrescarCobros(x.tarea_id);
 }
 async function confirmarPedido(id, ctx){
   const p = PEDIDOS.find(x => x.id === id); if (!p) return; const c = p.cobro || {};
   const imp = Number(p.comp_importe || p.importe);
   if (!await preguntar(`¿Confirmar el pago de ${plata(imp)} a ${p.destinatario}? Queda registrado como pago del presupuesto.`, 'Confirmar')) return;
   const d = { obra_id: OBRA.id, tipo: 'pago', nombre: `Pago del cliente · ${p.concepto}`, importe: imp, fecha: p.comp_fecha || hoyAR(), proveedor: p.destinatario, medio: (COBRO_TIPO[c.tipo] || 'Transferencia') + ' (cliente)', ref_id: p.presupuesto_id, tarea_id: p.tarea_id, notas: p.comp_nota || null, subido_por: YO.email, estado: 'pagado', path: p.comp_path || null, mime: p.comp_mime || null };
-  const { data, error } = await sb.from('obra_archivos').insert(d).select().single(); if (error) return toast(error.message, 'error');
-  const { error: e2 } = await sb.from('obra_pedidos_pago').update({ estado: 'confirmado', pago_id: data.id, confirmado_por: YO.email, confirmado_at: new Date().toISOString() }).eq('id', id); if (e2) return toast(e2.message, 'error');
-  if (p.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: p.tarea_id, tipo: 'archivo', texto: `Pago del cliente confirmado: ${plata(imp)} a ${p.destinatario}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  const { data, error } = await DB.from('obra_archivos').insert(d).select().single(); if (error) return toast(error.message, 'error');
+  const { error: e2 } = await DB.from('obra_pedidos_pago').update({ estado: 'confirmado', pago_id: data.id, confirmado_por: YO.email, confirmado_at: new Date().toISOString() }).eq('id', id); if (e2) return toast(e2.message, 'error');
+  if (p.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: p.tarea_id, tipo: 'archivo', texto: `Pago del cliente confirmado: ${plata(imp)} a ${p.destinatario}`, autor_email: YO.email, autor_nombre: YO.nombre });
   toast('Pago confirmado', 'success'); await cargar(); refrescarCobros(p.tarea_id);
 }
 async function rechazarPedido(id, ctx){
   const p = PEDIDOS.find(x => x.id === id); if (!p) return;
   if (!await preguntar('¿Rechazar este comprobante? El cliente va a poder subir otro desde el mismo link.', 'Rechazar')) return;
-  const { error } = await sb.from('obra_pedidos_pago').update({ estado: 'rechazado', nota_rechazo: 'No pudimos validar el comprobante' }).eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_pedidos_pago').update({ estado: 'rechazado', nota_rechazo: 'No pudimos validar el comprobante' }).eq('id', id); if (error) return toast(error.message, 'error');
   await cargar(); refrescarCobros(p.tarea_id);
 }
 async function borrarPedido(id, ctx){
   const p = PEDIDOS.find(x => x.id === id); if (!p || !await preguntar('¿Borrar este pedido de pago? El link deja de funcionar.', 'Borrar')) return;
-  if (p.comp_path) await sb.storage.from('obra').remove([p.comp_path]);
-  const { error } = await sb.from('obra_pedidos_pago').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  if (p.comp_path) await DB.storage.from('obra').remove([p.comp_path]);
+  const { error } = await DB.from('obra_pedidos_pago').delete().eq('id', id); if (error) return toast(error.message, 'error');
   await cargar(); refrescarCobros(p.tarea_id);
 }
 // ── v55 (JP): fotos de avance desde la ficha ──
@@ -2155,12 +2289,12 @@ async function faSubir(){
     for (const f of pend){
       hint.textContent = `Subiendo ${n + 1} de ${pend.length}…`;
       const chica = await achicarFoto(f.file), path = `${OBRA.id}/foto/${Date.now()}_${n}_${limpiarNombre(chica.name || 'foto.jpg')}`;
-      const up = await sb.storage.from('obra').upload(path, chica, { contentType: chica.type || 'image/jpeg' }); if (up.error) throw up.error;
-      const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tarea_id: tid, etapa_id: etapa, tipo: 'foto', nombre: chica.name || 'Foto de avance', path, mime: chica.type || 'image/jpeg', fecha: hoyAR(), notas: com, subido_por: YO.email }); if (error) throw error;
+      const up = await DB.storage.from('obra').upload(path, chica, { contentType: chica.type || 'image/jpeg' }); if (up.error) throw up.error;
+      const { error } = await DB.from('obra_archivos').insert({ obra_id: OBRA.id, tarea_id: tid, etapa_id: etapa, tipo: 'foto', nombre: chica.name || 'Foto de avance', path, mime: chica.type || 'image/jpeg', fecha: hoyAR(), notas: com, subido_por: YO.email }); if (error) throw error;
       f.ok = true; n++; faPintar();
     }
   } catch (e) { go.disabled = false; faPintar(); return toast('No se pudo subir: ' + e.message, 'error'); }
-  await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: tid, etapa_id: etapa, tipo: 'archivo', texto: `Subió ${n} foto${n === 1 ? '' : 's'} de avance${com ? ': ' + com : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: tid, etapa_id: etapa, tipo: 'archivo', texto: `Subió ${n} foto${n === 1 ? '' : 's'} de avance${com ? ': ' + com : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
   _faF.forEach(f => URL.revokeObjectURL(f.url)); _faF = [];
   toast(`${n} foto${n === 1 ? '' : 's'} subida${n === 1 ? '' : 's'}`, 'success'); cerrarOv(); await cargar(); _volverA = null; fichaTarea(tid, 'archivos'); try { renderTablero(); refrescarArchivos('foto'); } catch (e) {}
 }
@@ -2184,7 +2318,7 @@ function linksFotos(tid){
 function lfNom(el, n){ document.querySelectorAll('#lf-noms span').forEach(x => x.classList.toggle('on', x === el)); const i = document.getElementById('lf-nom'); i.value = n; i.style.display = n ? 'none' : ''; if (!n) i.focus(); }
 async function crearLinkFotos(tid){
   const nom = document.getElementById('lf-nom').value.trim(); if (!nom) return toast('¿Para quién es el link?', 'error');
-  const { data, error } = await sb.from('obra_fotos_links').insert({ obra_id: OBRA.id, tarea_id: tid, nombre: nom, creado_por: YO.email }).select().single(); if (error) return toast(error.message, 'error');
+  const { data, error } = await DB.from('obra_fotos_links').insert({ obra_id: OBRA.id, tarea_id: tid, nombre: nom, creado_por: YO.email }).select().single(); if (error) return toast(error.message, 'error');
   FOTOS_LINKS.push(data); await compartirLinkFotos(data.id); linksFotos(tid);
 }
 async function compartirLinkFotos(id){
@@ -2196,13 +2330,15 @@ async function compartirLinkFotos(id){
 }
 async function borrarLinkFotos(id){
   const l = FOTOS_LINKS.find(x => x.id === id); if (!l || !await preguntar(`¿Desactivar el link de ${l.nombre}? Deja de funcionar; las fotos que ya subió quedan.`, 'Desactivar')) return;
-  const { error } = await sb.from('obra_fotos_links').delete().eq('id', id); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_fotos_links').delete().eq('id', id); if (error) return toast(error.message, 'error');
   FOTOS_LINKS = FOTOS_LINKS.filter(x => x.id !== id); linksFotos(l.tarea_id);
 }
 // Subir archivo / registrar pago desde Archivos (modal genérico)
 function subirGeneral(tipoIni, refId){
-  const puedePago = esAdmin(); const ref = refId ? ARCHIVOS.find(x => x.id === refId) : null;
-  const tipos = [['presupuesto','Presupuesto'],['factura','Factura'],...(puedePago ? [['pago','Pago']] : []),['foto','Foto de avance'],['plano','Plano / render'],['otro','Otro archivo']];
+  const puedePago = ve('pagos'), puedeArch = ve('archivos'); const ref = refId ? ARCHIVOS.find(x => x.id === refId) : null;
+  const tipos = [...(puedeArch ? [['presupuesto','Presupuesto'],['factura','Factura']] : []), ...(puedePago ? [['pago','Pago']] : []), ...(puedeArch ? [['foto','Foto de avance'],['plano','Plano / render'],['otro','Otro archivo']] : [])];
+  if (!tipos.length) return toast('No tenés permiso para subir archivos', 'error');
+  if (!tipos.some(([k]) => k === (tipoIni || 'presupuesto'))) tipoIni = tipos[0][0];
   ovBox(`<div class="nueva3 subir3">
     <div class="cab"><button class="btn ico cierra" onclick="cerrarOv()" title="Cerrar" aria-label="Cerrar">${_i('x')}</button>
       <div class="tit-fija">${ref ? 'Pagar factura' : 'Subir a la obra'}</div>${ref ? `<div class="mini" style="color:#fde68a">${esc(ref.nombre)}${ref.proveedor ? ' · ' + esc(ref.proveedor) : ''} · ${plata(ref.importe)}</div>` : ''}</div>
@@ -2243,13 +2379,13 @@ async function guardarGeneral(){
     if (tipo === 'pago'){
       const file = files[0] || null;
       const d = { obra_id: OBRA.id, tipo: 'pago', nombre: 'Pago a ' + prov + ' ' + fmtF(fecha), importe: imp, fecha, proveedor: prov, medio: g('medio'), ref_id: g('ref') ? Number(g('ref')) : null, tarea_id, notas, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
-      if (file){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(file.name)}`; d.mime = file.type || null; const up = await sb.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' }); if (up.error) throw up.error; }
-      const { error } = await sb.from('obra_archivos').insert(d); if (error) throw error;
-      if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${prov}`, autor_email: YO.email, autor_nombre: YO.nombre });
+      if (file){ d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(file.name)}`; d.mime = file.type || null; const up = await DB.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' }); if (up.error) throw up.error; }
+      const { error } = await DB.from('obra_archivos').insert(d); if (error) throw error;
+      if (tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(imp)} a ${prov}`, autor_email: YO.email, autor_nombre: YO.nombre });
     } else if (!files.length){
       const nombre = (tipo === 'presupuesto' ? 'Presupuesto' : 'Factura') + ' - ' + prov;
-      const { error } = await sb.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre, path: null, proveedor: prov, importe: imp, fecha, tarea_id, notas, subido_por: YO.email, ...(gEt ? { etapa_id: gEt } : {}) }); if (error) throw error;
-      if (tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Cargó ${tipo}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
+      const { error } = await DB.from('obra_archivos').insert({ obra_id: OBRA.id, tipo, nombre, path: null, proveedor: prov, importe: imp, fecha, tarea_id, notas, subido_por: YO.email, ...(gEt ? { etapa_id: gEt } : {}) }); if (error) throw error;
+      if (tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id, tipo: 'archivo', texto: `Cargó ${tipo}: ${prov} · ${plata(imp)}`, autor_email: YO.email, autor_nombre: YO.nombre });
     } else {
       const extra = { tarea_id, fecha, notas, ...(plata_ ? { proveedor: prov, importe: imp } : {}), ...(gEt ? { etapa_id: gEt } : {}) };
       for (const f of files) await subirUno(f, tipo, extra);
@@ -2257,8 +2393,8 @@ async function guardarGeneral(){
   } catch (e) { return toast('No se pudo guardar: ' + e.message, 'error'); }
   toast('Guardado', 'success'); cerrarOv(); await cargar();
   if (gEt){ const e = ETAPAS.find(x => x.id === gEt); if (e && !e.hecha && presupDeEtapa(e).length >= (e.cant_presupuestos || 3)){
-    await sb.from('obra_etapas').update({ hecha: true }).eq('id', e.id);
-    await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
+    await DB.from('obra_etapas').update({ hecha: true }).eq('id', e.id);
+    await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: e.tarea_id, etapa_id: e.id, tipo: 'avance', texto: '✓ Etapa hecha: ' + e.titulo, autor_email: YO.email, autor_nombre: YO.nombre });
     toast(`Llegaron los ${e.cant_presupuestos || 3} presupuestos: etapa "${e.titulo}" terminada`, 'success'); await cargar(); } }
   renderArchivosTodo(); renderTablero(); try { renderResumen(); } catch (e) {}
 }
@@ -2272,24 +2408,24 @@ async function registrarPago(){
     ref_id: g('ref') ? Number(g('ref')) : null, tarea_id: g('tarea') ? Number(g('tarea')) : null, notas: g('notas') || null, subido_por: YO.email, estado: 'pagado', path: null, mime: null };
   if (file){
     d.path = `${OBRA.id}/pago/${Date.now()}_${limpiarNombre(file.name)}`; d.mime = file.type || null;
-    const up = await sb.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' });
+    const up = await DB.storage.from('obra').upload(d.path, file, { contentType: file.type || 'application/octet-stream' });
     if (up.error) return toast('No se pudo subir el comprobante: ' + up.error.message, 'error');
   }
-  const { error } = await sb.from('obra_archivos').insert(d); if (error) return toast(error.message, 'error');
-  if (d.tarea_id) await sb.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: d.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(importe)}${d.proveedor ? ' a ' + d.proveedor : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
+  const { error } = await DB.from('obra_archivos').insert(d); if (error) return toast(error.message, 'error');
+  if (d.tarea_id) await DB.from('obra_novedades').insert({ obra_id: OBRA.id, tarea_id: d.tarea_id, tipo: 'archivo', texto: `Pago registrado: ${plata(importe)}${d.proveedor ? ' a ' + d.proveedor : ''}`, autor_email: YO.email, autor_nombre: YO.nombre });
   toast('Pago registrado', 'success');
   for (const id of ['imp','prov','notas','file']) document.getElementById('pg-' + id).value = '';
   await cargar(); renderPagos(); renderResumen();
 }
 function renderPagos(){
-  document.getElementById('pg-form').style.display = esAdmin() ? '' : 'none';
+  document.getElementById('pg-form').style.display = ve('pagos') ? '' : 'none';
   const L = ARCHIVOS.filter(a => a.tipo === 'pago'); const tot = L.reduce((s, a) => s + Number(a.importe || 0), 0);
   document.getElementById('pg-stat').innerHTML = `${L.length} pago(s) · <strong>${plata(tot)}</strong>`;
   document.getElementById('pg-lista').innerHTML = L.length ? `<table><tr><th>Fecha</th><th>A quién</th><th>Medio</th><th>Factura</th><th>Tarea</th><th>Notas</th><th>Comprobante</th><th class="num">Importe</th><th></th></tr>` +
     L.map(a => { const f = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
       return `<tr><td>${fmtF(a.fecha)}</td><td>${esc(a.proveedor || '')}</td><td class="mini">${esc(a.medio || '')}</td><td class="mini">${f ? esc(f.nombre) : ''}</td><td class="mini">${a.tarea_id && tareaDe(a.tarea_id) ? esc(tareaDe(a.tarea_id).titulo) : ''}</td><td class="mini">${esc(a.notas || '')}</td>
         <td>${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ver</a>` : '<span class="mini">—</span>'}</td><td class="num">${plata(a.importe)}</td>
-        <td>${esAdmin() ? `<button class="btn ico" onclick="borrarArchivo(${a.id},'pago')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</td></tr>`; }).join('') + '</table>'
+        <td>${ve('pagos') ? `<button class="btn ico" onclick="borrarArchivo(${a.id},'pago')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</td></tr>`; }).join('') + '</table>'
     : '<div class="empty">Todavía no hay pagos registrados.</div>';
 }
 
@@ -2320,7 +2456,7 @@ async function activarNotif(){
     const reg = await navigator.serviceWorker.ready; let sub = await _getSubFresca(reg);
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC_KEY) });
     const raw = sub.toJSON();
-    const { error } = await sb.from('rrhh_push_subscriptions').upsert({ endpoint: raw.endpoint, p256dh: raw.keys.p256dh, auth: raw.keys.auth, app: 'obra', activa: true, plataforma: 'obra',
+    const { error } = await DB.from('rrhh_push_subscriptions').upsert({ endpoint: raw.endpoint, p256dh: raw.keys.p256dh, auth: raw.keys.auth, app: 'obra', activa: true, plataforma: 'obra',
       local_generico: grupoPush(), user_agent: (navigator.userAgent || '').slice(0, 200), last_seen_at: new Date().toISOString() }, { onConflict: 'endpoint,app' });
     if (error) return toast('No se pudo guardar: ' + error.message, 'error');
     document.querySelectorAll('#btn-notif, #tab-notif').forEach(b => b.classList.add('activo')); toast('Avisos activados en este dispositivo', 'success');
@@ -2340,19 +2476,33 @@ function renderEquipo(){
 async function guardarParticipante(){
   const d = { obra_id: OBRA.id, email: document.getElementById('e-email').value.trim().toLowerCase(), nombre: document.getElementById('e-nombre').value.trim(), rol: document.getElementById('e-rol').value, recibe_mails: document.getElementById('e-mails').checked };
   if (!d.email || !d.nombre) return toast('Email y nombre', 'error');
-  const { error } = await sb.from('obra_participantes').upsert(d, { onConflict: 'obra_id,email' }); if (error) return toast(error.message, 'error');
+  const { error } = await DB.from('obra_participantes').upsert(d, { onConflict: 'obra_id,email' }); if (error) return toast(error.message, 'error');
   toast('Agregado. Acordate de crearle el usuario en Supabase si todavía no lo tiene.', 'success');
   document.getElementById('e-email').value = ''; document.getElementById('e-nombre').value = '';
   await cargar(); renderEquipo();
 }
-async function togglePart(id, campo, valor){ const { error } = await sb.from('obra_participantes').update({ [campo]: valor }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); renderEquipo(); }
+async function togglePart(id, campo, valor){ const { error } = await DB.from('obra_participantes').update({ [campo]: valor }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); renderEquipo(); }
 async function probarRecordatorio(){
   const { data, error } = await sb.rpc('obra_recordatorios', { p_simular: true }); const el = document.getElementById('e-prueba'); el.style.display = 'block';
   if (error) { el.textContent = error.message; return; }
   el.textContent = (data || []).map(x => `${x.obra}\n— Push al arquitecto: ${x.push_arquitecto || 'nada'}\n— Push a JP: ${x.push_jp || 'nada'}`).join('\n\n') || 'Sin obras activas';
 }
+// ── (13-nov-2026) cada acción que graba pasa por su permiso del Hub ──
+(function(){
+  const A = {
+    tareas: ['cambiarEstado', 'guardarCampo', 'guardarTitulo', '_setGrupos', 'guardarTarea', 'guardarEtapaTitulo', 'fechaEtapa', 'cantPresup', 'agregarEtapa', 'prioEtapa', 'tildarEtapa', 'borrarEtapa'],
+    tareas_borrar: ['borrarTarea'], novedades: ['agregarNovedad', 'borrarNovedad'],
+    archivos: ['subirArchivo', 'subirDesdeTarea', 'faSubir', 'crearLinkFotos', 'borrarLinkFotos'],
+    aprobar: ['estadoArchivo'],
+    pagos: ['guardarPedido', 'compartirPedido', 'guardarPagoManual', '_adjComp', 'confirmarPedido', 'rechazarPedido', 'borrarPedido', 'registrarPago'],
+    resumen: ['generarResumen', 'guardarResumen', 'compartirResumen', 'marcarEnviado', 'borrarResumen', 'guardarProg'],
+    equipo: ['guardarParticipante', 'togglePart'], nueva: ['crearObra'] };
+  for (const [k, L] of Object.entries(A)) for (const n of L) { if (typeof window[n] === 'function') window[n] = conPermiso(k, window[n], n); else console.warn('[permisos] no existe', n); }
+  window.guardarGeneral = conPermiso(() => (document.getElementById('g-tipo') || {}).value === 'pago' ? 'pagos' : 'archivos', window.guardarGeneral, 'guardarGeneral');
+  window.borrarArchivo = conPermiso((id, tipo) => tipo === 'pago' ? 'pagos' : 'archivos', window.borrarArchivo, 'borrarArchivo');
+})();
 
 </script>
-<script src="manual.js?v=11"></script>
+<script src="manual.js?v=12"></script>
 </body>
 </html>
