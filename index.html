@@ -879,7 +879,7 @@ body.p-no-tareas [data-p-ro~="tareas"] { pointer-events: none; }
       <button class="hbtn ab-fijo" onclick="doLogout()" title="Salir" aria-label="Salir"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="lb">Salir</span></button>
     </div>
   </header>
-  <script src="/hub/banner.js?v=6"></script>
+  <script src="/hub/banner.js?v=7"></script>
   <main>
 
     <section id="content-resumen" class="tab-content">
@@ -1121,7 +1121,7 @@ async function entrar(user) {
   document.getElementById('franja-prueba').style.display = MODO_PRUEBA ? 'block' : 'none';
   await init();
 }
-async function doLogout() { await sb.auth.signOut(); location.reload(); }
+async function doLogout() { if (window.ADORNO_VERCOMO) return ADORNO_VERCOMO.salir(); /* (16-nov) «Ver como»: Salir vuelve al Hub sin cerrar la sesión de JP */ await sb.auth.signOut(); location.reload(); }
 (async () => {
   const { data: { session: s } } = await sb.auth.getSession();
   if (s && ADORNO_SSO.entraDirecto(MODULO, s.user?.email)) await entrar(s.user);
@@ -1229,6 +1229,10 @@ const ve = k => (PERM[k] || 'o') !== 'o';                 // se muestra (habilit
 const habilitada = k => PERM[k] === 'h' || DB !== sb;    // se puede hacer ya, sin pedir a nadie
 function conPermiso(k, fn, n){ return async function(...a){
   const key = typeof k === 'function' ? k(...a) : k, pm = PERM[key] || 'o';
+  // (16-nov-2026, Hub v126) «Ver como» del Hub: JP mira Obra como otra cuenta, solo lectura. No se graba ni se anota «Registra quién»:
+  // con la función habilitada se avisa y listo; con «Pide permiso» se abre la ventana igual (JP: «yo necesitaría ver que la parte de
+  // pedir permiso esté funcionando bien»), trabada: no valida ni envía nada y vuelve como si se cancelara.
+  if (window.ADORNO_VERCOMO && pm !== 'a') return toast(`Solo lectura. Para ${ADORNO_VERCOMO.nombre}, «${FUNC_NOMBRE[key]}» está ${pm === 'h' ? 'habilitada' : 'oculta'}.`);
   const correr = async () => {   // (14-nov) «📷 Registra quién»: se anota justo antes de grabar; si no se pudo anotar, no se graba
     if (!REG_CONFIRMA.has(n)) { if (!(await registrarQuien(key, n, a)).ok) return; return fn.apply(this, a); }
     REG_PEND = () => registrarQuien(key, n, a);
@@ -1252,6 +1256,10 @@ function pedirSuperior(k){ return new Promise(listo => {
     <div class="bts"><button class="b-no" id="sup-no">Cancelar</button><button class="b-si" id="sup-si">Autorizar</button></div></div>`;
   document.body.appendChild(o);
   const $ = q => o.querySelector(q), si = $('#sup-si'), err = $('#sup-err');
+  if (window.ADORNO_VERCOMO) {   // (16-nov) «Ver como»: se ve la ventana como le aparece a esa cuenta, sin poder autorizar
+    o.querySelectorAll('.sup-in').forEach(x => { x.disabled = true; x.style.opacity = '.55'; }); si.disabled = true;
+    err.style.color = 'var(--muted)'; err.textContent = `Viendo como ${ADORNO_VERCOMO.nombre}: así le aparece esta ventana. En «Ver como» no se valida ni se graba nada.`;
+  }
   const cerrar = r => { o.remove(); listo(r); };
   $('#sup-no').onclick = () => cerrar(null);
   o.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(null); });
@@ -1924,7 +1932,7 @@ async function fechaEtapa(id, valor){
 }
 // 2. reordenar etapas: mantener presionada (~0,5 s) y arrastrar
 function initDragEtapas(tid){
-  const cont = document.getElementById('m-etapas'); if (!cont || cont._drag || PERM.tareas !== 'h') return; cont._drag = true;   // (13-nov) mover etapas: solo con la función habilitada
+  const cont = document.getElementById('m-etapas'); if (!cont || cont._drag || PERM.tareas !== 'h' || window.ADORNO_VERCOMO) return; cont._drag = true;   // (13-nov) mover etapas: solo con la función habilitada
   let timer = null, el = null, startY = 0, moviendo = false;
   const stopTouch = ev => { if (moviendo) ev.preventDefault(); };
   cont.addEventListener('pointerdown', ev => {
@@ -2486,6 +2494,7 @@ async function estadoNotif(){
   } catch (_) {}
 }
 async function activarNotif(){
+  if (window.ADORNO_VERCOMO) return toast('«Ver como»: en este modo no se activan avisos.');   // (16-nov) solo lectura
   if (!('serviceWorker' in navigator) || !('PushManager' in window)){
     return alert(/iPhone|iPad/.test(navigator.userAgent) ? 'En iPhone los avisos solo funcionan con la app instalada: en Safari tocá Compartir → "Agregar a pantalla de inicio", abrila desde ahí y volvé a tocar la campanita.' : 'Este navegador no soporta notificaciones.');
   }
@@ -2541,6 +2550,6 @@ async function probarRecordatorio(){
 })();
 
 </script>
-<script src="manual.js?v=13"></script>
+<script src="manual.js?v=14"></script>
 </body>
 </html>
