@@ -1,5 +1,5 @@
 // Service Worker · network-first para HTML, cache-first para assets
-const CACHE_VERSION = 'obra-v68-registra-quien';
+const CACHE_VERSION = 'obra-v69-clodi-mic';
 const CACHE_ASSETS = ['fonts/URWGothic-Book.ttf', './', './index.html', './manual.js', './manifest.webmanifest'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_VERSION).then(c => c.addAll(CACHE_ASSETS)).catch(err => console.warn('[SW]', err)));
