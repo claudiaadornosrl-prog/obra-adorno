@@ -879,7 +879,7 @@ body.p-no-tareas [data-p-ro~="tareas"] { pointer-events: none; }
       <button class="hbtn ab-fijo" onclick="doLogout()" title="Salir" aria-label="Salir"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="lb">Salir</span></button>
     </div>
   </header>
-  <script src="/hub/banner.js?v=7"></script>
+  <script src="/hub/banner.js?v=8"></script>
   <main>
 
     <section id="content-resumen" class="tab-content">
@@ -1107,7 +1107,7 @@ async function doLogin() {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
     window._festejar = true; await entrar(data.user);
-  } catch (e) { errEl.textContent = 'Error: ' + (e.message || 'desconocido'); }
+  } catch (e) { errEl.textContent = window.ADORNO_AVISO ? ADORNO_AVISO.traducir(e).texto : 'Error: ' + (e.message || 'desconocido');   /* (16-nov) en castellano simple (banner común) */ }
   finally { document.getElementById('btn-login').disabled = false; }
 }
 async function entrar(user) {
@@ -1216,7 +1216,7 @@ async function registrarQuien(key, n, a){
     if (!r.error) REG_HECHO[clave] = Date.now(); else console.warn('[registro] sin legajo, no se anotó:', r.error.message);
     return { ok: true };
   }
-  if (!window.ADORNO_CARAS || !ADORNO_CARAS.registrar) { toast('Falta cargar el registro de quién (/hub/caras.js): recargá la página.', 'error'); return { ok: false }; }
+  if (!window.ADORNO_CARAS || !ADORNO_CARAS.registrar) { toast('No se pudo preparar el registro de quién lo hace. Recargá la página.', 'error'); return { ok: false }; }
   const r = await ADORNO_CARAS.registrar({ cli: sb, funcion: f, local: null, detalle: det });
   if (!r.ok && r.motivo === 'error') toast(r.error || 'No se pudo anotar quién lo hizo', 'error');
   return r;
@@ -1279,7 +1279,7 @@ function pedirSuperior(k){ return new Promise(listo => {
       toast('Autorizó ' + nom, 'success'); cerrar({ cli, nombre: nom });
     } catch (e) {
       try { await cli.auth.signOut({ scope: 'local' }); } catch (_) {}
-      err.textContent = e.message || 'No se pudo autorizar.'; si.disabled = false; $('#sup-no').disabled = false; si.textContent = 'Autorizar';
+      err.textContent = (window.ADORNO_AVISO ? ADORNO_AVISO.traducir(e).texto : e.message) || 'No se pudo autorizar.'; si.disabled = false; $('#sup-no').disabled = false; si.textContent = 'Autorizar';
     }
   };
   setTimeout(() => $('#sup-email').focus(), 50);
@@ -2522,7 +2522,7 @@ function renderEquipo(){
 }
 async function guardarParticipante(){
   const d = { obra_id: OBRA.id, email: document.getElementById('e-email').value.trim().toLowerCase(), nombre: document.getElementById('e-nombre').value.trim(), rol: document.getElementById('e-rol').value, recibe_mails: document.getElementById('e-mails').checked };
-  if (!d.email || !d.nombre) return toast('Email y nombre', 'error');
+  if (!d.email || !d.nombre) return toast('Completá el email y el nombre', 'error');
   const { error } = await DB.from('obra_participantes').upsert(d, { onConflict: 'obra_id,email' }); if (error) return toast(error.message, 'error');
   toast('Agregado. Acordate de crearle el usuario en Supabase si todavía no lo tiene.', 'success');
   document.getElementById('e-email').value = ''; document.getElementById('e-nombre').value = '';
@@ -2531,7 +2531,7 @@ async function guardarParticipante(){
 async function togglePart(id, campo, valor){ const { error } = await DB.from('obra_participantes').update({ [campo]: valor }).eq('id', id); if (error) return toast(error.message, 'error'); await cargar(); renderEquipo(); }
 async function probarRecordatorio(){
   const { data, error } = await sb.rpc('obra_recordatorios', { p_simular: true }); const el = document.getElementById('e-prueba'); el.style.display = 'block';
-  if (error) { el.textContent = error.message; return; }
+  if (error) { el.textContent = window.ADORNO_AVISO ? ADORNO_AVISO.traducir(error).texto : error.message; return; }
   el.textContent = (data || []).map(x => `${x.obra}\n— Push al arquitecto: ${x.push_arquitecto || 'nada'}\n— Push a JP: ${x.push_jp || 'nada'}`).join('\n\n') || 'Sin obras activas';
 }
 // ── (13-nov-2026) cada acción que graba pasa por su permiso del Hub ──
@@ -2550,6 +2550,6 @@ async function probarRecordatorio(){
 })();
 
 </script>
-<script src="manual.js?v=14"></script>
+<script src="manual.js?v=15"></script>
 </body>
 </html>
