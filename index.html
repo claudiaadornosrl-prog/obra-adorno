@@ -94,6 +94,25 @@ window.ADORNO_ASISTENTE = (function () {
     els.forEach((el) => { const lb = limpiar(el.getAttribute('title') || (el.querySelector('.lb') && el.querySelector('.lb').textContent) || el.textContent); if (lb && !out.some((o) => o.lb === lb)) out.push({ lb, el }); });
     return out;
   }
+  // (19-nov-2026, charla de Clodi) «llevame a…» entre módulos: el servidor manda ir_modulo {nombre, ruta, pestana?, llevar?}
+  function irUrl(m) {
+    if (!m || !/^\/[a-z0-9-]+\/$/.test(String(m.ruta || ''))) return '';
+    if (location.pathname.replace(/index\.html$/, '') === m.ruta) return '';   // ya está en ese módulo
+    return m.ruta + (m.pestana ? '#clodi-ir=' + encodeURIComponent(String(m.pestana).slice(0, 60)) : '');
+  }
+  function irModulo(m) {   // solo cuando pidió que la lleven: espera a que termine de hablar y va
+    const u = irUrl(m); if (!u) return; let n = 0;
+    const t = setInterval(() => { n++; let habla = false; try { habla = 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (_) {} if ((n > 3 && !habla) || n > 60) { clearInterval(t); location.href = u; } }, 400);
+  }
+  function llegar() {   // al entrar desde el botón de Clodi: abre la pestaña que venía pedida (espera a que el módulo arme sus pestañas)
+    const m = /[#&]clodi-ir=([^&]+)/.exec(location.hash || ''); if (!m) return;
+    let q = ''; try { q = decodeURIComponent(m[1]).toLowerCase(); } catch (_) { return; }
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {}
+    let n = 0; const t = setInterval(() => {
+      const ps = pestanas(); const p = ps.find((x) => x.lb.toLowerCase() === q) || ps.find((x) => x.lb.toLowerCase().includes(q) || q.includes(x.lb.toLowerCase()));
+      if (p) { clearInterval(t); irA(p.lb); } else if (++n > 40) clearInterval(t);
+    }, 500);
+  }
   function irA(nombre) {
     const p = pestanas().find((x) => x.lb.toLowerCase() === String(nombre).toLowerCase());
     if (!p) return;
@@ -146,7 +165,7 @@ window.ADORNO_ASISTENTE = (function () {
   .asist-card{align-self:stretch;border:1px solid var(--accent,#d97757);border-radius:12px;padding:9px 11px;background:var(--surface,#fff);line-height:1.4}
   .asist-bts{display:flex;gap:8px;margin-top:9px} .asist-bt{border:0;border-radius:999px;padding:7px 16px;font:inherit;font-weight:600;cursor:pointer}
   .asist-bt.si{background:var(--accent,#d97757);color:#fff} .asist-bt.no{background:transparent;color:var(--muted,#5f5e5a);border:0.5px solid var(--border,#d3d1c7)}
-  .asist-bt:disabled{opacity:.6;cursor:default} .asist-fin{margin-top:8px;font-size:13px} .asist-fin.ok{color:#166534} .asist-fin.mal{color:#991b1b}
+  .asist-bt:disabled{opacity:.6;cursor:default} a.asist-bt{text-decoration:none;display:inline-block} .asist-fin{margin-top:8px;font-size:13px} .asist-fin.ok{color:#166534} .asist-fin.mal{color:#991b1b}
   .asist-resalta{outline:3px solid var(--accent,#d97757)!important;outline-offset:2px;border-radius:8px;transition:outline-color 1.2s}
   @media (max-width:600px){.asist-panel{right:calc(8px + env(safe-area-inset-right,0px));left:calc(8px + env(safe-area-inset-left,0px));width:auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));max-height:66vh;max-height:66dvh}}
   /* (28-oct, JP) en celular y tablet: cara redonda flotante, despegada del borde (en iPhone la barra de Safari se achica abajo y tapaba el busto) */
@@ -362,7 +381,7 @@ window.ADORNO_ASISTENTE = (function () {
     if (tipo === 'q') { d.className = 'asist-q'; d.textContent = texto; }
     else if (tipo === 'err') { d.className = 'asist-err'; d.textContent = texto; }
     else if (tipo === 'wait') { d.className = 'asist-fila'; d.innerHTML = `<span class="asist-av">${CLODI('cara')}</span><div class="asist-a asist-wait"><i>Clodi está buscando en el manual…</i></div>`; d.querySelector('.clodi').classList.add('piensa'); }
-    else { d.className = 'asist-fila'; d.innerHTML = `<span class="asist-av">${CLODI('cara')}</span><div class="asist-a"></div>`; d.lastChild.innerHTML = esc(texto.respuesta) + (texto.pestana ? `<br><i>→ pestaña <b>${esc(texto.pestana)}</b></i>` : '') + ('speechSynthesis' in window ? ` <button class="asist-ib" title="Escuchar la respuesta" data-a="leer" data-t="${esc(texto.respuesta)}">${ICO.voz}</button>` : ''); }
+    else { d.className = 'asist-fila'; d.innerHTML = `<span class="asist-av">${CLODI('cara')}</span><div class="asist-a"></div>`; d.lastChild.innerHTML = esc(texto.respuesta) + (texto.pestana ? `<br><i>→ pestaña <b>${esc(texto.pestana)}</b></i>` : '') + (irUrl(texto.ir_modulo) ? `<div class="asist-bts"><a class="asist-bt si asist-ir" href="${esc(irUrl(texto.ir_modulo))}">Ir a ${esc(texto.ir_modulo.nombre || 'ese módulo')} →</a></div>` : '') + ('speechSynthesis' in window ? ` <button class="asist-ib" title="Escuchar la respuesta" data-a="leer" data-t="${esc(texto.respuesta)}">${ICO.voz}</button>` : ''); }
     l.appendChild(d); l.scrollTop = l.scrollHeight; return d;
   }
   async function prepararAccion(acc, porVoz) {   // completa el formulario del módulo; se envía SOLO con el botón Enviar
@@ -402,12 +421,14 @@ window.ADORNO_ASISTENTE = (function () {
       if (!r.ok || !j.ok) throw new Error(j.error || ('Error ' + r.status));
       hist.push({ q, a: j.respuesta }); log('a', j);
       if (j.pestana && !j.accion) irA(j.pestana);
+      if (j.ir_modulo && j.ir_modulo.llevar && !j.accion) irModulo(j.ir_modulo);
       if (porVoz || siempreVoz()) leer(j.respuesta);
       if (j.accion) await prepararAccion(j.accion, porVoz);
     } catch (e) { w.remove(); log('err', e.message || String(e)); }
     finally { ocupado = false; ta.focus(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', armar); else armar();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', llegar); else llegar();
   return { abrir, cerrar, preguntar: (q) => { abrir(); panel.querySelector('textarea').value = q; enviar(false); },
     // para soporte: qué voz y ajustes usa Clodi en este equipo
     decir: (t) => { armar(); leer(String(t || '')); },   // para probar la voz y la boca
@@ -2138,8 +2159,8 @@ function renderArchivos(tipo){
     return (a.estado === 'pendiente' ? `<button class="btn primary ico" onclick="estadoArchivo(${a.id},'${ok}','${tipo}')" title="${tipo === 'factura' ? 'Marcar pagada' : 'Aprobar'}" aria-label="Aprobar">${tipo === 'factura' ? _i('money') : _i('check')}</button><button class="btn ico" onclick="estadoArchivo(${a.id},'rechazado','${tipo}')" title="Rechazar" aria-label="Rechazar">${_i('ban')}</button>`
          : `<button class="btn ico" onclick="estadoArchivo(${a.id},'pendiente','${tipo}')" title="Volver a pendiente" aria-label="Volver a pendiente">${_i('undo')}</button>`)
          + `<button class="btn ico" onclick="borrarArchivo(${a.id},'${tipo}')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>`; };
-  document.getElementById(pre + '-lista').innerHTML = L.length ? `<table><tr><th>Fecha</th><th>Proveedor</th><th>Archivo</th><th>Tarea</th><th>Notas</th><th class="num">Importe</th><th>Estado</th><th></th></tr>` +
-    L.map(a => `<tr><td>${fmtF(a.fecha)}</td><td>${esc(a.proveedor || '')}</td><td><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a><div class="mini">subió ${esc(quien(a.subido_por))}</div></td><td class="mini">${a.tarea_id && tareaDe(a.tarea_id) ? esc(tareaDe(a.tarea_id).titulo) : ''}</td><td class="mini">${esc(a.notas || '')}</td><td class="num">${plata(a.importe)}</td><td>${chip(a.estado)}</td><td style="white-space:nowrap">${acc(a)}</td></tr>`).join('') + '</table>'
+  document.getElementById(pre + '-lista').innerHTML = L.length ? `<table><thead><tr><th>Fecha</th><th>Proveedor</th><th>Archivo</th><th>Tarea</th><th>Notas</th><th class="num">Importe</th><th>Estado</th><th></th></tr></thead><tbody>` +
+    L.map(a => `<tr><td>${fmtF(a.fecha)}</td><td>${esc(a.proveedor || '')}</td><td><a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ${esc(a.nombre)}</a><div class="mini">subió ${esc(quien(a.subido_por))}</div></td><td class="mini">${a.tarea_id && tareaDe(a.tarea_id) ? esc(tareaDe(a.tarea_id).titulo) : ''}</td><td class="mini">${esc(a.notas || '')}</td><td class="num">${plata(a.importe)}</td><td>${chip(a.estado)}</td><td style="white-space:nowrap">${acc(a)}</td></tr>`).join('') + '</tbody></table>'
     : '<div class="empty">Nada por acá todavía.</div>';
 }
 async function estadoArchivo(id, estado, tipo){
@@ -2543,11 +2564,11 @@ function renderPagos(){
   document.getElementById('pg-form').style.display = ve('pagos') ? '' : 'none';
   const L = ARCHIVOS.filter(a => a.tipo === 'pago'); const tot = L.reduce((s, a) => s + Number(a.importe || 0), 0);
   document.getElementById('pg-stat').innerHTML = `${L.length} pago(s) · <strong>${plata(tot)}</strong>`;
-  document.getElementById('pg-lista').innerHTML = L.length ? `<table><tr><th>Fecha</th><th>A quién</th><th>Medio</th><th>Factura</th><th>Tarea</th><th>Notas</th><th>Comprobante</th><th class="num">Importe</th><th></th></tr>` +
+  document.getElementById('pg-lista').innerHTML = L.length ? `<table><thead><tr><th>Fecha</th><th>A quién</th><th>Medio</th><th>Factura</th><th>Tarea</th><th>Notas</th><th>Comprobante</th><th class="num">Importe</th><th></th></tr></thead><tbody>` +
     L.map(a => { const f = a.ref_id ? ARCHIVOS.find(x => x.id === a.ref_id) : null;
       return `<tr><td>${fmtF(a.fecha)}</td><td>${esc(a.proveedor || '')}</td><td class="mini">${esc(a.medio || '')}</td><td class="mini">${f ? esc(f.nombre) : ''}</td><td class="mini">${a.tarea_id && tareaDe(a.tarea_id) ? esc(tareaDe(a.tarea_id).titulo) : ''}</td><td class="mini">${esc(a.notas || '')}</td>
         <td>${a.path ? `<a href="#" onclick="abrirArchivo('${esc(a.path)}');return false">${_i('file')} ver</a>` : '<span class="mini">—</span>'}</td><td class="num">${plata(a.importe)}</td>
-        <td>${ve('pagos') ? `<button class="btn ico" onclick="borrarArchivo(${a.id},'pago')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</td></tr>`; }).join('') + '</table>'
+        <td>${ve('pagos') ? `<button class="btn ico" onclick="borrarArchivo(${a.id},'pago')" title="Borrar" aria-label="Borrar">${_i('trash')}</button>` : ''}</td></tr>`; }).join('') + '</tbody></table>'
     : '<div class="empty">Todavía no hay pagos registrados.</div>';
 }
 
@@ -2591,9 +2612,9 @@ function renderEquipo(){
   sb.from('rrhh_push_subscriptions').select('local_generico, plataforma, last_seen_at').like('local_generico', 'obra-%').eq('activa', true).then(({ data }) => {
     const g = {}; (data || []).forEach(r => { g[r.local_generico] = (g[r.local_generico] || 0) + 1; });
     document.getElementById('e-subs').textContent = Object.keys(g).length ? 'Celulares con avisos activados: ' + Object.entries(g).map(([k, v]) => k.replace('obra-', '') + ' (' + v + ')').join(' · ') : 'Todavía nadie activó los avisos en el celular.'; });
-  document.getElementById('e-lista').innerHTML = PARTS.length ? `<table><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Mails</th><th>Activo</th><th></th></tr>` +
+  document.getElementById('e-lista').innerHTML = PARTS.length ? `<table><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Mails</th><th>Activo</th><th></th></tr></thead><tbody>` +
     PARTS.map(p => `<tr class="${p.activo ? '' : 'dim'}"><td>${esc(p.nombre)}</td><td>${esc(p.email)}</td><td>${p.rol}</td><td>${p.recibe_mails ? '✓' : '—'}</td><td>${p.activo ? '✓' : 'no'}</td>
-      <td style="white-space:nowrap"><button class="btn ico" onclick="togglePart(${p.id},'recibe_mails',${!p.recibe_mails})" title="${p.recibe_mails ? 'Dejar de mandarle mails' : 'Mandarle mails'}" aria-label="Mails">${_i('send')}</button><button class="btn ico" onclick="togglePart(${p.id},'activo',${!p.activo})" title="${p.activo ? 'Sacarle el acceso' : 'Darle acceso de nuevo'}" aria-label="Acceso">${_i('toggle')}</button></td></tr>`).join('') + '</table>'
+      <td style="white-space:nowrap"><button class="btn ico" onclick="togglePart(${p.id},'recibe_mails',${!p.recibe_mails})" title="${p.recibe_mails ? 'Dejar de mandarle mails' : 'Mandarle mails'}" aria-label="Mails">${_i('send')}</button><button class="btn ico" onclick="togglePart(${p.id},'activo',${!p.activo})" title="${p.activo ? 'Sacarle el acceso' : 'Darle acceso de nuevo'}" aria-label="Acceso">${_i('toggle')}</button></td></tr>`).join('') + '</tbody></table>'
     : '<div class="mini">Todavía no agregaste a nadie. Los usuarios admin de Adorno entran siempre.</div>';
 }
 async function guardarParticipante(){
@@ -2626,6 +2647,7 @@ async function probarRecordatorio(){
 })();
 
 </script>
-<script src="manual.js?v=17"></script>
+<script src="manual.js?v=18"></script>
+<script src="adorno-tablas.js?v=e33931fe"></script>
 </body>
 </html>
